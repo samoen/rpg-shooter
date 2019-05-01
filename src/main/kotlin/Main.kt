@@ -90,7 +90,6 @@ fun menuTick(){
 }
 
 fun gameTick(){
-    allEntities.removeIf { it.isDead }
     val preupdateEnts = mutableListOf<EntDimens>()
     allEntities.forEach { entity: Entity ->
         preupdateEnts.add(EntDimens(entity.xpos,entity.ypos,entity.drawSize))
@@ -103,32 +102,22 @@ fun gameTick(){
         for (i in 0 until allEntities.size) {
             for (j in (i + 1) until allEntities.size) {
                 if(allEntities[i].overlapsOther(allEntities[j])){
-                    val me =allEntities[i]
-                    if (me is movementGetsBlocked){
-                        if(me.doIGetBlockedBy(allEntities[j])){
-                            if(timesTried<200) allclear = false
-                            else{
-                                allEntities[i].isDead = true
-                            }
-                        }
-                    }
-                    allEntities[i].collide(allEntities[j], preupdateEnts[i],preupdateEnts[j])
+                    val newallclear = allEntities[i].collide(allEntities[j], preupdateEnts[i],preupdateEnts[j])
+                    if(!newallclear && timesTried>100){
+                        allEntities[i].isDead = true
+                    }else if(allclear)allclear = newallclear
                 }
                 if(allEntities[j].overlapsOther(allEntities[i])){
-                    val me =allEntities[j]
-                    if (me is movementGetsBlocked){
-                        if(me.doIGetBlockedBy(allEntities[i])){
-                            if(timesTried<200) allclear = false
-                            else{
-                                allEntities[j].isDead
-                            }
-                        }
+                    val otherallclear = allEntities[j].collide(allEntities[i], preupdateEnts[j],preupdateEnts[i])
+                    if(!otherallclear && timesTried>100){
+                        allEntities[j].isDead = true
                     }
-                    allEntities[j].collide(allEntities[i], preupdateEnts[j],preupdateEnts[i])
+                    else if(allclear)allclear = otherallclear
                 }
             }
         }
     }while (!allclear)
+    allEntities.removeIf { it.isDead }
     myPanel.repaint()
     allEntities.addAll(entsToAdd)
     entsToAdd.clear()
@@ -138,9 +127,9 @@ fun gameTick(){
 
 fun revivePlayers(){
 //    allEntities.removeIf { (it !is Player) }
-    if(!allEntities.contains(player1))allEntities.add(player1)
+    if(!allEntities.contains(player1) && !entsToAdd.contains(player1))entsToAdd.add(player1)
 //    allEntities.clear()
-    if(!allEntities.contains(player2)) allEntities.add(player2)
+    if(!allEntities.contains(player2) && !entsToAdd.contains(player2)) entsToAdd.add(player2)
     player1.currentHp = player1.maxHP
     player1.isDead = false
     player2.currentHp = player2.maxHP
@@ -164,7 +153,7 @@ fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Colo
         se.color = colourofenemies
         se.xpos = (2 * i * sizeofenemies)
         se.ypos = 10.0
-        allEntities.add(se)
+        entsToAdd.add(se)
     }
 //    for (i in 0..wallseed-1) {
 //        val wall = Wall()
@@ -173,7 +162,7 @@ fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Colo
 //        allEntities.add(wall)
 //    }
     for(i in 1..4){
-        allEntities.add(MedPack().also {
+        entsToAdd.add(MedPack().also {
             it.xpos = i*it.drawSize*2 + 10
             it.ypos = 300.0
         })
@@ -216,7 +205,7 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
 }
 
 fun main() {
-    allEntities.addAll(listOf(
+    entsToAdd.addAll(listOf(
         player1,
         player2,
         Wall())

@@ -15,7 +15,9 @@ open class Entity() {
     open var speed: Int = 2
     open var drawSize: Double = 10.0
     open var color: Color = Color.BLUE
-    open fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens) {}
+    open fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens):Boolean {
+        return true
+    }
     open fun updateEntity() {}
     open fun drawComponents(g: Graphics) {}
     fun overlapsOther(other: Entity):Boolean{
@@ -37,10 +39,11 @@ class Bullet(val shotBy: shoots) : Entity() {
     override var speed = shotBy.wep.bulspd
     override var drawSize = shotBy.wep.bulSize
     override var color = shotBy.bulColor
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
+    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens):Boolean{
         if (!(other is MedPack) && shotBy != other && !(other is Bullet)) {
             isDead = true
         }
+        return true
     }
     override fun updateEntity() {
         ypos -= ((((Math.sin(bulDir))) * speed.toDouble()))
@@ -100,13 +103,14 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     )
     var primWep = Weapon()
 
-    override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
+    override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens):Boolean{
         blockMovement(other,oldme,oldOther)
         takeDamage(other)
         if(other is MedPack){
             currentHp+=5
             if (currentHp>maxHP)currentHp = maxHP
         }
+        return !doIGetBlockedBy(other)
     }
 
     override fun updateEntity() {
@@ -193,9 +197,10 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
     var randnumy = 0
     var iTried = Pair(-1.0,-1.0)
 
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
+    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens):Boolean{
         blockMovement(other,oldme,oldOther)
         takeDamage(other)
+        return !doIGetBlockedBy(other)
     }
     override fun updateEntity() {
         var preupdatePos = Pair(xpos, ypos)
@@ -249,8 +254,9 @@ class Wall : Entity(){
 class MedPack : Entity() {
     override var color = Color.GREEN
     override var drawSize = 20.0
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
+    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens):Boolean{
         if (other is Player) isDead = true
+        return true
     }
 }
 
