@@ -102,14 +102,14 @@ interface movementGetsBlocked{
     }
     fun blockMovement(other: Entity, oldme: EntDimens,oldOther:EntDimens){
         if(doIGetBlockedBy(other)){
-            var xdiff = (this as Entity).xpos - oldme.xpos
-            var ydiff = (this as Entity).ypos - oldme.ypos
+            val xdiff = (this as Entity).xpos - oldme.xpos
+            val ydiff = (this as Entity).ypos - oldme.ypos
             val midDistX =  abs(abs(oldOther.getMidpoint().first)-abs(oldme.getMidpoint().first))
             val midDistY = abs(abs(oldOther.getMidpoint().second)-abs(oldme.getMidpoint().second))
             if(midDistX>midDistY){
                 if(xdiff!=0.0){
-                    var otherxdiff = other.xpos - oldOther.xpos
-                    var xright = oldme.getMidpoint().first<oldOther.getMidpoint().first
+                    val otherxdiff = other.xpos - oldOther.xpos
+                    val xright = oldme.getMidpoint().first<oldOther.getMidpoint().first
 //                    var xright = abs( oldme.xpos+oldme.drawSize-oldOther.xpos)<abs(oldme.xpos-oldOther.xpos)
 
                     var meMovingatOtherx = 0.0
@@ -131,8 +131,8 @@ interface movementGetsBlocked{
                 }
             }else{
                 if(ydiff!=0.0){
-                    var otherydiff = other.ypos - oldOther.ypos
-                    var ybottom = oldme.getMidpoint().second< oldOther.getMidpoint().second
+                    val otherydiff = other.ypos - oldOther.ypos
+                    val ybottom = oldme.getMidpoint().second< oldOther.getMidpoint().second
 //                    var ybottom = abs(oldme.ypos+oldme.drawSize-oldOther.ypos)< abs(oldme.ypos-oldOther.ypos)
 
                     var meMovingatOthery = 0.0

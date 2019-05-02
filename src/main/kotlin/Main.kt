@@ -98,25 +98,35 @@ fun gameTick(){
     var timesTried = 0
     do{
         timesTried++
-        var allclear = true
+        var triggeredReaction = false
         for (i in 0 until allEntities.size) {
             for (j in (i + 1) until allEntities.size) {
-                if(allEntities[i].overlapsOther(allEntities[j])){
-                    val newallclear = allEntities[i].collide(allEntities[j], preupdateEnts[i],preupdateEnts[j])
-                    if(!newallclear && timesTried>100){
-                        allEntities[i].isDead = true
-                    }else if(allclear)allclear = newallclear
+                val ient = allEntities[i]
+                val jent = allEntities[j]
+                var collided = false
+                if(ient.overlapsOther(jent)){
+                    ient.collide(jent, preupdateEnts[i],preupdateEnts[j])
+                    collided = true
                 }
-                if(allEntities[j].overlapsOther(allEntities[i])){
-                    val otherallclear = allEntities[j].collide(allEntities[i], preupdateEnts[j],preupdateEnts[i])
-                    if(!otherallclear && timesTried>100){
-                        allEntities[j].isDead = true
+                if(jent.overlapsOther(ient)){
+                    jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
+                    collided = true
+                }
+                if(collided) {
+                    val iBlockedTrigger = (jent is movementGetsBlocked && jent.doIGetBlockedBy(ient))
+                    val jBlockedTrigger = (ient is movementGetsBlocked && ient.doIGetBlockedBy(jent))
+                    if (iBlockedTrigger||jBlockedTrigger) {
+                        if(timesTried > 100){
+                            ient.isDead = true
+                            jent.isDead = true
+                        }else{
+                            triggeredReaction = true
+                        }
                     }
-                    else if(allclear)allclear = otherallclear
                 }
             }
         }
-    }while (!allclear)
+    }while (triggeredReaction)
     allEntities.removeIf { it.isDead }
     myPanel.repaint()
     allEntities.addAll(entsToAdd)
