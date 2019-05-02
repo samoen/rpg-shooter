@@ -28,10 +28,17 @@ open class Entity() {
     }
     open fun drawEntity(g: Graphics) {
         g.color = color
-        g.fillRect(xpos.toInt(), ypos.toInt(), drawSize.toInt(), drawSize.toInt())
+//        g.fillRect(xpos.toInt(), ypos.toInt(), drawSize.toInt(), drawSize.toInt())
+        g.fillRect(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedSize().toInt(), getWindowAdjustedSize().toInt())
     }
-}
+    fun getWindowAdjustedSize():Double{
+        return drawSize * frameSize/INTENDED_FRAME_SIZE
+    }
 
+}
+fun getWindowAdjustedPos(pos:Double):Double{
+    return pos * frameSize/INTENDED_FRAME_SIZE
+}
 class Bullet(val shotBy: shoots) : Entity() {
     var bulDir = shotBy.angy + ((Math.random()-0.5)*shotBy.wep.recoil/6.0)
     override var xpos =  ((shotBy as Entity).getMidpoint().first-(shotBy.wep.bulSize/2))
@@ -47,14 +54,14 @@ class Bullet(val shotBy: shoots) : Entity() {
     override fun updateEntity() {
         ypos -= ((((Math.sin(bulDir))) * speed.toDouble()))
         xpos += ((((Math.cos(bulDir))) * speed))
-        if (xpos > FRAME_SIZE - drawSize || 0 > xpos || ypos > FRAME_SIZE - drawSize || 0 > xpos) {
+        if (xpos > INTENDED_FRAME_SIZE - drawSize || 0 > xpos || ypos > INTENDED_FRAME_SIZE - drawSize || 0 > xpos) {
             isDead = true
         }
     }
 
     override fun drawEntity(g: Graphics) {
         g.color = color
-        g.fillOval(xpos.toInt(), ypos.toInt(), drawSize.toInt(), drawSize.toInt())
+        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedSize().toInt(), getWindowAdjustedSize().toInt())
     }
 }
 
@@ -133,11 +140,8 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(preControl)
         processTurning(pCont.spenlef,pCont.spinri)
-        if(pCont.Swp.booly){
+        if(pCont.Swp.tryConsume()){
             playSound(swapNoise)
-            pCont.Swp.lockDown()
-//            pCont.Swp.booly = false
-//            pCont.Swp.locked = true
             if (primaryEquipped){
                 wep = spareWep
             }else{
@@ -166,7 +170,7 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
         }else{
             gaitcount = 0
         }
-        g.drawImage(todraw,xpos.toInt(),ypos.toInt(),drawSize.toInt(),drawSize.toInt(),null)
+        g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
     }
     var gaitcount = 0
 }
@@ -270,19 +274,16 @@ class Selector(val pnum:Int,val owner:Player,val xloc: Double):Entity(){
     override var color = Color.BLUE
     override var drawSize = 20.0
     override fun updateEntity() {
-        if(owner.pCont.dwm.booly){
-            owner.pCont.dwm.lockDown()
+        if(owner.pCont.dwm.tryConsume()){
             ypos+=30
         }
-        if(owner.pCont.up.booly){
-            owner.pCont.up.lockDown()
+        if(owner.pCont.up.tryConsume()){
             ypos-=30
         }
         if(ypos<0) ypos = 0.0
         if(ypos>30.0)ypos = 30.0
 
-        if(owner.pCont.sht.booly){
-            owner.pCont.sht.lockDown()
+        if(owner.pCont.sht.tryConsume()){
             when(ypos){
                 0.0->{
                     owner.speed += 1
@@ -291,8 +292,7 @@ class Selector(val pnum:Int,val owner:Player,val xloc: Double):Entity(){
                     owner.drawSize += 1
                 }
             }
-        }else if(owner.pCont.Swp.booly){
-            owner.pCont.Swp.lockDown()
+        }else if(owner.pCont.Swp.tryConsume()){
             when(ypos){
                 0.0->{
                     owner.speed -=1

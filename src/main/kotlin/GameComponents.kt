@@ -45,10 +45,10 @@ interface shoots{
         else g.color = Color.MAGENTA
         (g as Graphics2D).stroke = BasicStroke(10f)
         g.drawArc(
-            ((this as Entity).xpos-(this as Entity).drawSize/2).toInt(),
-            ((this as Entity).ypos-(this as Entity).drawSize/2).toInt(),
-            ((this as Entity).drawSize*2).toInt(),
-            ((this as Entity).drawSize*2).toInt(),
+            getWindowAdjustedPos(((this as Entity).xpos-(this as Entity).drawSize/2)).toInt(),
+            getWindowAdjustedPos(((this as Entity).ypos-(this as Entity).drawSize/2)).toInt(),
+            getWindowAdjustedPos(((this as Entity).drawSize*2)).toInt(),
+            getWindowAdjustedPos(((this as Entity).drawSize*2)).toInt(),
             (angy*180/Math.PI).toInt()-3,
             6
         )
@@ -157,14 +157,15 @@ interface movementGetsBlocked{
     }
 
     fun stayInMap(oldme: Pair<Double, Double>){
-        if((this as Entity).xpos>FRAME_SIZE-drawSize-15){
-            (this as Entity).xpos -= this.xpos - FRAME_SIZE + drawSize + 15
+        val limit = INTENDED_FRAME_SIZE-(this as Entity).drawSize
+        if(xpos>limit){
+            (this as Entity).xpos -= this.xpos - limit
         }
         if((this as Entity).xpos<0){
             (this as Entity).xpos -= this.xpos
         }
-        if((this as Entity).ypos>FRAME_SIZE-drawSize-35) {
-            (this as Entity).ypos -= this.ypos - FRAME_SIZE + drawSize + 35
+        if((this as Entity).ypos>INTENDED_FRAME_SIZE-drawSize) {
+            (this as Entity).ypos -= this.ypos - INTENDED_FRAME_SIZE + drawSize
         }
         if((this as Entity).ypos<0){
             (this as Entity).ypos -= this.ypos
@@ -179,16 +180,16 @@ interface hasHealth{
         g.color = Color.GREEN
         (g as Graphics2D).stroke = BasicStroke(2f)
         g.drawLine(
-            (this as Entity).xpos.toInt(),
-            (this as Entity).ypos.toInt() - 8,
-            ((this as Entity).xpos + ((this as Entity).drawSize * currentHp / maxHP)).toInt(),
-            (this as Entity).ypos.toInt() - 8
+            getWindowAdjustedPos((this as Entity).xpos).toInt(),
+            getWindowAdjustedPos((this as Entity).ypos).toInt() - 8,
+            getWindowAdjustedPos(((this as Entity).xpos + ((this as Entity).drawSize * currentHp / maxHP))).toInt(),
+            getWindowAdjustedPos((this as Entity).ypos).toInt() - 8
         )
         g.drawLine(
-            (this as Entity).xpos.toInt(),
-            (this as Entity).ypos.toInt() - 10,
-            ((this as Entity).xpos + ((this as Entity).drawSize * currentHp / maxHP)).toInt(),
-            (this as Entity).ypos.toInt() - 10
+            getWindowAdjustedPos(xpos).toInt(),
+            getWindowAdjustedPos(ypos).toInt() - 10,
+            getWindowAdjustedPos((this as Entity).xpos + ((this as Entity).drawSize * currentHp / maxHP)).toInt(),
+            getWindowAdjustedPos((this as Entity).ypos).toInt() - 10
         )
         g.stroke = BasicStroke(1f)
     }

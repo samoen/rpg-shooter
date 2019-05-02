@@ -1,6 +1,3 @@
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.awt.*
 import java.awt.event.*
 import javax.swing.*
@@ -8,23 +5,6 @@ import javax.swing.*
 val allEntities = mutableListOf<Entity>()
 val entsToAdd = mutableListOf<Entity>()
 
-class LockableBool(var locked:Boolean=false,var booly:Boolean=false){
-    fun lockDown(){
-        booly = false
-        locked = true
-    }
-
-    fun trySet(){
-        if(!locked){
-            booly=true
-        }
-    }
-    fun release(){
-        locked = false
-        booly = false
-    }
-}
-class playControls(var up:LockableBool=LockableBool(), var dwm:LockableBool=LockableBool(), var sht:LockableBool=LockableBool(), var Swp:LockableBool=LockableBool(),var riri:LockableBool=LockableBool(), var leflef:LockableBool=LockableBool(), var spinri:Boolean=false, var spenlef:Boolean=false)
 
 val player1 = Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD1,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD7,KeyEvent.VK_NUMPAD9)).also { it.speed = 8 }
 val player2 = Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B)).also{
@@ -33,26 +13,30 @@ val player2 = Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEven
     it.drawSize = 40.0
 }
 
-var pressed1 = LockableBool()
-var pressed2 = LockableBool()
-var pressed3 = LockableBool()
+var pressed1 = OneShotChannel()
+var pressed2 = OneShotChannel()
+var pressed3 = OneShotChannel()
 
 var showingmenu = false
-
-const val FRAME_SIZE = 500
+const val INTENDED_FRAME_SIZE = 500
+var frameSize = INTENDED_FRAME_SIZE
+var newframesize = INTENDED_FRAME_SIZE
 const val TICK_INTERVAL = 30
 
 val backgroundImage = ImageIcon("src/main/resources/grass.png").image
-
+var myrepaint = false
 var myPanel:JPanel =object : JPanel() {
     override fun paint(g: Graphics) {
         super.paint(g)
-        g.drawImage(backgroundImage,0,0,FRAME_SIZE,FRAME_SIZE,null)
-        allEntities.forEach { entity ->
-            entity.drawEntity(g)
-        }
-        allEntities.forEach { entity ->
-            entity.drawComponents(g)
+        if(myrepaint){
+            myrepaint = false
+            g.drawImage(backgroundImage,0,0,frameSize,frameSize,null)
+            allEntities.forEach { entity ->
+                entity.drawEntity(g)
+            }
+            allEntities.forEach { entity ->
+                entity.drawComponents(g)
+            }
         }
     }
 }.also {
@@ -71,17 +55,29 @@ var menuPanel:JPanel = object:JPanel(){
     it.background = Color.PINK
 }
 
-var myFrame=JFrame().also {
+var myFrame=object:JFrame(){
+
+}.also {
     it.isFocusable = true
     it.iconImage = ImageIcon("gunman.png").image
+    it.addComponentListener(object :ComponentListener{
+        override fun componentResized(e: ComponentEvent?) {
+            newframesize = it.width
+        }
+
+        override fun componentMoved(e: ComponentEvent?) {
+        }
+
+        override fun componentHidden(e: ComponentEvent?) {
+        }
+
+        override fun componentShown(e: ComponentEvent?) {
+        }
+    })
 }
 var menuEntities = mutableListOf<Entity>()
 
-class EntDimens(val xpos:Double,val ypos:Double,val drawSize:Double){
-    fun getMidpoint():Pair<Double,Double>{
-        return Pair((xpos+(drawSize/2)),ypos+(drawSize/2))
-    }
-}
+
 
 fun menuTick(){
     menuEntities.forEach { it.updateEntity() }
@@ -128,6 +124,7 @@ fun gameTick(){
         }
     }while (triggeredReaction)
     allEntities.removeIf { it.isDead }
+    myrepaint = true
     myPanel.repaint()
     allEntities.addAll(entsToAdd)
     entsToAdd.clear()
@@ -136,9 +133,7 @@ fun gameTick(){
 
 
 fun revivePlayers(){
-//    allEntities.removeIf { (it !is Player) }
     if(!allEntities.contains(player1) && !entsToAdd.contains(player1))entsToAdd.add(player1)
-//    allEntities.clear()
     if(!allEntities.contains(player2) && !entsToAdd.contains(player2)) entsToAdd.add(player2)
     player1.currentHp = player1.maxHP
     player1.isDead = false
@@ -146,16 +141,49 @@ fun revivePlayers(){
     player2.isDead = false
 //    var lastWidth = 0.0
 //    allEntities.forEachIndexed {i,e->
-        player1.ypos = (FRAME_SIZE - player1.drawSize*2-30).toDouble()
+        player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize).toDouble()
         player1.xpos = 1.0
-    player2.ypos = (FRAME_SIZE - player2.drawSize*2-30).toDouble()
+    player2.ypos = (INTENDED_FRAME_SIZE - player2.drawSize*2-30).toDouble()
 //    player2.xpos = (player1.drawSize+5).toDouble()
     player2.xpos = (200).toDouble()
 //        lastWidth += e.drawSize
 //    }
 }
 
-fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Color, wallseed: Int) {
+val map1 =  "10111111" +
+            "00000111" +
+            "00101011" +
+            "10011010"
+
+fun placeMap(){
+    val starty = 100.0
+    for((ind:Int,ch:Char) in map1.take(9).withIndex()){
+        if(ch=='1') entsToAdd.add(Wall().also {
+            it.xpos = ind.toDouble()+(ind* it.drawSize)
+            it.ypos = starty
+        })
+    }
+    for((ind:Int,ch:Char) in map1.substring(8,18).withIndex()){
+        if(ch=='1') entsToAdd.add(Wall().also {
+            it.xpos = ind.toDouble()+(ind* it.drawSize)
+            it.ypos = starty + it.drawSize+1
+        })
+    }
+    for((ind:Int,ch:Char) in map1.substring(16,24).withIndex()){
+        if(ch=='1') entsToAdd.add(Wall().also {
+            it.xpos = ind.toDouble()+(ind* it.drawSize)
+            it.ypos = starty + (it.drawSize+1)*2
+        })
+    }
+    for((ind:Int,ch:Char) in map1.substring(24,32).withIndex()){
+        if(ch=='1') entsToAdd.add(Wall().also {
+            it.xpos = ind.toDouble()+(ind* it.drawSize)
+            it.ypos = starty + (it.drawSize+1)*3
+        })
+    }
+}
+
+fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Color) {
 //    revivePlayers()
     for (i in 1..numberofenemies) {
         val se = Enemy()
@@ -165,12 +193,7 @@ fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Colo
         se.ypos = 10.0
         entsToAdd.add(se)
     }
-//    for (i in 0..wallseed-1) {
-//        val wall = Wall()
-//        wall.xpos = (i*wall.drawSize * FRAME_SIZE /(wallseed*wall.drawSize))
-//        wall.ypos =  (((Math.random()*(FRAME_SIZE-(3*100))))+70)
-//        allEntities.add(wall)
-//    }
+
     for(i in 1..4){
         entsToAdd.add(MedPack().also {
             it.xpos = i*it.drawSize*2 + 10
@@ -179,15 +202,15 @@ fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Colo
     }
 }
 
-class ButtonSet(val up:Int,val down:Int,val left:Int,val right:Int,val swapgun:Int,val shoot:Int,val spinleft:Int,val spinright:Int)
+
 
 fun playerKeyPressed(player: Player, e:KeyEvent){
-    if (e.keyCode == player.buttonSet.swapgun) player.pCont.Swp.trySet()
-    if (e.keyCode == player.buttonSet.up) player.pCont.up.trySet()
-    if (e.keyCode == player.buttonSet.down) player.pCont.dwm.trySet()
-    if (e.keyCode == player.buttonSet.shoot) player.pCont.sht.trySet()
-    if (e.keyCode == player.buttonSet.right) player.pCont.riri.trySet()
-    if (e.keyCode == player.buttonSet.left) player.pCont.leflef.trySet()
+    if (e.keyCode == player.buttonSet.swapgun) player.pCont.Swp.tryProduce()
+    if (e.keyCode == player.buttonSet.up) player.pCont.up.tryProduce()
+    if (e.keyCode == player.buttonSet.down) player.pCont.dwm.tryProduce()
+    if (e.keyCode == player.buttonSet.shoot) player.pCont.sht.tryProduce()
+    if (e.keyCode == player.buttonSet.right) player.pCont.riri.tryProduce()
+    if (e.keyCode == player.buttonSet.left) player.pCont.leflef.tryProduce()
     if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef = true
     if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri = true
 }
@@ -217,9 +240,9 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
 fun main() {
     entsToAdd.addAll(listOf(
         player1,
-        player2,
-        Wall())
-    )
+        player2
+//        , Wall()
+    ))
     menuEntities.addAll(
         listOf(
             StatView({"speed"},0.0,10.0),
@@ -244,9 +267,9 @@ fun main() {
             override fun keyTyped(e: KeyEvent?) {}
             override fun keyPressed(e: KeyEvent?) {
                 if(e!=null){
-                    if (e.keyCode == KeyEvent.VK_1) pressed1.trySet()
-                    if (e.keyCode == KeyEvent.VK_2) pressed2.trySet()
-                    if (e.keyCode == KeyEvent.VK_3) pressed3.trySet()
+                    if (e.keyCode == KeyEvent.VK_1) pressed1.tryProduce()
+                    if (e.keyCode == KeyEvent.VK_2) pressed2.tryProduce()
+                    if (e.keyCode == KeyEvent.VK_3) pressed3.tryProduce()
                     playerKeyPressed(player1,e)
                     playerKeyPressed(player2,e)
                 }
@@ -267,19 +290,18 @@ fun main() {
 //    myFrame.bufferStrategy.show()
 
     myFrame.title = "Gunplay"
-    myFrame.setBounds(0, 0, FRAME_SIZE, FRAME_SIZE)
+    myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, (INTENDED_FRAME_SIZE*1.08).toInt())
     myFrame.isVisible = true
     myFrame.contentPane = myPanel
 //    startWave(4, (Math.random() * 30) + 10, Color.LIGHT_GRAY, 5)
-    runBlocking {
-        launch {
+//    runBlocking {
+//        launch {
             while (true){
-                delay(30)
-                if(pressed3.booly){
-                    pressed3.lockDown()
+                if(newframesize!=frameSize)frameSize = newframesize
+                Thread.sleep(30)
+                if(pressed3.tryConsume()){
                     gamePaused = !gamePaused
-                }else if(pressed2.booly) {
-                    pressed2.lockDown()
+                }else if(pressed2.tryConsume()) {
                     if(showingmenu){
                         myFrame.contentPane = myPanel
                     }else{
@@ -288,10 +310,10 @@ fun main() {
                     }
                     showingmenu = !showingmenu
                     myFrame.revalidate()
-                } else if (pressed1.booly) {
-                    pressed1.lockDown()
+                } else if (pressed1.tryConsume()) {
                     revivePlayers()
-                    startWave(4, (Math.random() * 30) + 10, Color.LIGHT_GRAY, 5)
+                    placeMap()
+                    startWave(4, (Math.random() * 30) + 10, Color.LIGHT_GRAY)
                 } else{
                     if(showingmenu)menuTick()
                     else{
@@ -301,7 +323,7 @@ fun main() {
                     }
                 }
             }
-        }
-    }
+//        }
+//    }
 }
 var gamePaused = false
