@@ -113,8 +113,14 @@ fun gameTick(){
                     val jBlockedTrigger = (ient is movementGetsBlocked && ient.doIGetBlockedBy(jent))
                     if (iBlockedTrigger||jBlockedTrigger) {
                         if(timesTried > 100){
-                            ient.isDead = true
-                            jent.isDead = true
+                            if(jent is Wall){
+                                jent.isDead = true
+                            }else if(ient is Wall){
+                                ient.isDead = true
+                            }else{
+                                ient.isDead = true
+                                jent.isDead = true
+                            }
                         }else{
                             triggeredReaction = true
                         }
@@ -144,23 +150,38 @@ fun revivePlayers(){
     player2.ypos = (INTENDED_FRAME_SIZE - player2.drawSize).toDouble()
     player2.xpos = (player1.drawSize).toDouble()
 }
-const val mapGridSize = 60.0
-val map1 =  "10111011" +
-            "00212011" +
-            "00121011" +
-            "10001010"
+const val mapGridSize = 55.0
+const val mapGridColumns = 16
+const val mapGridRows = 16
+val map1 =  "0000100010001011" +
+            "0021200000001011" +
+            "0021201100001011" +
+            "0021201100001011" +
+            "0021201100001011" +
+            "0021201100001011" +
+            "0021201100001011" +
+            "0012100000001011" +
+            "0012101110001011" +
+            "0012101110001011" +
+            "0012100000001011" +
+            "0012101110001011" +
+            "0002100010001011" +
+            "0002100010001011" +
+            "0002100010001011" +
+            "0000101000001011"
 
 fun placeMap(){
-    val starty = INTENDED_FRAME_SIZE/7
+//    val starty = INTENDED_FRAME_SIZE/15
+    val starty = 0
     var rownum = 0
-    for((outerind,i) in (0..25 step 8).withIndex()){
+    for((outerind,i) in (0..(mapGridColumns*mapGridRows)-7 step mapGridColumns).withIndex()){
         rownum++
-        for((ind:Int,ch:Char) in map1.substring(i,i+8).withIndex()){
+        for((ind:Int,ch:Char) in map1.substring(i,i+mapGridColumns).withIndex()){
             if(ch=='1'){
                 entsToAdd.add(Wall().also {
                     it.drawSize = mapGridSize
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                    it.ypos = starty + (mapGridSize)*(outerind)
                 })
             }else if (ch == '2'){
                 entsToAdd.add(MedPack().also {
@@ -193,6 +214,7 @@ fun playerKeyPressed(player: Player, e:KeyEvent){
     if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef = true
     if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri = true
 }
+
 fun playerKeyReleased(player: Player,e: KeyEvent){
     if (e.keyCode == player.buttonSet.swapgun) {
         player.pCont.Swp.release()
@@ -279,7 +301,8 @@ fun main() {
 //                if(newframesize!=frameSize)frameSize = newframesize
                 Thread.sleep(30)
                 if(pressed3.tryConsume()){
-                    gamePaused = !gamePaused
+//                    gamePaused = !gamePaused
+                    placeMap()
                 }else if(pressed2.tryConsume()) {
                     if(showingmenu){
                         myFrame.contentPane = myPanel
@@ -291,7 +314,6 @@ fun main() {
                     myFrame.revalidate()
                 } else if (pressed1.tryConsume()) {
                     revivePlayers()
-                    placeMap()
                     startWave(4, (Math.random() * 30) + 10, Color.LIGHT_GRAY)
                 } else{
                     if(showingmenu)menuTick()

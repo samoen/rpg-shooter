@@ -72,7 +72,7 @@ class Weapon(
     var recoil:Double = 5.0,
     var bulSize:Double = 10.0,
     var buldmg:Int = 1,
-    var framesSinceShottah:Int = 99
+    var framesSinceShottah:Int = 999
 )
 
 class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
