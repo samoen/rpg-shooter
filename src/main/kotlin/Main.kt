@@ -18,10 +18,10 @@ var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
 
 var showingmenu = false
-const val INTENDED_FRAME_SIZE = 500
-var frameSize = INTENDED_FRAME_SIZE
-var newframesize = INTENDED_FRAME_SIZE
-const val TICK_INTERVAL = 30
+const val INTENDED_FRAME_SIZE = 300
+val XMAXMAGIC = INTENDED_FRAME_SIZE*15
+//var frameSize = INTENDED_FRAME_SIZE
+//const val TICK_INTERVAL = 30
 
 val backgroundImage = ImageIcon("src/main/resources/grass.png").image
 var myrepaint = false
@@ -30,7 +30,7 @@ var myPanel:JPanel =object : JPanel() {
         super.paint(g)
         if(myrepaint){
             myrepaint = false
-            g.drawImage(backgroundImage,0,0,frameSize,frameSize,null)
+            g.drawImage(backgroundImage,0,0,myFrame.width,myFrame.width,null)
             allEntities.forEach { entity ->
                 entity.drawEntity(g)
             }
@@ -60,20 +60,20 @@ var myFrame=object:JFrame(){
 }.also {
     it.isFocusable = true
     it.iconImage = ImageIcon("gunman.png").image
-    it.addComponentListener(object :ComponentListener{
-        override fun componentResized(e: ComponentEvent?) {
-            newframesize = it.width
-        }
-
-        override fun componentMoved(e: ComponentEvent?) {
-        }
-
-        override fun componentHidden(e: ComponentEvent?) {
-        }
-
-        override fun componentShown(e: ComponentEvent?) {
-        }
-    })
+//    it.addComponentListener(object :ComponentListener{
+//        override fun componentResized(e: ComponentEvent?) {
+//            newframesize = it.width
+//        }
+//
+//        override fun componentMoved(e: ComponentEvent?) {
+//        }
+//
+//        override fun componentHidden(e: ComponentEvent?) {
+//        }
+//
+//        override fun componentShown(e: ComponentEvent?) {
+//        }
+//    })
 }
 var menuEntities = mutableListOf<Entity>()
 
@@ -173,7 +173,6 @@ fun placeMap(){
 }
 
 fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Color) {
-//    revivePlayers()
     for (i in 1..numberofenemies) {
         val se = Enemy()
         se.drawSize = sizeofenemies
@@ -182,16 +181,7 @@ fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Colo
         se.ypos = 10.0
         entsToAdd.add(se)
     }
-
-//    for(i in 1..4){
-//        entsToAdd.add(MedPack().also {
-//            it.xpos = i*it.drawSize*2 + 10
-//            it.ypos = 300.0
-//        })
-//    }
 }
-
-
 
 fun playerKeyPressed(player: Player, e:KeyEvent){
     if (e.keyCode == player.buttonSet.swapgun) player.pCont.Swp.tryProduce()
@@ -286,7 +276,7 @@ fun main() {
 //    runBlocking {
 //        launch {
             while (true){
-                if(newframesize!=frameSize)frameSize = newframesize
+//                if(newframesize!=frameSize)frameSize = newframesize
                 Thread.sleep(30)
                 if(pressed3.tryConsume()){
                     gamePaused = !gamePaused

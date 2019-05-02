@@ -32,12 +32,12 @@ open class Entity() {
         g.fillRect(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedSize().toInt(), getWindowAdjustedSize().toInt())
     }
     fun getWindowAdjustedSize():Double{
-        return drawSize * frameSize/INTENDED_FRAME_SIZE
+        return drawSize * myFrame.width/INTENDED_FRAME_SIZE
     }
 
 }
 fun getWindowAdjustedPos(pos:Double):Double{
-    return pos * frameSize/INTENDED_FRAME_SIZE
+    return pos * myFrame.width/INTENDED_FRAME_SIZE
 }
 class Bullet(val shotBy: shoots) : Entity() {
     var bulDir = shotBy.angy + ((Math.random()-0.5)*shotBy.wep.recoil/6.0)
@@ -54,9 +54,10 @@ class Bullet(val shotBy: shoots) : Entity() {
     override fun updateEntity() {
         ypos -= ((((Math.sin(bulDir))) * speed.toDouble()))
         xpos += ((((Math.cos(bulDir))) * speed))
-        if (xpos > INTENDED_FRAME_SIZE - drawSize || 0 > xpos || ypos > INTENDED_FRAME_SIZE - drawSize || 0 > xpos) {
-            isDead = true
-        }
+        if(xpos<0)isDead = true
+        if(xpos > INTENDED_FRAME_SIZE - (drawSize) - (XMAXMAGIC/myFrame.width))isDead = true
+        if(ypos > INTENDED_FRAME_SIZE - drawSize) isDead = true
+        if(ypos<0)isDead = true
     }
 
     override fun drawEntity(g: Graphics) {

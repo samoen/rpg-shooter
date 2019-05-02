@@ -158,7 +158,7 @@ interface movementGetsBlocked{
 
     fun stayInMap(oldme: Pair<Double, Double>){
         var limit = INTENDED_FRAME_SIZE-(this as Entity).drawSize
-        limit -= 8000/frameSize
+        limit -= XMAXMAGIC/myFrame.width
         if(xpos>limit){
             (this as Entity).xpos -= this.xpos - limit
         }
