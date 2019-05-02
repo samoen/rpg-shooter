@@ -60,16 +60,16 @@ interface shoots{
             (g as Graphics2D).stroke = BasicStroke(2f)
 
             g.drawLine(
-                (this as Entity).xpos.toInt(),
-                (this as Entity).ypos.toInt() - 2,
-                ((this as Entity).xpos + ((this as Entity).drawSize * (wep.atkSpd - weap.framesSinceShottah) / wep.atkSpd)).toInt(),
-                (this as Entity).ypos.toInt() - 2
+                getWindowAdjustedPos ((this as Entity).xpos).toInt(),
+                getWindowAdjustedPos((this as Entity).ypos).toInt()-2,
+                getWindowAdjustedPos  ( (xpos + (drawSize * (wep.atkSpd - weap.framesSinceShottah) / wep.atkSpd)) ).toInt(),
+                getWindowAdjustedPos(ypos).toInt()-2
             )
             g.drawLine(
-                (this as Entity).xpos.toInt(),
-                (this as Entity).ypos.toInt() - 4,
-                ((this as Entity).xpos + ((this as Entity).drawSize * (wep.atkSpd - weap.framesSinceShottah) / wep.atkSpd)).toInt(),
-                (this as Entity).ypos.toInt() - 4
+                getWindowAdjustedPos ((this as Entity).xpos).toInt(),
+                getWindowAdjustedPos((this as Entity).ypos).toInt()-4,
+                getWindowAdjustedPos  ( (xpos + (drawSize * (wep.atkSpd - weap.framesSinceShottah) / wep.atkSpd)) ).toInt(),
+                getWindowAdjustedPos(ypos).toInt()-4
             )
             g.stroke = BasicStroke(1f)
         }
@@ -157,7 +157,8 @@ interface movementGetsBlocked{
     }
 
     fun stayInMap(oldme: Pair<Double, Double>){
-        val limit = INTENDED_FRAME_SIZE-(this as Entity).drawSize
+        var limit = INTENDED_FRAME_SIZE-(this as Entity).drawSize
+        limit -= 8000/frameSize
         if(xpos>limit){
             (this as Entity).xpos -= this.xpos - limit
         }

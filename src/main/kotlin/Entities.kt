@@ -246,10 +246,10 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
 }
 
 class Wall : Entity(){
-    override var drawSize = 60.0
+    override var drawSize = mapGridSize
     override var color = Color.RED
-    override var ypos = 200.0
-    override var xpos = 200.0
+    override var ypos = 0.0
+    override var xpos = 0.0
 }
 
 class MedPack : Entity() {

@@ -139,47 +139,36 @@ fun revivePlayers(){
     player1.isDead = false
     player2.currentHp = player2.maxHP
     player2.isDead = false
-//    var lastWidth = 0.0
-//    allEntities.forEachIndexed {i,e->
-        player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize).toDouble()
-        player1.xpos = 1.0
-    player2.ypos = (INTENDED_FRAME_SIZE - player2.drawSize*2-30).toDouble()
-//    player2.xpos = (player1.drawSize+5).toDouble()
-    player2.xpos = (200).toDouble()
-//        lastWidth += e.drawSize
-//    }
+    player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize).toDouble()
+    player1.xpos = 0.0
+    player2.ypos = (INTENDED_FRAME_SIZE - player2.drawSize).toDouble()
+    player2.xpos = (player1.drawSize).toDouble()
 }
-
-val map1 =  "10111111" +
-            "00000111" +
-            "00101011" +
-            "10011010"
+const val mapGridSize = 60.0
+val map1 =  "10111011" +
+            "00212011" +
+            "00121011" +
+            "10001010"
 
 fun placeMap(){
-    val starty = 100.0
-    for((ind:Int,ch:Char) in map1.take(9).withIndex()){
-        if(ch=='1') entsToAdd.add(Wall().also {
-            it.xpos = ind.toDouble()+(ind* it.drawSize)
-            it.ypos = starty
-        })
-    }
-    for((ind:Int,ch:Char) in map1.substring(8,18).withIndex()){
-        if(ch=='1') entsToAdd.add(Wall().also {
-            it.xpos = ind.toDouble()+(ind* it.drawSize)
-            it.ypos = starty + it.drawSize+1
-        })
-    }
-    for((ind:Int,ch:Char) in map1.substring(16,24).withIndex()){
-        if(ch=='1') entsToAdd.add(Wall().also {
-            it.xpos = ind.toDouble()+(ind* it.drawSize)
-            it.ypos = starty + (it.drawSize+1)*2
-        })
-    }
-    for((ind:Int,ch:Char) in map1.substring(24,32).withIndex()){
-        if(ch=='1') entsToAdd.add(Wall().also {
-            it.xpos = ind.toDouble()+(ind* it.drawSize)
-            it.ypos = starty + (it.drawSize+1)*3
-        })
+    val starty = INTENDED_FRAME_SIZE/7
+    var rownum = 0
+    for((outerind,i) in (0..25 step 8).withIndex()){
+        rownum++
+        for((ind:Int,ch:Char) in map1.substring(i,i+8).withIndex()){
+            if(ch=='1'){
+                entsToAdd.add(Wall().also {
+                    it.drawSize = mapGridSize
+                    it.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                })
+            }else if (ch == '2'){
+                entsToAdd.add(MedPack().also {
+                    it.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                })
+            }
+        }
     }
 }
 
@@ -194,12 +183,12 @@ fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Colo
         entsToAdd.add(se)
     }
 
-    for(i in 1..4){
-        entsToAdd.add(MedPack().also {
-            it.xpos = i*it.drawSize*2 + 10
-            it.ypos = 300.0
-        })
-    }
+//    for(i in 1..4){
+//        entsToAdd.add(MedPack().also {
+//            it.xpos = i*it.drawSize*2 + 10
+//            it.ypos = 300.0
+//        })
+//    }
 }
 
 
