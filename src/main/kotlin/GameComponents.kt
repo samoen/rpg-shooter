@@ -40,18 +40,32 @@ interface shoots{
             if(angy<-Math.PI)angy = Math.PI - turnSpeed
         }
     }
-    fun drawCrosshair(g: Graphics,del:Boolean){
-        if(del)g.color = Color.WHITE
-        else g.color = Color.MAGENTA
-        (g as Graphics2D).stroke = BasicStroke(10f)
-        g.drawArc(
-            getWindowAdjustedPos(((this as Entity).xpos-(this as Entity).drawSize/2)).toInt(),
-            getWindowAdjustedPos(((this as Entity).ypos-(this as Entity).drawSize/2)).toInt(),
-            getWindowAdjustedPos(((this as Entity).drawSize*2)).toInt(),
-            getWindowAdjustedPos(((this as Entity).drawSize*2)).toInt(),
-            (angy*180/Math.PI).toInt()-3,
-            6
-        )
+    fun drawCrosshair(g: Graphics){
+        if(this.wep.buldmg>2){
+            g.color = Color.RED
+        }else g.color = Color.MAGENTA
+
+        (g as Graphics2D).stroke = BasicStroke(4f *myFrame.width/INTENDED_FRAME_SIZE)
+
+        val arcdiameter = (this as Entity).drawSize
+        fun doarc(diver:Double,timeser:Double){
+            val spread = (wep.recoil+1)*6
+            val bspd = wep.bulspd*2
+            g.drawArc(
+                getWindowAdjustedPos(((this as Entity).xpos)+(diver)).toInt()-bspd,
+                getWindowAdjustedPos(((this as Entity).ypos)+(diver)).toInt()-bspd,
+                (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
+                (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
+                ((angy*180/Math.PI)-spread/2).toInt(),
+                spread.toInt()
+            )
+        }
+        doarc(drawSize/4,0.5)
+        doarc(-drawSize/1.7,2.15)
+        doarc(0.0,1.0)
+        doarc(-drawSize/3.5,1.55)
+//        doarc(-drawSize,3.0)
+//        g.color = Color.ORANGE
         (g as Graphics2D).stroke = BasicStroke(1f)
     }
     fun drawReload(g: Graphics,weap: Weapon){

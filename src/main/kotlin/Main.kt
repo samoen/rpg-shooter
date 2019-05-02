@@ -18,7 +18,7 @@ var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
 
 var showingmenu = false
-const val INTENDED_FRAME_SIZE = 300
+const val INTENDED_FRAME_SIZE = 900
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 //var frameSize = INTENDED_FRAME_SIZE
 //const val TICK_INTERVAL = 30
@@ -269,7 +269,7 @@ fun main() {
 //    myFrame.bufferStrategy.show()
 
     myFrame.title = "Gunplay"
-    myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, (INTENDED_FRAME_SIZE*1.08).toInt())
+    myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, 40+INTENDED_FRAME_SIZE.toInt())
     myFrame.isVisible = true
     myFrame.contentPane = myPanel
 //    startWave(4, (Math.random() * 30) + 10, Color.LIGHT_GRAY, 5)

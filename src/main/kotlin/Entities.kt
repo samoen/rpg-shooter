@@ -66,12 +66,14 @@ class Bullet(val shotBy: shoots) : Entity() {
     }
 }
 
-class Weapon(var atkSpd:Int = 4,
-        var bulspd:Int = 2,
-        var recoil:Double = 5.0,
-        var bulSize:Double = 10.0,
-        var buldmg:Int = 1,
-             var framesSinceShottah:Int = 99)
+class Weapon(
+    var atkSpd:Int = 4,
+    var bulspd:Int = 2,
+    var recoil:Double = 5.0,
+    var bulSize:Double = 10.0,
+    var buldmg:Int = 1,
+    var framesSinceShottah:Int = 99
+)
 
 class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
     val stillImage = ImageIcon("src/main/resources/gunman.png").image
@@ -154,7 +156,7 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     }
 
     override fun drawComponents(g: Graphics) {
-        drawCrosshair(g,false)
+        drawCrosshair(g)
         drawReload(g,this.wep)
         drawHealth(g)
     }
@@ -242,7 +244,7 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
 
     override fun drawComponents(g: Graphics) {
         drawHealth(g)
-        drawCrosshair(g,false)
+        drawCrosshair(g)
     }
 }
 
