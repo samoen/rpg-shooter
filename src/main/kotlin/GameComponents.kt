@@ -47,11 +47,11 @@ interface shoots{
     }
     fun drawCrosshair(g: Graphics){
         if(this.wep.buldmg>2){
-            g.color = Color.RED
-        }else g.color = Color.MAGENTA
-
-        (g as Graphics2D).stroke = BasicStroke(4f *myFrame.width/INTENDED_FRAME_SIZE)
-
+            g.color = Color.BLACK
+        }else g.color = Color.CYAN
+        val strkw = if(this is Player)2f
+        else 5f
+        (g as Graphics2D).stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
         val arcdiameter = (this as Entity).drawSize
         fun doarc(diver:Double,timeser:Double){
             val spread = (wep.recoil+1)*6
@@ -65,10 +65,21 @@ interface shoots{
                 spread.toInt()
             )
         }
-        doarc(drawSize/4,0.5)
-        doarc(-drawSize/1.7,2.15)
-        doarc(0.0,1.0)
-        doarc(-drawSize/3.5,1.55)
+        if(this is Player){
+            doarc(drawSize/4,0.5)
+            doarc(-drawSize/3.5,1.55)
+            doarc(0.0,1.0)
+            doarc(-drawSize/1.7,2.15)
+        }else{
+            g.drawArc(
+                getWindowAdjustedPos(((this as Entity).xpos)).toInt(),
+                getWindowAdjustedPos(((this as Entity).ypos)).toInt(),
+                (getWindowAdjustedPos((arcdiameter))).toInt(),
+                (getWindowAdjustedPos((arcdiameter))).toInt(),
+                ((angy*180/Math.PI)-5/2).toInt(),
+                5.toInt()
+            )
+        }
 //        doarc(-drawSize,3.0)
 //        g.color = Color.ORANGE
         (g as Graphics2D).stroke = BasicStroke(1f)

@@ -95,12 +95,12 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     override var wep = Weapon()
     override var speed = 10
     override var drawSize = 40.0
-    override var color = Color.BLACK
+//    override var color = Color.BLACK
     override var angy = 0.0
     override val maxHP = 30
     override var currentHp = maxHP
-    override var bulColor = Color.PINK
-    override var turnSpeed = 0.2
+    override var bulColor = Color.LIGHT_GRAY
+    override var turnSpeed = 0.1
 
     var primaryEquipped = true
     var spareWep:Weapon = Weapon(
@@ -325,7 +325,7 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
 
 class Wall : Entity(){
     override var drawSize = mapGridSize
-    override var color = Color.RED
+    override var color = Color.DARK_GRAY
     override var ypos = 0.0
     override var xpos = 0.0
 }
@@ -387,7 +387,7 @@ class Selector(val pnum:Int,val owner:Player,val xloc: Double,val numstats:Int):
                     owner.drawSize += 1
                 }
                 2->{
-                    owner.turnSpeed +=0.1
+                    owner.turnSpeed +=0.05
                 }
             }
         }else if(owner.pCont.Swp.tryConsume()){
@@ -401,7 +401,7 @@ class Selector(val pnum:Int,val owner:Player,val xloc: Double,val numstats:Int):
                     if(owner.drawSize<10.0)owner.drawSize = 10.0
                 }
                 2->{
-                    owner.turnSpeed -=0.1
+                    owner.turnSpeed -=0.05
                 }
             }
         }
