@@ -153,22 +153,36 @@ fun revivePlayers(){
 const val mapGridSize = 55.0
 const val mapGridColumns = 16
 const val mapGridRows = 16
-val map1 =  "0000100010001011" +
-            "0021200000001011" +
+val map1 =  "0000100010031311" +
+            "0021200000001311" +
             "0021201100001011" +
             "0021201100001011" +
-            "0021201100001011" +
-            "0021201100001011" +
-            "0021201100001011" +
+            "0021200000000000" +
+            "0021200000000000" +
+            "0021201100000001" +
             "0012100000001011" +
             "0012101110001011" +
             "0012101110001011" +
             "0012100000001011" +
-            "0012101110001011" +
-            "0002100010001011" +
-            "0002100010001011" +
-            "0002100010001011" +
-            "0000101000001011"
+            "0012001110001011" +
+            "0002000010001011" +
+            "0002000010001011" +
+            "0002000010000000" +
+            "0000101000000000"
+
+fun locToMapCoord(x:Double,y:Double):Pair<Int,Int>{
+    var row = (y/mapGridSize).toInt()
+    var col = (x/mapGridSize).toInt()
+    return Pair(col,row)
+}
+fun locToIndex(x:Double,y:Double):Int{
+    var fromrows = mapGridColumns*(locToMapCoord(x,y).second)
+    var lastcol = locToMapCoord(x,y).first
+    var result = fromrows+lastcol
+    if(result<1)result = 1
+    if(result>map1.length-1)result = map1.length-1
+    return result
+}
 
 fun placeMap(){
 //    val starty = INTENDED_FRAME_SIZE/15
@@ -190,24 +204,34 @@ fun placeMap(){
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
                 })
+            }else if (ch == '3'){
+                entsToAdd.add(randEnemy().also {
+                    it.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                })
             }
         }
     }
 }
 
+fun randEnemy():Enemy{
+    val se = Enemy()
+    se.turnSpeed = 0.002+(Math.random()/12)
+    se.drawSize = 20+(Math.random()*30)
+    se.speed = (Math.random()*3).toInt()+1
+    se.wep.atkSpd = (Math.random()*20).toInt()+10
+    se.wep.bulspd = (Math.random()*10).toInt()+3
+    return  se
+}
+
 fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Color) {
+    var lastsize = 0.0
     for (i in 1..numberofenemies) {
-        val se = Enemy()
-        se.turnSpeed = 0.01+(Math.random()/10)
-        se.drawSize = sizeofenemies
-        se.speed = (Math.random()*3).toInt()+1
-        se.wep.atkSpd = (Math.random()*20).toInt()+10
-//        se.wep.atkSpd = 50
-        se.wep.bulspd = (Math.random()*10).toInt()+1
-        se.color = colourofenemies
-        se.xpos = (2 * i * sizeofenemies)
-        se.ypos = 10.0
-        entsToAdd.add(se)
+        val e = randEnemy()
+        e.xpos = (lastsize)
+        lastsize += e.drawSize
+        e.ypos = 10.0
+        entsToAdd.add(e)
     }
 }
 
