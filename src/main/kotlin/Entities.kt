@@ -95,7 +95,7 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     override var wep = Weapon()
     override var speed = 8
     override var drawSize = 40.0
-    override var color = Color.GRAY
+    override var color = Color.BLACK
     override var angy = 0.0
     override val maxHP = 30
     override var currentHp = maxHP
@@ -265,45 +265,68 @@ class MedPack : Entity() {
 
 class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity(){
     override fun drawEntity(g: Graphics) {
-          g.drawString(showText(),xloc.toInt(),yloc.toInt())
+          g.drawString(showText(),getWindowAdjustedPos( xloc).toInt(),getWindowAdjustedPos(yloc).toInt())
     }
 }
 
-class Selector(val pnum:Int,val owner:Player,val xloc: Double):Entity(){
-    var statup : (Entity)->Unit = {}
-    var statdown : (Entity)->Unit = {}
-    override var ypos = 0.0
+class Selector(val pnum:Int,val owner:Player,val xloc: Double,val numstats:Int):Entity(){
+//    var statup : (Entity)->Unit = {}
+//    var statdown : (Entity)->Unit = {}
+//    val vertspacing = 40.0
+//    val maxvert = vertspacing*numstats
+
     override var xpos = xloc
     override var color = Color.BLUE
     override var drawSize = 20.0
+    override var ypos = selectoryspacing[0]-this.drawSize/2
+    var indexer = 0
     override fun updateEntity() {
         if(owner.pCont.dwm.tryConsume()){
-            ypos+=30
+            if(indexer+1<selectoryspacing.size){
+                indexer++
+                ypos=selectoryspacing[indexer]-this.drawSize/2
+            }
         }
         if(owner.pCont.up.tryConsume()){
-            ypos-=30
+//            ypos-=vertspacing
+            if(indexer-1>=0){
+                indexer--
+                ypos = selectoryspacing[indexer]-this.drawSize/2
+            }
         }
-        if(ypos<0) ypos = 0.0
-        if(ypos>30.0)ypos = 30.0
+
+//        if(ypos<10.0) ypos = 10.0
+//        if(ypos>selectoryspacing.last())ypos = selectoryspacing.last()
 
         if(owner.pCont.sht.tryConsume()){
-            when(ypos){
-                0.0->{
+//            for(i:Int in 0..numstats){
+//                if(ypos == i*vertspacing){
+//                    owner.speed+=1
+//                }
+//            }
+            when(indexer){
+                0->{
                     owner.speed += 1
                 }
-                30.0->{
+                1->{
                     owner.drawSize += 1
+                }
+                2->{
+                    owner.turnSpeed +=0.1
                 }
             }
         }else if(owner.pCont.Swp.tryConsume()){
-            when(ypos){
-                0.0->{
+            when(indexer){
+                0->{
                     owner.speed -=1
                     if(owner.speed<0)owner.speed = 0
                 }
-                30.0->{
+                1->{
                     owner.drawSize -=1
                     if(owner.drawSize<10.0)owner.drawSize = 10.0
+                }
+                2->{
+                    owner.turnSpeed -=0.1
                 }
             }
         }

@@ -115,57 +115,44 @@ interface movementGetsBlocked{
         return !(entity is MedPack) && !(entity is Bullet)
     }
     fun blockMovement(other: Entity, oldme: EntDimens,oldOther:EntDimens){
+        
+        fun specialk(diff:Double,mepos:Double,otherpos:Double,oldotherpos:Double,oldmecoord:Double,oldothercoord:Double):Double{
+            if(diff!=0.0){
+                val otherxdiff = otherpos - oldotherpos
+                val xright = oldmecoord<oldothercoord
+
+                val meMovingatOtherx =
+                if(diff>0 && xright) diff
+                else if(diff<0 && !xright) -diff
+                else 0.0
+
+                val otherMovingAtMex =
+                if(otherxdiff>0 && !xright) otherxdiff
+                else if(otherxdiff<0 && xright) -otherxdiff
+                else 0.0
+
+                val overlapx =
+                if(xright) mepos + (this as Entity).drawSize - otherpos
+                else otherpos + other.drawSize - mepos
+
+                var takebackx: Double = (meMovingatOtherx / (meMovingatOtherx+otherMovingAtMex)) * overlapx
+                if (xright) takebackx = takebackx * -1.0
+                if(abs(takebackx)<(this as Entity).speed+2) {
+                    return takebackx
+                }
+            }
+            return 0.0
+        }
+        
         if(doIGetBlockedBy(other)){
             val xdiff = (this as Entity).xpos - oldme.xpos
             val ydiff = (this as Entity).ypos - oldme.ypos
             val midDistX =  abs(abs(oldOther.getMidpoint().first)-abs(oldme.getMidpoint().first))
             val midDistY = abs(abs(oldOther.getMidpoint().second)-abs(oldme.getMidpoint().second))
             if(midDistX>midDistY){
-                if(xdiff!=0.0){
-                    val otherxdiff = other.xpos - oldOther.xpos
-                    val xright = oldme.getMidpoint().first<oldOther.getMidpoint().first
-//                    var xright = abs( oldme.xpos+oldme.drawSize-oldOther.xpos)<abs(oldme.xpos-oldOther.xpos)
-
-                    var meMovingatOtherx = 0.0
-                    if(xdiff>0 && xright) meMovingatOtherx = xdiff
-                    else if(xdiff<0 && !xright) meMovingatOtherx = -xdiff
-                    var otherMovingAtMex = 0.0
-                    if(otherxdiff>0 && !xright) otherMovingAtMex = otherxdiff
-                    else if(otherxdiff<0 && xright)otherMovingAtMex = -otherxdiff
-
-                    var overlapx = 0.0
-                    if(xright)overlapx = this.xpos + this.drawSize -other.xpos
-                    else overlapx = other.xpos + other.drawSize - this.xpos
-
-                    var takebackx: Double = (meMovingatOtherx / (meMovingatOtherx+otherMovingAtMex)) * overlapx
-                    if (xright) takebackx = takebackx * -1.0
-                    if(abs(takebackx)<this.speed+2) {
-                        (this as Entity).xpos = ((this as Entity).xpos + takebackx)
-                    }
-                }
+                (this as Entity).xpos +=  specialk(xdiff,this.xpos,other.xpos,oldOther.xpos,oldme.getMidpoint().first,oldOther.getMidpoint().first)
             }else{
-                if(ydiff!=0.0){
-                    val otherydiff = other.ypos - oldOther.ypos
-                    val ybottom = oldme.getMidpoint().second< oldOther.getMidpoint().second
-//                    var ybottom = abs(oldme.ypos+oldme.drawSize-oldOther.ypos)< abs(oldme.ypos-oldOther.ypos)
-
-                    var meMovingatOthery = 0.0
-                    if(ydiff>0 && ybottom) meMovingatOthery = ydiff
-                    else if(ydiff<0 && !ybottom) meMovingatOthery = -ydiff
-                    var otherMovingAtMey = 0.0
-                    if(otherydiff>0 && !ybottom) otherMovingAtMey = otherydiff
-                    else if(otherydiff<0 && ybottom)otherMovingAtMey = -otherydiff
-
-                    var overlapy = 0.0
-                    if(ybottom)overlapy = this.ypos+this.drawSize - other.ypos
-                    else overlapy = other.ypos + other.drawSize - this.ypos
-
-                    var takebacky: Double = (meMovingatOthery / (meMovingatOthery+otherMovingAtMey)) * overlapy
-                    if (ybottom) takebacky = takebacky * -1.0
-                    if(abs(takebacky)<this.speed+2) {
-                        (this as Entity).ypos = ((this as Entity).ypos + takebacky)
-                    }
-                }
+                (this as Entity).ypos +=  specialk(ydiff,this.ypos,other.ypos,oldOther.ypos,oldme.getMidpoint().second,oldOther.getMidpoint().second)
             }
         }
     }

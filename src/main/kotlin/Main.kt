@@ -197,6 +197,9 @@ fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Colo
     for (i in 1..numberofenemies) {
         val se = Enemy()
         se.drawSize = sizeofenemies
+        se.wep.atkSpd = (Math.random()*20).toInt()+10
+//        se.wep.atkSpd = 50
+        se.wep.bulspd = (Math.random()*10).toInt()+1
         se.color = colourofenemies
         se.xpos = (2 * i * sizeofenemies)
         se.ypos = 10.0
@@ -237,30 +240,38 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
     if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef = false
     if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri = false
 }
-
+val selectoryspacing = listOf(30.0,70.0,110.0)
 fun main() {
     entsToAdd.addAll(listOf(
         player1,
         player2
 //        , Wall()
     ))
-    menuEntities.addAll(
-        listOf(
-            StatView({"speed"},0.0,10.0),
-            StatView({"size"},0.0,50.0)
-        )
-    )
-    val nums = listOf(40.0,170.0)
-    val topnums = listOf(80.0,200.0)
+
+    val nums = listOf(80.0,160.0)
+//    val topnums = listOf(80.0,200.0)
+
+//    val numstats = 3
 
     menuEntities.addAll(
         listOf(
-            Selector(0, player1, topnums[0]),
-            StatView({ player1.speed.toString() }, nums[0], 10.0),
-            StatView({ player1.drawSize.toString() }, nums[0], 50.0),
-            Selector(1, player2, topnums[1]),
-            StatView({ player2.speed.toString() }, nums[1], 10.0),
-            StatView({ player2.drawSize.toString() }, nums[1], 50.0)
+            StatView({"speed"},0.0,selectoryspacing[0]),
+            StatView({"size"},0.0,selectoryspacing[1]),
+            StatView({"Aimspeed"},0.0,selectoryspacing[2])
+        )
+    )
+
+
+    menuEntities.addAll(
+        listOf(
+            Selector(0, player1, nums[0]+30,selectoryspacing.size),
+            StatView({ player1.speed.toString() }, nums[0], selectoryspacing[0]),
+            StatView({ player1.drawSize.toString() }, nums[0], selectoryspacing[1]),
+            StatView({ player1.turnSpeed.toString() }, nums[0], selectoryspacing[2]),
+            Selector(1, player2, nums[1]+30,selectoryspacing.size),
+            StatView({ player2.speed.toString() }, nums[1], selectoryspacing[0]),
+            StatView({ player2.drawSize.toString() }, nums[1], selectoryspacing[1]),
+            StatView({ player2.turnSpeed.toString() }, nums[1], selectoryspacing[2])
         )
     )
     myFrame.addKeyListener(
