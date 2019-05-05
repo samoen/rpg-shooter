@@ -32,12 +32,17 @@ interface shoots{
     }
     fun processTurning(lef:Boolean,righ:Boolean){
         if (lef) {
-            angy += turnSpeed
-            if(angy>Math.PI)angy = -Math.PI + turnSpeed
+            var desired = angy+turnSpeed
+            if(desired>Math.PI){
+//                val leftover =
+                angy = -Math.PI + (desired-Math.PI)
+            }else
+                angy += turnSpeed
         }
         if (righ){
-            angy -= turnSpeed
-            if(angy<-Math.PI)angy = Math.PI - turnSpeed
+            val desired = angy-turnSpeed
+            if(desired<-Math.PI)angy = Math.PI - (-Math.PI-desired)
+            else angy -= turnSpeed
         }
     }
     fun drawCrosshair(g: Graphics){

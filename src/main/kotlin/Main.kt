@@ -172,6 +172,8 @@ val map1 =  "0000100010001011" +
 
 fun placeMap(){
 //    val starty = INTENDED_FRAME_SIZE/15
+//    allEntities.forEach { if(it is Wall) it.isDead = true }
+    allEntities.removeIf{it is Wall}
     val starty = 0
     var rownum = 0
     for((outerind,i) in (0..(mapGridColumns*mapGridRows)-7 step mapGridColumns).withIndex()){
@@ -196,7 +198,9 @@ fun placeMap(){
 fun startWave(numberofenemies: Int, sizeofenemies: Double, colourofenemies: Color) {
     for (i in 1..numberofenemies) {
         val se = Enemy()
+        se.turnSpeed = 0.01+(Math.random()/10)
         se.drawSize = sizeofenemies
+        se.speed = (Math.random()*3).toInt()+1
         se.wep.atkSpd = (Math.random()*20).toInt()+10
 //        se.wep.atkSpd = 50
         se.wep.bulspd = (Math.random()*10).toInt()+1

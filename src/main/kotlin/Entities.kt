@@ -93,7 +93,7 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     }
     var didMove = false
     override var wep = Weapon()
-    override var speed = 8
+    override var speed = 10
     override var drawSize = 40.0
     override var color = Color.BLACK
     override var angy = 0.0
@@ -198,8 +198,8 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
     override var bulColor = Color.BLUE
     override var turnSpeed = 0.05
     var framesSinceDrift = 100
-    var randnumx = 0
-    var randnumy = 0
+    var randnumx = 0.0
+    var randnumy = 0.0
     var iTried = Pair(-1.0,-1.0)
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
@@ -215,18 +215,23 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
             if(filteredEnts.isNotEmpty()){
                 framesSinceDrift++
                 if(!(iTried.first==xpos && iTried.second==ypos)){
-                    randnumx = (Math.random() * 10).toInt()
-                    randnumy = (Math.random() * 10).toInt()
+                    randnumx = (Math.random()-0.5)*2
+                    randnumy = (Math.random()-0.5)*2
                     framesSinceDrift = 0
                 } else{
-                    if(framesSinceDrift>20){
-                        if (filteredEnts.first().getMidpoint ().first > getMidpoint().first) xpos += speed
-                        else xpos -= speed
-                        if (filteredEnts.first().getMidpoint().second > getMidpoint().second) ypos += speed
-                        else ypos -= speed
+                    if(framesSinceDrift>40){
+                        val xdiff = filteredEnts.first().getMidpoint ().first - getMidpoint().first
+                        if (xdiff>speed){
+                            xpos += speed
+                        } else if(xdiff<-speed) {
+                            xpos -= speed
+                        }
+                        val ydiff = filteredEnts.first().getMidpoint().second - getMidpoint().second
+                        if (ydiff>speed) ypos += speed
+                        else if(ydiff<-speed) ypos -= speed
                     }else{
-                        ypos += ((randnumy - 5))*speed/3
-                        xpos += (randnumx - 5)*speed/3
+                        ypos += speed*randnumy
+                        xpos += speed*randnumx
                     }
                 }
                 iTried = Pair(xpos,ypos)
@@ -234,11 +239,17 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
 
                 val dx = getMidpoint().first - filteredEnts.first().getMidpoint().first
                 val dy = getMidpoint().second - filteredEnts.first().getMidpoint().second
-                var radtarget = ((atan2( dy.toDouble() , -dx.toDouble())))
-                var shootem = abs(radtarget-angy)<0.1
 
+                var radtarget = ((atan2( dy.toDouble() , -dx.toDouble())))
+                val absanglediff = abs(radtarget-angy)
+                var shootem = absanglediff<0.1
                 processShooting(shootem,this.wep)
-                processTurning(radtarget>angy && !shootem,radtarget<angy && !shootem)
+
+                var fix = absanglediff>Math.PI-turnSpeed
+                var lef = radtarget>=angy
+                if(fix)lef = !lef
+                var righ = !lef
+                processTurning(lef && !shootem,righ && !shootem)
             }
     }
 
