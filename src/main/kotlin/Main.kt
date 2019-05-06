@@ -31,9 +31,16 @@ var myPanel:JPanel =object : JPanel() {
         if(myrepaint){
             myrepaint = false
             g.drawImage(backgroundImage,0,0,myFrame.width,myFrame.width,null)
+            val players = mutableListOf<Entity>()
             allEntities.forEach { entity ->
-                entity.drawEntity(g)
+                if(entity is Player){
+                    players.add(entity)
+                }else entity.drawEntity(g)
             }
+            players.forEach {
+                it.drawEntity(g)
+            }
+
             allEntities.forEach { entity ->
                 entity.drawComponents(g)
             }
@@ -165,22 +172,21 @@ val map1 =  "        w       " +
             "            w ww" +
             "  wh  www     ww" +
             "  w   www     ww" +
-            "  w    h    w  w" +
-            "  w   www   wh  " +
-            "        w   we  " +
-            "   x        w   " +
+            "  w    h    w e w" +
+            "  w         wh  " +
+            "                " +
+            "   x            " +
             "                " +
             "                "
-
 val map2 =  "s       w       " +
-            "   1            " +
+            "   3            " +
             "      ww     h  " +
             "    h ww        " +
             "               w" +
             "               w" +
             "   eh    x     w" +
-            "     w        ww" +
-            "   h ww       ww" +
+            "              ww" +
+            "   h          ww" +
             "     w w       w" +
             "       h    w  w" +
             "      www   wh w" +
@@ -188,6 +194,25 @@ val map2 =  "s       w       " +
             "        w   w  w" +
             "        w      w" +
             "      w      www"
+
+val map3 =  "                " +
+            "   1            " +
+            "       x     h  " +
+            "                " +
+            "               w" +
+            "               w" +
+            "    h          w" +
+            "          s   ww" +
+            "              ww" +
+            "               w" +
+            "               w" +
+            "            wh w" +
+            "               w" +
+            "                " +
+            "                " +
+            "                "
+
+var previousMap = map1
 //fun locToMapCoord(x:Double,y:Double):Pair<Int,Int>{
 //    var row = (y/mapGridSize).toInt()
 //    var col = (x/mapGridSize).toInt()
@@ -203,11 +228,12 @@ val map2 =  "s       w       " +
 //}
 
 var playerSpawn = Pair(50.0,50.0)
-
+var currentMap = map1
 fun placeMap(map:String){
 //    val starty = INTENDED_FRAME_SIZE/15
 //    allEntities.forEach { if(it is Wall) it.isDead = true }
 //    allEntities.removeIf{it is Wall || it is MedPack || it is Enemy || it is Gateway || it is GateSwitch || it is Bullet}
+    currentMap = map
     allEntities.clear()
     val starty = 0
     var rownum = 0
@@ -244,13 +270,17 @@ fun placeMap(map:String){
                 continue
             }
             if(ch == 'x'){
+                val spawnGate = Gateway()
+                spawnGate.backgate = true
+                spawnGate.xpos = ind.toDouble()+(ind* mapGridSize)
+                spawnGate.ypos = starty + (mapGridSize+1)*(outerind+1)
                 player1.xpos = ind.toDouble()+(ind* mapGridSize)
                 player1.ypos = starty + (mapGridSize+1)*(outerind+1)
                 player2.xpos = (player1.drawSize)+player1.xpos
                 player2.ypos = starty + (mapGridSize+1)*(outerind+1)
                 entsToAdd.add(player1)
                 entsToAdd.add(player2)
-//                playerSpawn = Pair(ind.toDouble()+(ind* mapGridSize),starty + (mapGridSize+1)*(outerind+1))
+                entsToAdd.add(spawnGate)
                 continue
             }
 
@@ -259,6 +289,7 @@ fun placeMap(map:String){
                  val mappy:String =when(charint){
                      1->map1
                      2->map2
+                     3->map3
                      else ->map1
                  }
                  entsToAdd.add(Gateway().also {

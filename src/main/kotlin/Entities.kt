@@ -298,6 +298,7 @@ class Wall : Entity(){
 
 class Gateway : Entity(){
 //    var playersInside = mutableListOf<Player>()
+    var backgate = false
     var playersInside =0
     var map = map1
     var locked = true
@@ -313,8 +314,13 @@ class Gateway : Entity(){
                 other.isDead = true
                 playersInside++
                 if(playersInside>=NumPlayers){
+                    if(backgate){
+                        nextMap = previousMap
+                    }else{
+                        nextMap = map
+                    }
                     changeMap = true
-                    nextMap = map
+                    previousMap = currentMap
                 }
             }
         }
