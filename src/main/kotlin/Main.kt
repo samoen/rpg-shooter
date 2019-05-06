@@ -156,12 +156,12 @@ const val mapGridSize = 55.0
 const val mapGridColumns = 16
 const val mapGridRows = 16
 val map1 =  "        w       " +
-            "  e          2  " +
+            "             2  " +
             "      ww        " +
             "ww wh ww    w   " +
             " whwh          w" +
             "  hwh          w" +
-            " whwh          w" +
+            " whwh        s w" +
             "            w ww" +
             "  wh  www     ww" +
             "  w   www     ww" +
@@ -172,7 +172,7 @@ val map1 =  "        w       " +
             "        w      w" +
             "      w      www"
 
-val map2 =  "        w       " +
+val map2 =  "s       w       " +
             "   1            " +
             "      ww     h  " +
             "    h ww        " +
@@ -205,7 +205,7 @@ val map2 =  "        w       " +
 fun placeMap(map:String){
 //    val starty = INTENDED_FRAME_SIZE/15
 //    allEntities.forEach { if(it is Wall) it.isDead = true }
-    allEntities.removeIf{it is Wall || it is MedPack || it is Enemy || it is Gateway}
+    allEntities.removeIf{it is Wall || it is MedPack || it is Enemy || it is Gateway || it is GateSwitch}
     val starty = 0
     var rownum = 0
     for((outerind,i) in (0..(mapGridColumns*mapGridRows)-7 step mapGridColumns).withIndex()){
@@ -217,28 +217,43 @@ fun placeMap(map:String){
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize)*(outerind)
                 })
-            }else if (ch == 'h'){
+                continue
+            }
+            if (ch == 'h'){
                 entsToAdd.add(MedPack().also {
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
                 })
-            }else if (ch == 'e'){
+                continue
+            }
+            if (ch == 'e'){
                 entsToAdd.add(randEnemy().also {
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
                 })
-            }else if (ch == '1' || ch == '2'){
-                var mappy:String =when(Character.getNumericValue(ch).toInt()){
-                    1->map1
-                    2->map2
-                    else ->map1
-                }
-                entsToAdd.add(Gateway().also {
-                    it.map = mappy
+                continue
+            }
+            if(ch == 's'){
+                entsToAdd.add(GateSwitch().also {
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
                 })
             }
+            val charint = Character.getNumericValue(ch)
+            if(charint in 1..9){
+                 val mappy:String =when(charint){
+                     1->map1
+                     2->map2
+                     else ->map1
+                 }
+                 entsToAdd.add(Gateway().also {
+                     it.map = mappy
+                     it.xpos = ind.toDouble()+(ind* mapGridSize)
+                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                 })
+                continue
+            }
+
         }
     }
 }
@@ -389,7 +404,7 @@ fun main() {
                 showingmenu = !showingmenu
                 myFrame.revalidate()
             } else if (pressed1.tryConsume()) {
-                revivePlayers(true)
+//                revivePlayers(true)
                 startWave(4)
             } else if(changeMap){
                 changeMap=false

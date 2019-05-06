@@ -47,7 +47,7 @@ class Bullet(val shotBy: shoots) : Entity() {
     override var drawSize = shotBy.wep.bulSize
     override var color = shotBy.bulColor
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if (!(other is MedPack) && shotBy != other && !(other is Bullet)) {
+        if (((other is Player) ||  other is Enemy || other is Wall )&&shotBy != other) {
             isDead = true
         }
     }
@@ -76,6 +76,7 @@ class Weapon(
 )
 
 class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
+    var insideGate = false
     val stillImage = ImageIcon("src/main/resources/gunman.png").image
     val runImage = ImageIcon("src/main/resources/rungunman.png").image
     val pCont:playControls = playControls()
@@ -115,13 +116,9 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
         blockMovement(other,oldme,oldOther)
         takeDamage(other)
-        if(other is Gateway){
-            isDead = true
-//            other.playersInside.add(this)
-//            if(allEntities.filter { it is Player }.all { it.isDead }){
-//
-//            }
-        }
+//        if(other is Gateway){
+//            isDead = true
+//        }
     }
 
     override fun updateEntity() {
@@ -300,17 +297,39 @@ class Wall : Entity(){
 }
 
 class Gateway : Entity(){
-    var playersInside = mutableListOf<Player>()
+//    var playersInside = mutableListOf<Player>()
+    var playersInside =0
     var map = map1
+    var locked = true
+    override var drawSize = mapGridSize
+    override var color = Color.PINK
+//    override fun drawEntity(g: Graphics) {
+//        super.drawEntity(g)
+//    }
+
+    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
+        if(!locked){
+            if(other is Player && !other.isDead){
+                other.isDead = true
+                playersInside++
+                if(playersInside>=NumPlayers){
+                    changeMap = true
+                    nextMap = map
+                }
+            }
+        }
+    }
+}
+class GateSwitch:Entity(){
     override var drawSize = mapGridSize
     override var color = Color.YELLOW
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(other is Player){
-            playersInside.add(other)
-            if(playersInside.size>=NumPlayers){
-                changeMap = true
-                nextMap = map
-            }
+         allEntities.filter { it is Gateway }.forEach {
+             (it as Gateway).locked = false
+             it.color = Color.BLACK
+             color = Color.ORANGE
+         }
         }
     }
 }
