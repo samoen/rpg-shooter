@@ -20,7 +20,6 @@ var pressed3 = OneShotChannel()
 var showingmenu = false
 const val INTENDED_FRAME_SIZE = 900
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
-//var frameSize = INTENDED_FRAME_SIZE
 //const val TICK_INTERVAL = 30
 
 val backgroundImage = ImageIcon("src/main/resources/grass.png").image
@@ -163,7 +162,7 @@ const val mapGridSize = 55.0
 const val mapGridColumns = 16
 const val mapGridRows = 15
 val map1 =  "        w       " +
-            "  e             " +
+            "                " +
             "      ww        " +
             "ww wh ww    w   " +
             " whwh          w" +
@@ -175,7 +174,7 @@ val map1 =  "        w       " +
             "  w    h    w   w" +
             "  w         wh  " +
             "            2   " +
-            "   x            " +
+            "   1            " +
             "            s   "
 
 val map2 =  "s       w       " +
@@ -184,7 +183,7 @@ val map2 =  "s       w       " +
             "    h ww        " +
             "               w" +
             "               w" +
-            "   eh    x     w" +
+            "    h    1     w" +
             "              ww" +
             "   h          ww" +
             "     w w       w" +
@@ -195,8 +194,8 @@ val map2 =  "s       w       " +
             "        w      w"
 
 val map3 =  "                " +
-            "   1            " +
-            "       x     h  " +
+            "                " +
+            "       2     h  " +
             "                " +
             "               w" +
             "               w" +
@@ -210,7 +209,6 @@ val map3 =  "                " +
             "                " +
             "                "
 
-var previousMap = map1
 //fun locToMapCoord(x:Double,y:Double):Pair<Int,Int>{
 //    var row = (y/mapGridSize).toInt()
 //    var col = (x/mapGridSize).toInt()
@@ -224,14 +222,9 @@ var previousMap = map1
 //    if(result>map1.length-1)result = map1.length-1
 //    return result
 //}
-var exitGatePost = Pair(100.0,100.0)
-var playerSpawn = Pair(50.0,50.0)
-var currentMap = map1
-fun placeMap(map:String){
-//    val starty = INTENDED_FRAME_SIZE/15
-//    allEntities.forEach { if(it is Wall) it.isDead = true }
-//    allEntities.removeIf{it is Wall || it is MedPack || it is Enemy || it is Gateway || it is GateSwitch || it is Bullet}
-    currentMap = map
+
+fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
+    currentMapNum = mapNum
     allEntities.clear()
     val starty = 0
     var rownum = 0
@@ -267,23 +260,29 @@ fun placeMap(map:String){
                 })
                 continue
             }
-            if(ch == 'x'){
-                val spawnGate = Gateway()
-                spawnGate.backgate = true
-                playerSpawn = Pair(ind.toDouble()+(ind* mapGridSize),starty + (mapGridSize+1)*(outerind+1))
-                spawnGate.xpos = playerSpawn.first
-                spawnGate.ypos = playerSpawn.second
-                player1.xpos = playerSpawn.first
-                player1.ypos = playerSpawn.second
-                player2.xpos = playerSpawn.first + (player1.drawSize)
-                player2.ypos = playerSpawn.second
-                entsToAdd.add(player1)
-                entsToAdd.add(player2)
-                entsToAdd.add(spawnGate)
-                continue
-            }
+//            if(ch == 'x'){
+////            if(ch == 'a' || ch=='A'){
+//                val spawnGate = Gateway()
+////                spawnGate.backgate = true
+////                if(ch=='A'){
+//                    spawnGate.map = map1
+////                }else{
+//                    spawnGate.mapnum = 1
+////                }
+//                playerSpawn = Pair(ind.toDouble()+(ind* mapGridSize),starty + (mapGridSize+1)*(outerind+1))
+//                spawnGate.xpos = playerSpawn.first
+//                spawnGate.ypos = playerSpawn.second
+//                player1.xpos = playerSpawn.first
+//                player1.ypos = playerSpawn.second
+//                player2.xpos = playerSpawn.first + (player1.drawSize)
+//                player2.ypos = playerSpawn.second
+//                entsToAdd.add(player1)
+//                entsToAdd.add(player2)
+//                entsToAdd.add(spawnGate)
+//                continue
+//            }
 
-            val charint = Character.getNumericValue(ch)
+            val charint :Int= Character.getNumericValue(ch)
             if(charint in 1..9){
                  val mappy:String =when(charint){
                      1->map1
@@ -291,10 +290,22 @@ fun placeMap(map:String){
                      3->map3
                      else ->map1
                  }
+                val gatex = ind.toDouble()+(ind* mapGridSize)
+                val gatey = starty + (mapGridSize+1)*(outerind+1)
+                if(charint==fromMapNum){
+                    player1.xpos = gatex
+                    player1.ypos = gatey
+                    player2.xpos = gatex + (player1.drawSize)
+                    player2.ypos = gatey
+                    entsToAdd.add(player1)
+                    entsToAdd.add(player2)
+                }
+
                  entsToAdd.add(Gateway().also {
                      it.map = mappy
-                     it.xpos = ind.toDouble()+(ind* mapGridSize)
-                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                     it.mapnum = charint
+                     it.xpos = gatex
+                     it.ypos = gatey
                  })
                 continue
             }
@@ -438,7 +449,7 @@ fun main() {
             Thread.sleep(30)
             if(pressed3.tryConsume()){
 //                    gamePaused = !gamePaused
-                placeMap(map1)
+                placeMap(map1,1,1)
             }else if(pressed2.tryConsume()) {
                 if(showingmenu){
                     myFrame.contentPane = myPanel
@@ -453,7 +464,7 @@ fun main() {
                 startWave(4)
             } else if(changeMap){
                 changeMap=false
-                placeMap(nextMap)
+                placeMap(nextMap,nextMapNum,currentMapNum)
                 revivePlayers(false)
             } else{
                 if(showingmenu)menuTick()

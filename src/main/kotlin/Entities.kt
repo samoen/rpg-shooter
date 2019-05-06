@@ -301,6 +301,7 @@ class Gateway : Entity(){
     var backgate = false
     var playersInside = mutableListOf<Player>()
     var map = map1
+    var mapnum = 1
     var locked = true
     override var drawSize = mapGridSize
     override var color = Color.PINK
@@ -341,13 +342,14 @@ class Gateway : Entity(){
                 playersInside.add(other)
 //                playersInside++
                 if(playersInside.size>=NumPlayers){
-                    if(backgate){
-                        nextMap = previousMap
-                    }else{
+//                    if(backgate){
+//                        nextMap = previousMap
+//                    }else{
                         nextMap = map
-                    }
-                    changeMap = true
-                    previousMap = currentMap
+                        nextMapNum = mapnum
+                        changeMap = true
+//                    }
+//                    previousMap = currentMap
                 }
             }
         }
@@ -367,6 +369,8 @@ class GateSwitch:Entity(){
     }
 }
 var nextMap = map1
+var nextMapNum = 1
+var currentMapNum = 1
 var changeMap = false
 var NumPlayers = 2
 
