@@ -138,38 +138,56 @@ fun gameTick(){
 
 
 
-fun revivePlayers(){
+fun revivePlayers(heal:Boolean){
     if(!allEntities.contains(player1) && !entsToAdd.contains(player1))entsToAdd.add(player1)
     if(!allEntities.contains(player2) && !entsToAdd.contains(player2)) entsToAdd.add(player2)
-    player1.currentHp = player1.maxHP
     player1.isDead = false
-    player2.currentHp = player2.maxHP
     player2.isDead = false
-    player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize).toDouble()
+    player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize)
     player1.xpos = 0.0
-    player2.ypos = (INTENDED_FRAME_SIZE - player2.drawSize).toDouble()
-    player2.xpos = (player1.drawSize).toDouble()
+    player2.ypos = (INTENDED_FRAME_SIZE - player2.drawSize)
+    player2.xpos = (player1.drawSize)
+    if(heal){
+        player1.currentHp = player1.maxHP
+        player2.currentHp = player2.maxHP
+    }
 }
 const val mapGridSize = 55.0
 const val mapGridColumns = 16
 const val mapGridRows = 16
-val map1 =  "0000000010031300" +
-            "0000000000001300" +
-            "0000001100001200" +
-            "1101201100001000" +
-            "0121200000000001" +
-            "0021200000000001" +
-            "0121200000000001" +
-            "0000000000001011" +
-            "0012001110000011" +
-            "0010001110000011" +
-            "0010000200001001" +
-            "0010001110001201" +
-            "0000000010001001" +
-            "0000000010001001" +
-            "0000000010000001" +
-            "0000001000000111"
+val map1 =  "        w       " +
+            "  e          2  " +
+            "      ww        " +
+            "ww wh ww    w   " +
+            " whwh          w" +
+            "  hwh          w" +
+            " whwh          w" +
+            "            w ww" +
+            "  wh  www     ww" +
+            "  w   www     ww" +
+            "  w    h    w  w" +
+            "  w   www   wh w" +
+            "        w   w  w" +
+            "        w   w  w" +
+            "        w      w" +
+            "      w      www"
 
+val map2 =  "        w       " +
+            "   1            " +
+            "      ww     h  " +
+            "    h ww        " +
+            "  h h          w" +
+            "  h h          w" +
+            "    h          w" +
+            "     w        ww" +
+            "   h ww       ww" +
+            "     w w       w" +
+            "       h    w  w" +
+            "      www   wh w" +
+            "        w   w  w" +
+            "        w   w  w" +
+            "        w      w" +
+            "      w      www"
 //fun locToMapCoord(x:Double,y:Double):Pair<Int,Int>{
 //    var row = (y/mapGridSize).toInt()
 //    var col = (x/mapGridSize).toInt()
@@ -184,28 +202,39 @@ val map1 =  "0000000010031300" +
 //    return result
 //}
 
-fun placeMap(){
+fun placeMap(map:String){
 //    val starty = INTENDED_FRAME_SIZE/15
 //    allEntities.forEach { if(it is Wall) it.isDead = true }
-    allEntities.removeIf{it is Wall}
+    allEntities.removeIf{it is Wall || it is MedPack || it is Enemy || it is Gateway}
     val starty = 0
     var rownum = 0
     for((outerind,i) in (0..(mapGridColumns*mapGridRows)-7 step mapGridColumns).withIndex()){
         rownum++
-        for((ind:Int,ch:Char) in map1.substring(i,i+mapGridColumns).withIndex()){
-            if(ch=='1'){
+        for((ind:Int,ch:Char) in map.substring(i,i+mapGridColumns).withIndex()){
+            if(ch=='w'){
                 entsToAdd.add(Wall().also {
                     it.drawSize = mapGridSize
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize)*(outerind)
                 })
-            }else if (ch == '2'){
+            }else if (ch == 'h'){
                 entsToAdd.add(MedPack().also {
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
                 })
-            }else if (ch == '3'){
+            }else if (ch == 'e'){
                 entsToAdd.add(randEnemy().also {
+                    it.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                })
+            }else if (ch == '1' || ch == '2'){
+                var mappy:String =when(Character.getNumericValue(ch).toInt()){
+                    1->map1
+                    2->map2
+                    else ->map1
+                }
+                entsToAdd.add(Gateway().also {
+                    it.map = mappy
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
                 })
@@ -349,7 +378,7 @@ fun main() {
             Thread.sleep(30)
             if(pressed3.tryConsume()){
 //                    gamePaused = !gamePaused
-                placeMap()
+                placeMap(map1)
             }else if(pressed2.tryConsume()) {
                 if(showingmenu){
                     myFrame.contentPane = myPanel
@@ -360,8 +389,12 @@ fun main() {
                 showingmenu = !showingmenu
                 myFrame.revalidate()
             } else if (pressed1.tryConsume()) {
-                revivePlayers()
+                revivePlayers(true)
                 startWave(4)
+            } else if(changeMap){
+                changeMap=false
+                placeMap(nextMap)
+                revivePlayers(false)
             } else{
                 if(showingmenu)menuTick()
                 else{

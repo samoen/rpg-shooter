@@ -133,7 +133,7 @@ interface damagedByBullets{
 
 interface movementGetsBlocked{
     fun doIGetBlockedBy(entity: Entity):Boolean {
-        return !(entity is MedPack) && !(entity is Bullet)
+        return (entity is Wall) || (entity is Enemy) || entity is Player
     }
     fun blockMovement(other: Entity, oldme: EntDimens,oldOther:EntDimens){
         

@@ -115,7 +115,13 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
         blockMovement(other,oldme,oldOther)
         takeDamage(other)
-
+        if(other is Gateway){
+            isDead = true
+//            other.playersInside.add(this)
+//            if(allEntities.filter { it is Player }.all { it.isDead }){
+//
+//            }
+        }
     }
 
     override fun updateEntity() {
@@ -291,9 +297,26 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
 class Wall : Entity(){
     override var drawSize = mapGridSize
     override var color = Color.DARK_GRAY
-    override var ypos = 0.0
-    override var xpos = 0.0
 }
+
+class Gateway : Entity(){
+    var playersInside = mutableListOf<Player>()
+    var map = map1
+    override var drawSize = mapGridSize
+    override var color = Color.YELLOW
+    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
+        if(other is Player){
+            playersInside.add(other)
+            if(playersInside.size>=NumPlayers){
+                changeMap = true
+                nextMap = map
+            }
+        }
+    }
+}
+var nextMap = map1
+var changeMap = false
+var NumPlayers = 2
 
 class MedPack : Entity() {
     override var color = Color.GREEN
@@ -364,8 +387,8 @@ class Selector(val owner:Player,xloc: Double):Entity(){
         }else if(owner.pCont.Swp.tryConsume()){
             when(indexer){
                 0->{
-                    owner.speed -=1
-                    if(owner.speed<0)owner.speed = 0
+                    val desiredspeed = owner.speed-1
+                    if(desiredspeed>0)owner.speed = desiredspeed
                 }
                 1->{
                     val desiredSize = owner.drawSize -10
