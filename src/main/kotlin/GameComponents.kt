@@ -19,7 +19,7 @@ interface shoots{
     var shootNoise:Clip
     var angy :Double
     var wep:Weapon
-    var turnSpeed:Double
+    var turnSpeed:Float
     var bulColor:Color
     fun processShooting(sht:Boolean,weap:Weapon){
         if (sht && weap.framesSinceShottah > this.wep.atkSpd) {
@@ -198,9 +198,8 @@ interface movementGetsBlocked{
 
 interface hasHealth{
     var didHeal :Boolean
-    var healLater :Int
-    var currentHp :Int
-    val maxHP :Int
+    var currentHp :Double
+    val maxHP :Double
     fun drawHealth(g:Graphics){
         g.color = Color.GREEN
         (g as Graphics2D).stroke = BasicStroke(2f)

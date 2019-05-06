@@ -92,18 +92,16 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
     }
     var didMove = false
-    override var wep = Weapon()
     override var speed = 10
     override var drawSize = 40.0
     override var didHeal=false
     override var angy = 0.0
-    override var healLater=0
-    override var maxHP = 30
+    override var maxHP = drawSize
     override var currentHp = maxHP
     override var bulColor = Color.LIGHT_GRAY
-    override var turnSpeed = 0.1
-
+    override var turnSpeed = 0.1f
     var primaryEquipped = true
+
     var spareWep:Weapon = Weapon(
         atkSpd = 60,
         bulspd = 15,
@@ -112,6 +110,7 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
         buldmg = 5
     )
     var primWep = Weapon()
+    override var wep = primWep
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
         blockMovement(other,oldme,oldOther)
@@ -193,11 +192,10 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
     override var drawSize = 25.0
     override var angy = 0.0
     override var didHeal=false
-    override var healLater=0
-    override var maxHP = 10
+    override var maxHP = drawSize
     override var currentHp = maxHP
     override var bulColor = Color.RED
-    override var turnSpeed = 0.05
+    override var turnSpeed = 0.05f
     var framesSinceDrift = 100
     var randnumx = 0.0
     var randnumy = 0.0
@@ -341,11 +339,13 @@ class Selector(val owner:Player,xloc: Double):Entity(){
                     owner.speed += 1
                 }
                 1->{
-                    owner.drawSize  += 1
-                    owner.maxHP +=1
+                    owner.drawSize  += 10
+                    owner.maxHP +=10
+                    owner.currentHp = owner.maxHP
                 }
                 2->{
-                    owner.turnSpeed +=0.05
+                    val desired = "%.4f".format(owner.turnSpeed+0.01f).toFloat()
+                    if(desired<1) owner.turnSpeed = desired
                 }
                 3->{
                     owner.primWep.buldmg+=1
@@ -353,9 +353,12 @@ class Selector(val owner:Player,xloc: Double):Entity(){
                 }
                 4->{
                     if(owner.primWep.bulspd+1<30)owner.primWep.bulspd++
-                    if(owner.primaryEquipped){
-                        owner.wep = owner.primWep
-                    }
+                }
+                5->{
+                    if(owner.primWep.recoil+1<30)owner.primWep.recoil++
+                }
+                6->{
+                    if(owner.primWep.atkSpd+1<200)owner.primWep.atkSpd++
                 }
             }
         }else if(owner.pCont.Swp.tryConsume()){
@@ -365,31 +368,37 @@ class Selector(val owner:Player,xloc: Double):Entity(){
                     if(owner.speed<0)owner.speed = 0
                 }
                 1->{
-                    val desiredSize = owner.drawSize -1
-                    val desiredHp = owner.maxHP-1
-                    if(desiredSize>10.0 && desiredHp>0){
+                    val desiredSize = owner.drawSize -10
+                    val desiredHp = owner.maxHP-10
+                    if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
                         owner.drawSize = desiredSize
                         owner.maxHP = desiredHp
                     }
+                    owner.currentHp = owner.maxHP
                 }
                 2->{
-                    owner.turnSpeed -=0.05
+                    val desired = "%.4f".format(owner.turnSpeed-0.01f).toFloat()
+                    if(desired>0) owner.turnSpeed = desired
                 }
                 3->{
                     val desiredSize = owner.primWep.bulSize -1
-                    val desiredHp = owner.primWep.buldmg-1
-                    if(desiredSize>5.0 && desiredHp>0){
+                    val desiredDmg = owner.primWep.buldmg-1
+                    if(desiredSize>MIN_ENT_SIZE && desiredDmg>0){
                         owner.primWep.bulSize = desiredSize
-                        owner.primWep.buldmg = desiredHp
+                        owner.primWep.buldmg = desiredDmg
                     }
                 }
                 4->{
                     if(owner.primWep.bulspd-1>1)owner.primWep.bulspd--
-                    if(owner.primaryEquipped){
-                        owner.wep = owner.primWep
-                    }
+                }
+                5->{
+                    if(owner.primWep.recoil-1>=0)owner.primWep.recoil--
+                }
+                6->{
+                    if(owner.primWep.atkSpd-1>0)owner.primWep.atkSpd--
                 }
             }
         }
     }
 }
+const val MIN_ENT_SIZE = 9.0

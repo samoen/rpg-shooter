@@ -216,9 +216,9 @@ fun placeMap(){
 
 fun randEnemy():Enemy{
     val se = Enemy()
-    se.turnSpeed = 0.01+(Math.random()/15)
+    se.turnSpeed = (0.01+(Math.random()/15)).toFloat()
     se.drawSize = 20+(Math.random()*30)
-    se.maxHP = (se.drawSize/2).toInt()
+    se.maxHP = (se.drawSize/2)
     se.currentHp = se.maxHP
     se.speed = (Math.random()*3).toInt()+1
     se.wep.bulSize = 8.0+(Math.random()*40)
@@ -272,7 +272,7 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
     if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef = false
     if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri = false
 }
-val selectoryspacing = listOf(0.0,40.0,80.0,120.0,160.0)
+val selectoryspacing = listOf(0.0,40.0,80.0,120.0,160.0,200.0,240.0)
 fun main() {
     entsToAdd.addAll(listOf(
         player1,
@@ -281,17 +281,16 @@ fun main() {
     ))
 
     val xspacing = listOf(100.0,170.0)
-//    val topnums = listOf(80.0,200.0)
-
-//    val numstats = 3
 
     menuEntities.addAll(
         listOf(
-            StatView({"Speed"},0.0,selectoryspacing[0]),
+            StatView({"Run Speed"},0.0,selectoryspacing[0]),
             StatView({"Health"},0.0,selectoryspacing[1]),
-            StatView({"Aimspeed"},0.0,selectoryspacing[2]),
+            StatView({"Turn Speed"},0.0,selectoryspacing[2]),
             StatView({"Wep1 Damage"},0.0,selectoryspacing[3]),
-            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4])
+            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4]),
+            StatView({"Wep1 Recoil"},0.0,selectoryspacing[5]),
+            StatView({"Wep1 Reload"},0.0,selectoryspacing[6])
         )
     )
 
@@ -299,16 +298,20 @@ fun main() {
         listOf(
             Selector(player1, xspacing[0]+30),
             StatView({ player1.speed.toString() }, xspacing[0], selectoryspacing[0]),
-            StatView({ player1.drawSize.toString() }, xspacing[0], selectoryspacing[1]),
+            StatView({ player1.maxHP.toInt().toString() }, xspacing[0], selectoryspacing[1]),
             StatView({ player1.turnSpeed.toString() }, xspacing[0], selectoryspacing[2]),
             StatView({ player1.primWep.buldmg.toString() }, xspacing[0], selectoryspacing[3]),
             StatView({ player1.primWep.bulspd.toString() }, xspacing[0], selectoryspacing[4]),
+            StatView({ player1.primWep.recoil.toString() }, xspacing[0], selectoryspacing[5]),
+            StatView({ player1.primWep.atkSpd.toString() }, xspacing[0], selectoryspacing[6]),
             Selector(player2, xspacing[1]+30),
             StatView({ player2.speed.toString() }, xspacing[1], selectoryspacing[0]),
-            StatView({ player2.drawSize.toString() }, xspacing[1], selectoryspacing[1]),
+            StatView({ player2.maxHP.toInt().toString() }, xspacing[1], selectoryspacing[1]),
             StatView({ player2.turnSpeed.toString() }, xspacing[1], selectoryspacing[2]),
             StatView({ player2.primWep.buldmg.toString() }, xspacing[1], selectoryspacing[3]),
-            StatView({ player2.primWep.bulspd.toString() }, xspacing[1], selectoryspacing[4])
+            StatView({ player2.primWep.bulspd.toString() }, xspacing[1], selectoryspacing[4]),
+            StatView({ player2.primWep.recoil.toString() }, xspacing[1], selectoryspacing[5]),
+            StatView({ player2.primWep.atkSpd.toString() }, xspacing[1], selectoryspacing[6])
         )
     )
     myFrame.addKeyListener(
