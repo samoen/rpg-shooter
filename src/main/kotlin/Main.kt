@@ -272,7 +272,7 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
     if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef = false
     if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri = false
 }
-val selectoryspacing = listOf(30.0,70.0,110.0,150.0,190.0)
+val selectoryspacing = listOf(0.0,40.0,80.0,120.0,160.0)
 fun main() {
     entsToAdd.addAll(listOf(
         player1,
@@ -280,7 +280,7 @@ fun main() {
 //        , Wall()
     ))
 
-    val nums = listOf(80.0,160.0)
+    val xspacing = listOf(100.0,170.0)
 //    val topnums = listOf(80.0,200.0)
 
 //    val numstats = 3
@@ -295,21 +295,20 @@ fun main() {
         )
     )
 
-
     menuEntities.addAll(
         listOf(
-            Selector(0, player1, nums[0]+30,selectoryspacing.size),
-            StatView({ player1.speed.toString() }, nums[0], selectoryspacing[0]),
-            StatView({ player1.drawSize.toString() }, nums[0], selectoryspacing[1]),
-            StatView({ player1.turnSpeed.toString() }, nums[0], selectoryspacing[2]),
-            StatView({ player1.primWep.buldmg.toString() }, nums[0], selectoryspacing[3]),
-            StatView({ player1.primWep.bulspd.toString() }, nums[0], selectoryspacing[4]),
-            Selector(1, player2, nums[1]+30,selectoryspacing.size),
-            StatView({ player2.speed.toString() }, nums[1], selectoryspacing[0]),
-            StatView({ player2.drawSize.toString() }, nums[1], selectoryspacing[1]),
-            StatView({ player2.turnSpeed.toString() }, nums[1], selectoryspacing[2]),
-            StatView({ player2.primWep.buldmg.toString() }, nums[1], selectoryspacing[3]),
-            StatView({ player2.primWep.bulspd.toString() }, nums[1], selectoryspacing[4])
+            Selector(player1, xspacing[0]+30),
+            StatView({ player1.speed.toString() }, xspacing[0], selectoryspacing[0]),
+            StatView({ player1.drawSize.toString() }, xspacing[0], selectoryspacing[1]),
+            StatView({ player1.turnSpeed.toString() }, xspacing[0], selectoryspacing[2]),
+            StatView({ player1.primWep.buldmg.toString() }, xspacing[0], selectoryspacing[3]),
+            StatView({ player1.primWep.bulspd.toString() }, xspacing[0], selectoryspacing[4]),
+            Selector(player2, xspacing[1]+30),
+            StatView({ player2.speed.toString() }, xspacing[1], selectoryspacing[0]),
+            StatView({ player2.drawSize.toString() }, xspacing[1], selectoryspacing[1]),
+            StatView({ player2.turnSpeed.toString() }, xspacing[1], selectoryspacing[2]),
+            StatView({ player2.primWep.buldmg.toString() }, xspacing[1], selectoryspacing[3]),
+            StatView({ player2.primWep.bulspd.toString() }, xspacing[1], selectoryspacing[4])
         )
     )
     myFrame.addKeyListener(
@@ -343,37 +342,31 @@ fun main() {
     myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, 40+INTENDED_FRAME_SIZE.toInt())
     myFrame.isVisible = true
     myFrame.contentPane = myPanel
-//    startWave(4, (Math.random() * 30) + 10, Color.LIGHT_GRAY, 5)
-//    runBlocking {
-//        launch {
-            while (true){
-//                if(newframesize!=frameSize)frameSize = newframesize
-                Thread.sleep(30)
-                if(pressed3.tryConsume()){
+        while (true){
+            Thread.sleep(30)
+            if(pressed3.tryConsume()){
 //                    gamePaused = !gamePaused
-                    placeMap()
-                }else if(pressed2.tryConsume()) {
-                    if(showingmenu){
-                        myFrame.contentPane = myPanel
-                    }else{
-                        myFrame.contentPane = menuPanel
+                placeMap()
+            }else if(pressed2.tryConsume()) {
+                if(showingmenu){
+                    myFrame.contentPane = myPanel
+                }else{
+                    myFrame.contentPane = menuPanel
 
-                    }
-                    showingmenu = !showingmenu
-                    myFrame.revalidate()
-                } else if (pressed1.tryConsume()) {
-                    revivePlayers()
-                    startWave(4)
-                } else{
-                    if(showingmenu)menuTick()
-                    else{
-                        if(!gamePaused){
-                            gameTick()
-                        }
+                }
+                showingmenu = !showingmenu
+                myFrame.revalidate()
+            } else if (pressed1.tryConsume()) {
+                revivePlayers()
+                startWave(4)
+            } else{
+                if(showingmenu)menuTick()
+                else{
+                    if(!gamePaused){
+                        gameTick()
                     }
                 }
             }
-//        }
-//    }
+        }
 }
 var gamePaused = false

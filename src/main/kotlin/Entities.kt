@@ -95,8 +95,9 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     override var wep = Weapon()
     override var speed = 10
     override var drawSize = 40.0
-//    override var color = Color.BLACK
+    override var didHeal=false
     override var angy = 0.0
+    override var healLater=0
     override var maxHP = 30
     override var currentHp = maxHP
     override var bulColor = Color.LIGHT_GRAY
@@ -115,14 +116,12 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
         blockMovement(other,oldme,oldOther)
         takeDamage(other)
-        if(other is MedPack){
-            currentHp+=5
-            if (currentHp>maxHP)currentHp = maxHP
-        }
+
     }
 
     override fun updateEntity() {
         didMove = false
+        didHeal = false
         var preControl = Pair(xpos, ypos)
         var toMovex = 0.0
         var toMovey = 0.0
@@ -193,6 +192,8 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
     override var xpos = 150.0
     override var drawSize = 25.0
     override var angy = 0.0
+    override var didHeal=false
+    override var healLater=0
     override var maxHP = 10
     override var currentHp = maxHP
     override var bulColor = Color.RED
@@ -207,68 +208,80 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
         takeDamage(other)
     }
     override fun updateEntity() {
-        var preupdatePos = Pair(xpos, ypos)
+        didHeal = false
+        val preupdatePos = Pair(xpos, ypos)
+        val willgoforpack = currentHp<maxHP
         val filteredEnts = allEntities
-            .filter { it is Player}
+            .filter { it is Player }
+            .sortedBy { abs(it.xpos - xpos) + abs(it.ypos - ypos) }
+        val packEnts = allEntities
+            .filter {(it is MedPack)}
             .sortedBy { abs(it.xpos - xpos) + abs(it.ypos - ypos) }
 
-            if(filteredEnts.isNotEmpty()){
-                framesSinceDrift++
-                if(!(iTried.first==xpos && iTried.second==ypos)){
-                    randnumx = (Math.random()-0.5)*2
-                    randnumy = (Math.random()-0.5)*2
-                    framesSinceDrift = 0
-                } else{
-                    if(framesSinceDrift>40){
-                        val xdiff = filteredEnts.first().getMidpoint ().first - getMidpoint().first
-                        if (xdiff>speed){
-                            xpos += speed
-                        } else if(xdiff<-speed) {
-                            xpos -= speed
-                        }
-                        val ydiff = filteredEnts.first().getMidpoint().second - getMidpoint().second
-                        if (ydiff>speed) ypos += speed
-                        else if(ydiff<-speed) ypos -= speed
+        if(filteredEnts.isNotEmpty()){
+            framesSinceDrift++
+            if(!(iTried.first==xpos && iTried.second==ypos)){
+                randnumx = (Math.random()-0.5)*2
+                randnumy = (Math.random()-0.5)*2
+                framesSinceDrift = 0
+            } else{
+                if(framesSinceDrift>40){
+                    var xdiff = 0.0
+                    var ydiff = 0.0
+                    if(willgoforpack && packEnts.isNotEmpty()){
+                        xdiff = packEnts.first().getMidpoint ().first - getMidpoint().first
+                        ydiff = packEnts.first().getMidpoint().second - getMidpoint().second
                     }else{
-                        ypos += speed*randnumy
-                        xpos += speed*randnumx
+                        xdiff = filteredEnts.first().getMidpoint ().first - getMidpoint().first
+                        ydiff = filteredEnts.first().getMidpoint().second - getMidpoint().second
                     }
+                    if (xdiff>speed){
+                        xpos += speed
+                    } else if(xdiff<-speed) {
+                        xpos -= speed
+                    }
+                    if (ydiff>speed) ypos += speed
+                    else if(ydiff<-speed) ypos -= speed
+                }else{
+                    ypos += speed*randnumy
+                    xpos += speed*randnumx
                 }
-                iTried = Pair(xpos,ypos)
-                stayInMap(preupdatePos)
+            }
+            iTried = Pair(xpos,ypos)
+            stayInMap(preupdatePos)
 
-                val dx = getMidpoint().first - filteredEnts.first().getMidpoint().first
-                val dy = getMidpoint().second - filteredEnts.first().getMidpoint().second
+            val dx = getMidpoint().first - filteredEnts.first().getMidpoint().first
+            val dy = getMidpoint().second - filteredEnts.first().getMidpoint().second
 
-                var radtarget = ((atan2( dy.toDouble() , -dx.toDouble())))
-                val absanglediff = abs(radtarget-angy)
-                var shootem = absanglediff<0.1
-                var shoot2 = shootem
-                if(shootem){
-                    val walls = allEntities.filter { it is Wall || it is Player }
-                    outer@ for( i in 1..400 step 20){
-                        val pointx = (xpos+(drawSize/2))+(Math.cos(angy)*i)
-                        val pointy = ypos+(drawSize/2)-(Math.sin(angy)*(i))
-                        if(pointx>INTENDED_FRAME_SIZE || pointx < 0 || pointy>INTENDED_FRAME_SIZE || pointy<0)
-                            break@outer
-                        for (wall in walls){
-                            if(pointx in wall.xpos..wall.xpos+wall.drawSize){
-                                if(pointy in wall.ypos..wall.ypos+wall.drawSize){
-                                    if(wall is Wall)shoot2 = false
-                                        break@outer
-                                }
-
+            val radtarget = ((atan2( dy , -dx)))
+            val absanglediff = abs(radtarget-angy)
+            val shootem = absanglediff<0.1
+            var shoot2 = shootem
+            if(shootem){
+                val walls = allEntities.filter { it is Wall || it is Player }
+                outer@ for( i in 1..400 step 20){
+                    val pointx = (xpos+(drawSize/2))+(Math.cos(angy)*i)
+                    val pointy = ypos+(drawSize/2)-(Math.sin(angy)*(i))
+                    if(pointx>INTENDED_FRAME_SIZE || pointx < 0 || pointy>INTENDED_FRAME_SIZE || pointy<0)
+                        break@outer
+                    for (wall in walls){
+                        if(pointx in wall.xpos..wall.xpos+wall.drawSize){
+                            if(pointy in wall.ypos..wall.ypos+wall.drawSize){
+                                if(wall is Wall)shoot2 = false
+                                    break@outer
                             }
+
                         }
                     }
                 }
-                processShooting(shoot2,this.wep)
-
-                var fix = absanglediff>Math.PI-turnSpeed
-                var lef = radtarget>=angy
-                if(fix)lef = !lef
-                processTurning(lef && !shootem,!lef && !shootem)
             }
+            processShooting(shoot2,this.wep)
+
+            val fix = absanglediff>Math.PI-turnSpeed
+            var lef = radtarget>=angy
+            if(fix)lef = !lef
+            processTurning(lef && !shootem,!lef && !shootem)
+        }
     }
 
     override fun drawComponents(g: Graphics) {
@@ -288,39 +301,34 @@ class MedPack : Entity() {
     override var color = Color.GREEN
     override var drawSize = 20.0
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if (other is Player) isDead = true
+        if (other is hasHealth && (other.currentHp<other.maxHP || other.didHeal)) isDead = true
     }
 }
 
 class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity(){
     override fun drawEntity(g: Graphics) {
-          g.drawString(showText(),getWindowAdjustedPos( xloc).toInt(),getWindowAdjustedPos(yloc).toInt())
+          g.drawString(showText(),getWindowAdjustedPos( xloc).toInt(),getWindowAdjustedPos(yloc+15).toInt())
     }
 }
 
-class Selector(val pnum:Int,val owner:Player,val xloc: Double,val numstats:Int):Entity(){
-//    var statup : (Entity)->Unit = {}
-//    var statdown : (Entity)->Unit = {}
-//    val vertspacing = 40.0
-//    val maxvert = vertspacing*numstats
-
+class Selector(val owner:Player,xloc: Double):Entity(){
     override var xpos = xloc
     override var color = Color.BLUE
     override var drawSize = 20.0
-    override var ypos = selectoryspacing[0]-this.drawSize/2
+    override var ypos = selectoryspacing[0]
     var indexer = 0
     override fun updateEntity() {
         if(owner.pCont.dwm.tryConsume()){
             if(indexer+1<selectoryspacing.size){
                 indexer++
-                ypos=selectoryspacing[indexer]-this.drawSize/2
+                ypos=selectoryspacing[indexer]
             }
         }
         if(owner.pCont.up.tryConsume()){
 //            ypos-=vertspacing
             if(indexer-1>=0){
                 indexer--
-                ypos = selectoryspacing[indexer]-this.drawSize/2
+                ypos = selectoryspacing[indexer]
             }
         }
 

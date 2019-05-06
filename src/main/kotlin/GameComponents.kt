@@ -46,15 +46,13 @@ interface shoots{
         }
     }
     fun drawCrosshair(g: Graphics){
-        if(this.wep.buldmg>2){
-            g.color = Color.BLACK
-        }else g.color = Color.CYAN
+        g.color = Color.CYAN
         val strkw = if(this is Player)2f
         else 5f
         (g as Graphics2D).stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
         val arcdiameter = (this as Entity).drawSize
         fun doarc(diver:Double,timeser:Double){
-            val spread = (wep.recoil+1)*6
+            val spread = (7)*(wep.recoil+1)
             val bspd = wep.bulspd*2
             g.drawArc(
                 getWindowAdjustedPos(((this as Entity).xpos)+(diver)).toInt()-bspd,
@@ -118,7 +116,14 @@ interface damagedByBullets{
             }else{
                 playSound(ouchNoise)
             }
-
+        }else if (other is MedPack && (this as hasHealth).currentHp<maxHP){
+            didHeal = true
+            val desiredhp = (this as hasHealth).currentHp+5
+            if (desiredhp>maxHP){
+                this.currentHp = maxHP
+            }else{
+                currentHp = desiredhp
+            }
         }
     }
     fun dieFromBullet(){
@@ -192,6 +197,8 @@ interface movementGetsBlocked{
 }
 
 interface hasHealth{
+    var didHeal :Boolean
+    var healLater :Int
     var currentHp :Int
     val maxHP :Int
     fun drawHealth(g:Graphics){
