@@ -153,22 +153,22 @@ fun revivePlayers(){
 const val mapGridSize = 55.0
 const val mapGridColumns = 16
 const val mapGridRows = 16
-val map1 =  "0000100010031311" +
-            "0021200000001311" +
-            "0021201100001011" +
-            "0021201100001011" +
-            "0021200000000000" +
-            "0021200000000000" +
-            "0021201100000001" +
-            "0012100000001011" +
-            "0012101110001011" +
-            "0012101110001011" +
-            "0012100000001011" +
-            "0012001110001011" +
-            "0002000010001011" +
-            "0002000010001011" +
-            "0002000010000000" +
-            "0000101000000000"
+val map1 =  "0000000010031300" +
+            "0000000000001300" +
+            "0000001100001200" +
+            "1101201100001000" +
+            "0121200000000001" +
+            "0021200000000001" +
+            "0121200000000001" +
+            "0000000000001011" +
+            "0012001110000011" +
+            "0010001110000011" +
+            "0010000200001001" +
+            "0010001110001201" +
+            "0000000010001001" +
+            "0000000010001001" +
+            "0000000010000001" +
+            "0000001000000111"
 
 //fun locToMapCoord(x:Double,y:Double):Pair<Int,Int>{
 //    var row = (y/mapGridSize).toInt()
@@ -218,8 +218,11 @@ fun randEnemy():Enemy{
     val se = Enemy()
     se.turnSpeed = 0.01+(Math.random()/15)
     se.drawSize = 20+(Math.random()*30)
+    se.maxHP = (se.drawSize/2).toInt()
+    se.currentHp = se.maxHP
     se.speed = (Math.random()*3).toInt()+1
     se.wep.bulSize = 8.0+(Math.random()*40)
+    se.wep.buldmg = se.wep.bulSize.toInt()
     se.wep.atkSpd = (Math.random()*20).toInt()+10
     se.wep.bulspd = (Math.random()*10).toInt()+3
     return  se
@@ -269,7 +272,7 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
     if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef = false
     if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri = false
 }
-val selectoryspacing = listOf(30.0,70.0,110.0)
+val selectoryspacing = listOf(30.0,70.0,110.0,150.0,190.0)
 fun main() {
     entsToAdd.addAll(listOf(
         player1,
@@ -284,9 +287,11 @@ fun main() {
 
     menuEntities.addAll(
         listOf(
-            StatView({"speed"},0.0,selectoryspacing[0]),
-            StatView({"size"},0.0,selectoryspacing[1]),
-            StatView({"Aimspeed"},0.0,selectoryspacing[2])
+            StatView({"Speed"},0.0,selectoryspacing[0]),
+            StatView({"Health"},0.0,selectoryspacing[1]),
+            StatView({"Aimspeed"},0.0,selectoryspacing[2]),
+            StatView({"Wep1 Damage"},0.0,selectoryspacing[3]),
+            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4])
         )
     )
 
@@ -297,10 +302,14 @@ fun main() {
             StatView({ player1.speed.toString() }, nums[0], selectoryspacing[0]),
             StatView({ player1.drawSize.toString() }, nums[0], selectoryspacing[1]),
             StatView({ player1.turnSpeed.toString() }, nums[0], selectoryspacing[2]),
+            StatView({ player1.primWep.buldmg.toString() }, nums[0], selectoryspacing[3]),
+            StatView({ player1.primWep.bulspd.toString() }, nums[0], selectoryspacing[4]),
             Selector(1, player2, nums[1]+30,selectoryspacing.size),
             StatView({ player2.speed.toString() }, nums[1], selectoryspacing[0]),
             StatView({ player2.drawSize.toString() }, nums[1], selectoryspacing[1]),
-            StatView({ player2.turnSpeed.toString() }, nums[1], selectoryspacing[2])
+            StatView({ player2.turnSpeed.toString() }, nums[1], selectoryspacing[2]),
+            StatView({ player2.primWep.buldmg.toString() }, nums[1], selectoryspacing[3]),
+            StatView({ player2.primWep.bulspd.toString() }, nums[1], selectoryspacing[4])
         )
     )
     myFrame.addKeyListener(

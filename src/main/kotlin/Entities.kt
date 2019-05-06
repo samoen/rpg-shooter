@@ -97,7 +97,7 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
     override var drawSize = 40.0
 //    override var color = Color.BLACK
     override var angy = 0.0
-    override val maxHP = 30
+    override var maxHP = 30
     override var currentHp = maxHP
     override var bulColor = Color.LIGHT_GRAY
     override var turnSpeed = 0.1
@@ -179,7 +179,7 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
 }
 class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
     override var shootNoise: Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/pewnew.wav").getAbsoluteFile()))
+        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/enemypew.wav").getAbsoluteFile()))
     }
     override var ouchNoise: Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
@@ -193,7 +193,7 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
     override var xpos = 150.0
     override var drawSize = 25.0
     override var angy = 0.0
-    override val maxHP = 10
+    override var maxHP = 10
     override var currentHp = maxHP
     override var bulColor = Color.RED
     override var turnSpeed = 0.05
@@ -245,48 +245,12 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
                 var shootem = absanglediff<0.1
                 var shoot2 = shootem
                 if(shootem){
-//                    var vully = Bullet(this)
-//                    var buls = mutableListOf<Bullet>()
-//                    for( i in 0..200.toInt() step 10){
-//                        var bbq = Bullet(this)
-//                        for(j in 0..i)bbq.updateEntity()
-//                        buls.add(bbq)
-////                        vully.updateEntity()
-//
-//                    }
-//                    var vul2 = Bullet(this)
-//                    for( i in 0..(3*drawSize/wep.bulspd).toInt()){
-//                        vul2.updateEntity()
-//                    }
-//                    var vul3 = Bullet(this)
-//                    for( i in 0..100/wep.bulspd.toInt()){
-//                        vul3.updateEntity()
-//                    }
-//                    vully.updateEntity()
-//                    vully.updateEntity()
-
-
-//                    val enites = allEntities.filter { it is Player || it is Wall || (it is Enemy && it!=this) }
-//
-//                        outer@ for (entie in enites) {
-////                        if(it is Player)break
-//                        for(ent in buls){
-//                            if(ent.overlapsOther(entie)){
-//                                if(entie is Player){
-//                                    break@outer
-//                                }else
-//                                shootem = false
-//                            }
-//                        }
-////                        if(it.overlapsOther(vully)||it.overlapsOther(vul2)||it.overlapsOther(vul3)){
-////                            shootem = false
-////                        }
-//                    }
-
                     val walls = allEntities.filter { it is Wall || it is Player }
-                    outer@ for( i in 1..300 step 20){
-                        var pointx = xpos+(Math.cos(angy)*i)
-                        var pointy = ypos-(Math.sin(angy)*(i))
+                    outer@ for( i in 1..400 step 20){
+                        val pointx = (xpos+(drawSize/2))+(Math.cos(angy)*i)
+                        val pointy = ypos+(drawSize/2)-(Math.sin(angy)*(i))
+                        if(pointx>INTENDED_FRAME_SIZE || pointx < 0 || pointy>INTENDED_FRAME_SIZE || pointy<0)
+                            break@outer
                         for (wall in walls){
                             if(pointx in wall.xpos..wall.xpos+wall.drawSize){
                                 if(pointy in wall.ypos..wall.ypos+wall.drawSize){
@@ -297,16 +261,6 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
                             }
                         }
                     }
-//                    if(map1[locToIndex(pointx,pointy)-1]=='1'){
-//                        shootem = false
-//                    }
-//                    allEntities.forEach {
-//                        if(it is Wall){
-//                            if(pointx in it.xpos..it.xpos+it.drawSize)
-//                                if(pointy in it.ypos..it.ypos+it.drawSize)
-//                                    shootem = false
-//                        }
-//                    }
                 }
                 processShooting(shoot2,this.wep)
 
@@ -374,20 +328,26 @@ class Selector(val pnum:Int,val owner:Player,val xloc: Double,val numstats:Int):
 //        if(ypos>selectoryspacing.last())ypos = selectoryspacing.last()
 
         if(owner.pCont.sht.tryConsume()){
-//            for(i:Int in 0..numstats){
-//                if(ypos == i*vertspacing){
-//                    owner.speed+=1
-//                }
-//            }
             when(indexer){
                 0->{
                     owner.speed += 1
                 }
                 1->{
-                    owner.drawSize += 1
+                    owner.drawSize  += 1
+                    owner.maxHP +=1
                 }
                 2->{
                     owner.turnSpeed +=0.05
+                }
+                3->{
+                    owner.primWep.buldmg+=1
+                    owner.primWep.bulSize+=1
+                }
+                4->{
+                    if(owner.primWep.bulspd+1<30)owner.primWep.bulspd++
+                    if(owner.primaryEquipped){
+                        owner.wep = owner.primWep
+                    }
                 }
             }
         }else if(owner.pCont.Swp.tryConsume()){
@@ -397,11 +357,29 @@ class Selector(val pnum:Int,val owner:Player,val xloc: Double,val numstats:Int):
                     if(owner.speed<0)owner.speed = 0
                 }
                 1->{
-                    owner.drawSize -=1
-                    if(owner.drawSize<10.0)owner.drawSize = 10.0
+                    val desiredSize = owner.drawSize -1
+                    val desiredHp = owner.maxHP-1
+                    if(desiredSize>10.0 && desiredHp>0){
+                        owner.drawSize = desiredSize
+                        owner.maxHP = desiredHp
+                    }
                 }
                 2->{
                     owner.turnSpeed -=0.05
+                }
+                3->{
+                    val desiredSize = owner.primWep.bulSize -1
+                    val desiredHp = owner.primWep.buldmg-1
+                    if(desiredSize>5.0 && desiredHp>0){
+                        owner.primWep.bulSize = desiredSize
+                        owner.primWep.buldmg = desiredHp
+                    }
+                }
+                4->{
+                    if(owner.primWep.bulspd-1>1)owner.primWep.bulspd--
+                    if(owner.primaryEquipped){
+                        owner.wep = owner.primWep
+                    }
                 }
             }
         }
