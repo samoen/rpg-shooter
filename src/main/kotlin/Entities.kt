@@ -76,7 +76,7 @@ class Weapon(
 )
 
 class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
-    var insideGate = false
+//    var insideGate = false
     val stillImage = ImageIcon("src/main/resources/gunman.png").image
     val runImage = ImageIcon("src/main/resources/rungunman.png").image
     val pCont:playControls = playControls()

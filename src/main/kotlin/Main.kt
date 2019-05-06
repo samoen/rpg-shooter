@@ -143,10 +143,10 @@ fun revivePlayers(heal:Boolean){
     if(!allEntities.contains(player2) && !entsToAdd.contains(player2)) entsToAdd.add(player2)
     player1.isDead = false
     player2.isDead = false
-    player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize)
-    player1.xpos = 0.0
-    player2.ypos = (INTENDED_FRAME_SIZE - player2.drawSize)
-    player2.xpos = (player1.drawSize)
+//    player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize)
+//    player1.xpos = 0.0
+//    player2.ypos = (INTENDED_FRAME_SIZE - player2.drawSize)
+//    player2.xpos = (player1.drawSize)
     if(heal){
         player1.currentHp = player1.maxHP
         player2.currentHp = player2.maxHP
@@ -156,29 +156,29 @@ const val mapGridSize = 55.0
 const val mapGridColumns = 16
 const val mapGridRows = 16
 val map1 =  "        w       " +
-            "             2  " +
+            "  e          2  " +
             "      ww        " +
             "ww wh ww    w   " +
             " whwh          w" +
             "  hwh          w" +
-            " whwh        s w" +
+            " whwh        s  " +
             "            w ww" +
             "  wh  www     ww" +
             "  w   www     ww" +
             "  w    h    w  w" +
-            "  w   www   wh w" +
-            "        w   w  w" +
-            "        w   w  w" +
-            "        w      w" +
-            "      w      www"
+            "  w   www   wh  " +
+            "        w   we  " +
+            "   x        w   " +
+            "                " +
+            "                "
 
 val map2 =  "s       w       " +
             "   1            " +
             "      ww     h  " +
             "    h ww        " +
-            "  h h          w" +
-            "  h h          w" +
-            "    h          w" +
+            "               w" +
+            "               w" +
+            "   eh    x     w" +
             "     w        ww" +
             "   h ww       ww" +
             "     w w       w" +
@@ -202,10 +202,13 @@ val map2 =  "s       w       " +
 //    return result
 //}
 
+var playerSpawn = Pair(50.0,50.0)
+
 fun placeMap(map:String){
 //    val starty = INTENDED_FRAME_SIZE/15
 //    allEntities.forEach { if(it is Wall) it.isDead = true }
-    allEntities.removeIf{it is Wall || it is MedPack || it is Enemy || it is Gateway || it is GateSwitch}
+//    allEntities.removeIf{it is Wall || it is MedPack || it is Enemy || it is Gateway || it is GateSwitch || it is Bullet}
+    allEntities.clear()
     val starty = 0
     var rownum = 0
     for((outerind,i) in (0..(mapGridColumns*mapGridRows)-7 step mapGridColumns).withIndex()){
@@ -238,7 +241,19 @@ fun placeMap(map:String){
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
                 })
+                continue
             }
+            if(ch == 'x'){
+                player1.xpos = ind.toDouble()+(ind* mapGridSize)
+                player1.ypos = starty + (mapGridSize+1)*(outerind+1)
+                player2.xpos = (player1.drawSize)+player1.xpos
+                player2.ypos = starty + (mapGridSize+1)*(outerind+1)
+                entsToAdd.add(player1)
+                entsToAdd.add(player2)
+//                playerSpawn = Pair(ind.toDouble()+(ind* mapGridSize),starty + (mapGridSize+1)*(outerind+1))
+                continue
+            }
+
             val charint = Character.getNumericValue(ch)
             if(charint in 1..9){
                  val mappy:String =when(charint){
