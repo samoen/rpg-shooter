@@ -299,7 +299,7 @@ class Wall : Entity(){
 class Gateway : Entity(){
 //    var playersInside = mutableListOf<Player>()
     var backgate = false
-    var playersInside =0
+    var playersInside = mutableListOf<Player>()
     var map = map1
     var locked = true
     override var drawSize = mapGridSize
@@ -307,13 +307,40 @@ class Gateway : Entity(){
 //    override fun drawEntity(g: Graphics) {
 //        super.drawEntity(g)
 //    }
+    override fun updateEntity() {
+//        super.updateEntity()
+//        if(playersInside.size>0){
+//
+//        }
+//        var dexesToRemove = mutableListOf<Int>()
+        playersInside.forEachIndexed { index, player ->
+            if(player.pCont.sht.booly){
+                player.xpos = xpos + drawSize
+                player.ypos = ypos
+                var canSpawn = true
+                for(ent in allEntities){
+                    if(player.overlapsOther(ent))canSpawn = false
+                }
+                if(canSpawn){
+                    player.isDead = false
+                    entsToAdd.add(player)
+                }
+//                dexesToRemove.add(index)
+            }
+        }
+        playersInside.removeIf{!it.isDead}
+//        for(i in dexesToRemove){
+//            playersInside.
+//        }
+    }
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(!locked){
             if(other is Player && !other.isDead){
                 other.isDead = true
-                playersInside++
-                if(playersInside>=NumPlayers){
+                playersInside.add(other)
+//                playersInside++
+                if(playersInside.size>=NumPlayers){
                     if(backgate){
                         nextMap = previousMap
                     }else{

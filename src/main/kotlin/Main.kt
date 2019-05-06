@@ -161,23 +161,23 @@ fun revivePlayers(heal:Boolean){
 }
 const val mapGridSize = 55.0
 const val mapGridColumns = 16
-const val mapGridRows = 16
+const val mapGridRows = 15
 val map1 =  "        w       " +
-            "  e          2  " +
+            "  e             " +
             "      ww        " +
             "ww wh ww    w   " +
             " whwh          w" +
             "  hwh          w" +
-            " whwh        s  " +
+            " whwh           " +
             "            w ww" +
             "  wh  www     ww" +
             "  w   www     ww" +
-            "  w    h    w e w" +
+            "  w    h    w   w" +
             "  w         wh  " +
-            "                " +
+            "            2   " +
             "   x            " +
-            "                " +
-            "                "
+            "            s   "
+
 val map2 =  "s       w       " +
             "   3            " +
             "      ww     h  " +
@@ -192,8 +192,7 @@ val map2 =  "s       w       " +
             "      www   wh w" +
             "        w   w  w" +
             "        w   w  w" +
-            "        w      w" +
-            "      w      www"
+            "        w      w"
 
 val map3 =  "                " +
             "   1            " +
@@ -208,7 +207,6 @@ val map3 =  "                " +
             "               w" +
             "            wh w" +
             "               w" +
-            "                " +
             "                " +
             "                "
 
@@ -226,7 +224,7 @@ var previousMap = map1
 //    if(result>map1.length-1)result = map1.length-1
 //    return result
 //}
-
+var exitGatePost = Pair(100.0,100.0)
 var playerSpawn = Pair(50.0,50.0)
 var currentMap = map1
 fun placeMap(map:String){
@@ -272,12 +270,13 @@ fun placeMap(map:String){
             if(ch == 'x'){
                 val spawnGate = Gateway()
                 spawnGate.backgate = true
-                spawnGate.xpos = ind.toDouble()+(ind* mapGridSize)
-                spawnGate.ypos = starty + (mapGridSize+1)*(outerind+1)
-                player1.xpos = ind.toDouble()+(ind* mapGridSize)
-                player1.ypos = starty + (mapGridSize+1)*(outerind+1)
-                player2.xpos = (player1.drawSize)+player1.xpos
-                player2.ypos = starty + (mapGridSize+1)*(outerind+1)
+                playerSpawn = Pair(ind.toDouble()+(ind* mapGridSize),starty + (mapGridSize+1)*(outerind+1))
+                spawnGate.xpos = playerSpawn.first
+                spawnGate.ypos = playerSpawn.second
+                player1.xpos = playerSpawn.first
+                player1.ypos = playerSpawn.second
+                player2.xpos = playerSpawn.first + (player1.drawSize)
+                player2.ypos = playerSpawn.second
                 entsToAdd.add(player1)
                 entsToAdd.add(player2)
                 entsToAdd.add(spawnGate)
