@@ -5,9 +5,10 @@ import javax.swing.*
 val allEntities = mutableListOf<Entity>()
 val entsToAdd = mutableListOf<Entity>()
 
-
-val player1 = Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD1,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD7,KeyEvent.VK_NUMPAD9)).also { it.speed = 8 }
-val player2 = Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B)).also{
+val selectoryspacing = listOf(0.0,40.0,80.0,120.0,160.0,200.0,240.0)
+val selectorxspacing = listOf(100.0,170.0)
+val player0 = Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD1,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD7,KeyEvent.VK_NUMPAD9),0).also { it.speed = 8 }
+val player1 = Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B),1).also{
     it.xpos=150.0
     it.speed = 8
     it.drawSize = 40.0
@@ -18,6 +19,8 @@ var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
 
 var showingmenu = false
+var playersMenuShowing = mutableMapOf(0 to false, 1 to false)
+
 const val INTENDED_FRAME_SIZE = 900
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 //const val TICK_INTERVAL = 30
@@ -43,12 +46,29 @@ var myPanel:JPanel =object : JPanel() {
             allEntities.forEach { entity ->
                 entity.drawComponents(g)
             }
-            if(showingmenu){
-                menuEntities.forEach { it.updateEntity() }
+            var eitherShowing = false
+            for(i in 0..1){
+                if(playersMenuShowing[i]!!){
+                    eitherShowing = true
+                    if(i==0)
+                        player0.menuStuff.forEach {
+                            it.updateEntity()
+                            it.drawEntity(g)
+                        }
+                    else
+                        player1.menuStuff.forEach {
+                        it.updateEntity()
+                            it.drawEntity(g)
+                    }
+
+                }
+            }
+            if(eitherShowing){
                 menuEntities.forEach { entity ->
                     entity.drawEntity(g)
                 }
             }
+
         }
     }
 }.also {
@@ -56,16 +76,16 @@ var myPanel:JPanel =object : JPanel() {
 //    it.background = Color.DARK_GRAY
 }
 
-var menuPanel:JPanel = object:JPanel(){
-    override fun paint(g: Graphics) {
-        super.paint(g)
-        menuEntities.forEach { entity ->
-            entity.drawEntity(g)
-        }
-    }
-}.also {
-    it.background = Color.PINK
-}
+//var menuPanel:JPanel = object:JPanel(){
+//    override fun paint(g: Graphics) {
+//        super.paint(g)
+//        menuEntities.forEach { entity ->
+//            entity.drawEntity(g)
+//        }
+//    }
+//}.also {
+//    it.background = Color.PINK
+//}
 
 var myFrame=object:JFrame(){
 
@@ -91,10 +111,10 @@ var menuEntities = mutableListOf<Entity>()
 
 
 
-fun menuTick(){
-    menuEntities.forEach { it.updateEntity() }
-    menuPanel.repaint()
-}
+//fun menuTick(){
+//    menuEntities.forEach { it.updateEntity() }
+//    menuPanel.repaint()
+//}
 
 fun gameTick(){
     val preupdateEnts = mutableListOf<EntDimens>()
@@ -131,6 +151,8 @@ fun gameTick(){
                             }else{
                                 ient.isDead = true
                                 jent.isDead = true
+                                if(ient is Player)ient.dieFromBullet()
+                                if(jent is Player)jent.dieFromBullet()
                             }
                         }else{
                             triggeredReaction = true
@@ -150,17 +172,17 @@ fun gameTick(){
 
 
 fun revivePlayers(heal:Boolean){
-    if(!allEntities.contains(player1) && !entsToAdd.contains(player1))entsToAdd.add(player1)
-    if(!allEntities.contains(player2) && !entsToAdd.contains(player2)) entsToAdd.add(player2)
+    if(!allEntities.contains(player0) && !entsToAdd.contains(player0))entsToAdd.add(player0)
+    if(!allEntities.contains(player1) && !entsToAdd.contains(player1)) entsToAdd.add(player1)
+    player0.isDead = false
     player1.isDead = false
-    player2.isDead = false
+//    player0.ypos = (INTENDED_FRAME_SIZE - player0.drawSize)
+//    player0.xpos = 0.0
 //    player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize)
-//    player1.xpos = 0.0
-//    player2.ypos = (INTENDED_FRAME_SIZE - player2.drawSize)
-//    player2.xpos = (player1.drawSize)
+//    player1.xpos = (player0.drawSize)
     if(heal){
+        player0.currentHp = player0.maxHP
         player1.currentHp = player1.maxHP
-        player2.currentHp = player2.maxHP
     }
 }
 const val mapGridSize = 55.0
@@ -177,7 +199,7 @@ val map1 =  "        w       " +
             "  wh  www     ww" +
             "  w   www     ww" +
             "  w    h    w   w" +
-            "  w         wh  " +
+            "  w    b    wh  " +
             "            2   " +
             "   1            " +
             "            s   "
@@ -265,6 +287,13 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                 })
                 continue
             }
+            if(ch == 'b'){
+                entsToAdd.add(WeaponSmith().also {
+                    it.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                })
+                continue
+            }
 //            if(ch == 'x'){
 ////            if(ch == 'a' || ch=='A'){
 //                val spawnGate = Gateway()
@@ -277,12 +306,12 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
 //                playerSpawn = Pair(ind.toDouble()+(ind* mapGridSize),starty + (mapGridSize+1)*(outerind+1))
 //                spawnGate.xpos = playerSpawn.first
 //                spawnGate.ypos = playerSpawn.second
-//                player1.xpos = playerSpawn.first
+//                player0.xpos = playerSpawn.first
+//                player0.ypos = playerSpawn.second
+//                player1.xpos = playerSpawn.first + (player0.drawSize)
 //                player1.ypos = playerSpawn.second
-//                player2.xpos = playerSpawn.first + (player1.drawSize)
-//                player2.ypos = playerSpawn.second
+//                entsToAdd.add(player0)
 //                entsToAdd.add(player1)
-//                entsToAdd.add(player2)
 //                entsToAdd.add(spawnGate)
 //                continue
 //            }
@@ -304,14 +333,14 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                     it.ypos = gatey
                 }
                 if(charint==fromMapNum){
-                    player1.xpos = gatex
+                    player0.xpos = gatex
+                    player0.ypos = gatey
+                    player0.spawnGate = gate
+                    player1.xpos = gatex + (player0.drawSize)
                     player1.ypos = gatey
                     player1.spawnGate = gate
-                    player2.xpos = gatex + (player1.drawSize)
-                    player2.ypos = gatey
-                    player2.spawnGate = gate
+                    entsToAdd.add(player0)
                     entsToAdd.add(player1)
-                    entsToAdd.add(player2)
                 }
 
                  entsToAdd.add(gate)
@@ -380,15 +409,15 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
     if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.release()
     if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
 }
-val selectoryspacing = listOf(0.0,40.0,80.0,120.0,160.0,200.0,240.0)
+
 fun main() {
     entsToAdd.addAll(listOf(
-        player1,
-        player2
+        player0,
+        player1
 //        , Wall()
     ))
 
-    val xspacing = listOf(100.0,170.0)
+
 
     menuEntities.addAll(
         listOf(
@@ -402,26 +431,26 @@ fun main() {
         )
     )
 
-    menuEntities.addAll(
-        listOf(
-            Selector(player1, xspacing[0]+30),
-            StatView({ player1.speed.toString() }, xspacing[0], selectoryspacing[0]),
-            StatView({ player1.maxHP.toInt().toString() }, xspacing[0], selectoryspacing[1]),
-            StatView({ player1.turnSpeed.toString() }, xspacing[0], selectoryspacing[2]),
-            StatView({ player1.primWep.buldmg.toString() }, xspacing[0], selectoryspacing[3]),
-            StatView({ player1.primWep.bulspd.toString() }, xspacing[0], selectoryspacing[4]),
-            StatView({ player1.primWep.recoil.toString() }, xspacing[0], selectoryspacing[5]),
-            StatView({ player1.primWep.atkSpd.toString() }, xspacing[0], selectoryspacing[6]),
-            Selector(player2, xspacing[1]+30),
-            StatView({ player2.speed.toString() }, xspacing[1], selectoryspacing[0]),
-            StatView({ player2.maxHP.toInt().toString() }, xspacing[1], selectoryspacing[1]),
-            StatView({ player2.turnSpeed.toString() }, xspacing[1], selectoryspacing[2]),
-            StatView({ player2.primWep.buldmg.toString() }, xspacing[1], selectoryspacing[3]),
-            StatView({ player2.primWep.bulspd.toString() }, xspacing[1], selectoryspacing[4]),
-            StatView({ player2.primWep.recoil.toString() }, xspacing[1], selectoryspacing[5]),
-            StatView({ player2.primWep.atkSpd.toString() }, xspacing[1], selectoryspacing[6])
-        )
-    )
+//    menuEntities.addAll(
+//        listOf(
+//            Selector(player0, selectorxspacing[0]+30),
+//            StatView({ player0.speed.toString() }, selectorxspacing[0], selectoryspacing[0]),
+//            StatView({ player0.maxHP.toInt().toString() }, selectorxspacing[0], selectoryspacing[1]),
+//            StatView({ player0.turnSpeed.toString() }, selectorxspacing[0], selectoryspacing[2]),
+//            StatView({ player0.primWep.buldmg.toString() }, selectorxspacing[0], selectoryspacing[3]),
+//            StatView({ player0.primWep.bulspd.toString() }, selectorxspacing[0], selectoryspacing[4]),
+//            StatView({ player0.primWep.recoil.toString() }, selectorxspacing[0], selectoryspacing[5]),
+//            StatView({ player0.primWep.atkSpd.toString() }, selectorxspacing[0], selectoryspacing[6]),
+//            Selector(player1, selectorxspacing[1]+30),
+//            StatView({ player1.speed.toString() }, selectorxspacing[1], selectoryspacing[0]),
+//            StatView({ player1.maxHP.toInt().toString() }, selectorxspacing[1], selectoryspacing[1]),
+//            StatView({ player1.turnSpeed.toString() }, selectorxspacing[1], selectoryspacing[2]),
+//            StatView({ player1.primWep.buldmg.toString() }, selectorxspacing[1], selectoryspacing[3]),
+//            StatView({ player1.primWep.bulspd.toString() }, selectorxspacing[1], selectoryspacing[4]),
+//            StatView({ player1.primWep.recoil.toString() }, selectorxspacing[1], selectoryspacing[5]),
+//            StatView({ player1.primWep.atkSpd.toString() }, selectorxspacing[1], selectoryspacing[6])
+//        )
+//    )
     myFrame.addKeyListener(
         object :KeyListener{
             override fun keyTyped(e: KeyEvent?) {}
@@ -430,8 +459,8 @@ fun main() {
                     if (e.keyCode == KeyEvent.VK_1) pressed1.tryProduce()
                     if (e.keyCode == KeyEvent.VK_2) pressed2.tryProduce()
                     if (e.keyCode == KeyEvent.VK_3) pressed3.tryProduce()
+                    playerKeyPressed(player0,e)
                     playerKeyPressed(player1,e)
-                    playerKeyPressed(player2,e)
                 }
             }
             override fun keyReleased(e: KeyEvent?) {
@@ -439,8 +468,8 @@ fun main() {
                     if (e.keyCode == KeyEvent.VK_1) pressed1.release()
                     if (e.keyCode == KeyEvent.VK_2) pressed2.release()
                     if (e.keyCode == KeyEvent.VK_3) pressed3.release()
+                    playerKeyReleased(player0,e)
                     playerKeyReleased(player1,e)
-                    playerKeyReleased(player2,e)
                 }
             }
         }

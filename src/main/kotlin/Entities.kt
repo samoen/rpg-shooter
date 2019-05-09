@@ -75,9 +75,17 @@ class Weapon(
     var framesSinceShottah:Int = 999
 )
 
-class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
+class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
 //    var insideGate = false
-
+    var menuStuff = listOf(
+    Selector(this, selectorxspacing[playerNumber]+30),
+    StatView({ this.speed.toString() }, selectorxspacing[playerNumber], selectoryspacing[0]),
+    StatView({ this.maxHP.toInt().toString() }, selectorxspacing[playerNumber], selectoryspacing[1]),
+    StatView({ this.turnSpeed.toString() }, selectorxspacing[playerNumber], selectoryspacing[2]),
+    StatView({ this.primWep.buldmg.toString() }, selectorxspacing[playerNumber], selectoryspacing[3]),
+    StatView({ this.primWep.bulspd.toString() }, selectorxspacing[playerNumber], selectoryspacing[4]),
+    StatView({ this.primWep.recoil.toString() }, selectorxspacing[playerNumber], selectoryspacing[5]),
+    StatView({ this.primWep.atkSpd.toString() }, selectorxspacing[playerNumber], selectoryspacing[6]))
     var spawnGate:Gateway = Gateway()
     val stillImage = ImageIcon("src/main/resources/gunman.png").image
     val runImage = ImageIcon("src/main/resources/rungunman.png").image
@@ -150,7 +158,7 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
         ypos += toMovey
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(preControl)
-        if(!showingmenu){
+        if(!playersMenuShowing[playerNumber]!!){
             processTurning(pCont.spenlef.booly,pCont.spinri.booly)
             if(pCont.Swp.tryConsume()){
                 playSound(swapNoise)
@@ -321,7 +329,7 @@ class Gateway : Entity(){
 
     override fun updateEntity() {
         if(!canEnterGate){
-            if(!overlapsOther(player1) && !overlapsOther(player2)){
+            if(!overlapsOther(player0) && !overlapsOther(player1)){
                 canEnterGate = true
             }
         }
@@ -385,6 +393,28 @@ class MedPack : Entity() {
     override var drawSize = 20.0
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if (other is hasHealth && (other.currentHp<other.maxHP || other.didHeal)) isDead = true
+    }
+}
+
+class WeaponSmith:Entity(){
+    override var color = Color.CYAN
+    override var drawSize = 20.0
+    var smithShowing = mutableMapOf<Int,Boolean>(1 to false, 2 to false)
+    override fun updateEntity() {
+//        for ((num,showing) in smithShowing){
+//        }
+//        if(smithShowing[1]!!) if(!overlapsOther(player0)){smithShowing[1] = false
+//        if(smithShowing[2]!!) if(!overlapsOther(player1))smithShowing[2] = false
+        if(playersMenuShowing[0]!!){
+            if(!overlapsOther(player0))playersMenuShowing[0] = false
+        }
+        if(playersMenuShowing[1]!!){
+            if(!overlapsOther(player1))playersMenuShowing[1] = false
+        }
+    }
+
+    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
+        if(other is Player)playersMenuShowing[other.playerNumber] = true
     }
 }
 
