@@ -77,7 +77,9 @@ class Weapon(
 
 class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
 //    var insideGate = false
-    var menuStuff = listOf(
+    var menushowign = false
+    var menuStuff:List<Entity> =
+    listOf(
     Selector(this, selectorxspacing[playerNumber]+30),
     StatView({ this.speed.toString() }, selectorxspacing[playerNumber], selectoryspacing[0]),
     StatView({ this.maxHP.toInt().toString() }, selectorxspacing[playerNumber], selectoryspacing[1]),
@@ -86,6 +88,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     StatView({ this.primWep.bulspd.toString() }, selectorxspacing[playerNumber], selectoryspacing[4]),
     StatView({ this.primWep.recoil.toString() }, selectorxspacing[playerNumber], selectoryspacing[5]),
     StatView({ this.primWep.atkSpd.toString() }, selectorxspacing[playerNumber], selectoryspacing[6]))
+
     var spawnGate:Gateway = Gateway()
     val stillImage = ImageIcon("src/main/resources/gunman.png").image
     val runImage = ImageIcon("src/main/resources/rungunman.png").image
@@ -133,6 +136,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
 
     override fun dieFromBullet() {
         super.dieFromBullet()
+        menushowign = false
         spawnGate.playersInside.add(this)
     }
 
@@ -158,7 +162,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         ypos += toMovey
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(preControl)
-        if(!playersMenuShowing[playerNumber]!!){
+        if(!menushowign){
             processTurning(pCont.spenlef.booly,pCont.spinri.booly)
             if(pCont.Swp.tryConsume()){
                 playSound(swapNoise)
@@ -398,29 +402,53 @@ class MedPack : Entity() {
 
 class WeaponSmith:Entity(){
     override var color = Color.CYAN
-    override var drawSize = 20.0
-    var smithShowing = mutableMapOf<Int,Boolean>(1 to false, 2 to false)
+    override var drawSize = 35.0
+//    var smithShowing = mutableMapOf<Int,Boolean>(1 to false, 2 to false)
     override fun updateEntity() {
 //        for ((num,showing) in smithShowing){
 //        }
 //        if(smithShowing[1]!!) if(!overlapsOther(player0)){smithShowing[1] = false
 //        if(smithShowing[2]!!) if(!overlapsOther(player1))smithShowing[2] = false
-        if(playersMenuShowing[0]!!){
-            if(!overlapsOther(player0))playersMenuShowing[0] = false
+        if(player0.menushowign){
+            if(!overlapsOther(player0)){
+                player0.menushowign = false
+//                lockCollide = false
+            }
         }
-        if(playersMenuShowing[1]!!){
-            if(!overlapsOther(player1))playersMenuShowing[1] = false
+        if(player1.menushowign){
+            if(!overlapsOther(player1)){
+                player1.menushowign = false
+//                lockCollide = false
+            }
+        }
+    }
+//    var lockCollide = false
+
+    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
+        if(other is Player){
+            if(!other.menushowign){
+//                lockCollide = true
+                other.menuStuff = listOf(
+                    Selector(other, selectorxspacing[other.playerNumber]+30),
+                    StatView({other.speed.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[0]),
+                    StatView({other.maxHP.toInt().toString() }, selectorxspacing[other.playerNumber], selectoryspacing[1]),
+                    StatView({other.turnSpeed.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[2]),
+                    StatView({other.primWep.buldmg.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[3]),
+                    StatView({other.primWep.bulspd.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[4]),
+                    StatView({other.primWep.recoil.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[5]),
+                    StatView({other.primWep.atkSpd.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[6]))
+
+                other.menushowign = true
+            }
         }
     }
 
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if(other is Player)playersMenuShowing[other.playerNumber] = true
-    }
+    
 }
 
 class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity(){
     override fun drawEntity(g: Graphics) {
-          g.drawString(showText(),getWindowAdjustedPos( xloc).toInt(),getWindowAdjustedPos(yloc+15).toInt())
+          g.drawString(showText(),getWindowAdjustedPos(xloc).toInt(),getWindowAdjustedPos(yloc+15).toInt())
     }
 }
 

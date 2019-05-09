@@ -47,28 +47,27 @@ var myPanel:JPanel =object : JPanel() {
                 entity.drawComponents(g)
             }
             var eitherShowing = false
-            for(i in 0..1){
-                if(playersMenuShowing[i]!!){
+//            for(i in 0..1){
+                if(player0.menushowign){
                     eitherShowing = true
-                    if(i==0)
-                        player0.menuStuff.forEach {
-                            it.updateEntity()
-                            it.drawEntity(g)
-                        }
-                    else
-                        player1.menuStuff.forEach {
+                    player0.menuStuff.forEach {
                         it.updateEntity()
-                            it.drawEntity(g)
+                        it.drawEntity(g)
                     }
-
                 }
-            }
+                if(player1.menushowign){
+                    eitherShowing = true
+                    player1.menuStuff.forEach {
+                        it.updateEntity()
+                        it.drawEntity(g)
+                    }
+                }
+//            }
             if(eitherShowing){
                 menuEntities.forEach { entity ->
                     entity.drawEntity(g)
                 }
             }
-
         }
     }
 }.also {
@@ -107,8 +106,15 @@ var myFrame=object:JFrame(){
 //        }
 //    })
 }
-var menuEntities = mutableListOf<Entity>()
-
+var menuEntities:MutableList<Entity> = mutableListOf(
+            StatView({"Run Speed"},0.0,selectoryspacing[0]),
+            StatView({"Health"},0.0,selectoryspacing[1]),
+            StatView({"Turn Speed"},0.0,selectoryspacing[2]),
+            StatView({"Wep1 Damage"},0.0,selectoryspacing[3]),
+            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4]),
+            StatView({"Wep1 Recoil"},0.0,selectoryspacing[5]),
+            StatView({"Wep1 Reload"},0.0,selectoryspacing[6])
+        )
 
 
 //fun menuTick(){
@@ -419,17 +425,17 @@ fun main() {
 
 
 
-    menuEntities.addAll(
-        listOf(
-            StatView({"Run Speed"},0.0,selectoryspacing[0]),
-            StatView({"Health"},0.0,selectoryspacing[1]),
-            StatView({"Turn Speed"},0.0,selectoryspacing[2]),
-            StatView({"Wep1 Damage"},0.0,selectoryspacing[3]),
-            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4]),
-            StatView({"Wep1 Recoil"},0.0,selectoryspacing[5]),
-            StatView({"Wep1 Reload"},0.0,selectoryspacing[6])
-        )
-    )
+//    menuEntities.addAll(
+//        listOf(
+//            StatView({"Run Speed"},0.0,selectoryspacing[0]),
+//            StatView({"Health"},0.0,selectoryspacing[1]),
+//            StatView({"Turn Speed"},0.0,selectoryspacing[2]),
+//            StatView({"Wep1 Damage"},0.0,selectoryspacing[3]),
+//            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4]),
+//            StatView({"Wep1 Recoil"},0.0,selectoryspacing[5]),
+//            StatView({"Wep1 Reload"},0.0,selectoryspacing[6])
+//        )
+//    )
 
 //    menuEntities.addAll(
 //        listOf(
