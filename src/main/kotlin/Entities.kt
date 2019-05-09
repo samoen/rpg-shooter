@@ -62,7 +62,7 @@ class Bullet(val shotBy: shoots) : Entity() {
 
     override fun drawEntity(g: Graphics) {
         g.color = color
-        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedSize().toInt(), getWindowAdjustedSize().toInt())
+        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedSize()*1.2).toInt(), (getWindowAdjustedSize().toInt()))
     }
 }
 
@@ -77,6 +77,8 @@ class Weapon(
 
 class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
 //    var insideGate = false
+
+    var spawnGate:Gateway = Gateway()
     val stillImage = ImageIcon("src/main/resources/gunman.png").image
     val runImage = ImageIcon("src/main/resources/rungunman.png").image
     val pCont:playControls = playControls()
@@ -121,6 +123,11 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
 //        }
     }
 
+    override fun dieFromBullet() {
+        super.dieFromBullet()
+        spawnGate.playersInside.add(this)
+    }
+
     override fun updateEntity() {
         didMove = false
         didHeal = false
@@ -143,17 +150,19 @@ class Player(val buttonSet: ButtonSet): Entity(), shoots, hasHealth,movementGets
         ypos += toMovey
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(preControl)
-        processTurning(pCont.spenlef,pCont.spinri)
-        if(pCont.Swp.tryConsume()){
-            playSound(swapNoise)
-            if (primaryEquipped){
-                wep = spareWep
-            }else{
-                wep = primWep
+        if(!showingmenu){
+            processTurning(pCont.spenlef.booly,pCont.spinri.booly)
+            if(pCont.Swp.tryConsume()){
+                playSound(swapNoise)
+                if (primaryEquipped){
+                    wep = spareWep
+                }else{
+                    wep = primWep
+                }
+                primaryEquipped = !primaryEquipped
             }
-            primaryEquipped = !primaryEquipped
+            processShooting(pCont.sht.booly,this.wep)
         }
-        processShooting(pCont.sht.booly,this.wep)
     }
 
     override fun drawComponents(g: Graphics) {
@@ -298,58 +307,55 @@ class Wall : Entity(){
 
 class Gateway : Entity(){
 //    var playersInside = mutableListOf<Player>()
-    var backgate = false
+//    var backgate = false
     var playersInside = mutableListOf<Player>()
     var map = map1
     var mapnum = 1
     var locked = true
     override var drawSize = mapGridSize
     override var color = Color.PINK
-//    override fun drawEntity(g: Graphics) {
+    //    override fun drawEntity(g: Graphics) {
 //        super.drawEntity(g)
 //    }
+    var canEnterGate = true
+
     override fun updateEntity() {
-//        super.updateEntity()
-//        if(playersInside.size>0){
-//
-//        }
-//        var dexesToRemove = mutableListOf<Int>()
-        playersInside.forEachIndexed { index, player ->
+        if(!canEnterGate){
+            if(!overlapsOther(player1) && !overlapsOther(player2)){
+                canEnterGate = true
+            }
+        }
+        playersInside.forEach { player ->
             if(player.pCont.sht.booly){
-                player.xpos = xpos + drawSize
+                player.xpos = xpos
                 player.ypos = ypos
                 var canSpawn = true
-                for(ent in allEntities){
+                for(ent in allEntities.filter { it is Player || it is Enemy }){
                     if(player.overlapsOther(ent))canSpawn = false
+                    if(player.xpos+player.drawSize>INTENDED_FRAME_SIZE || player.ypos+player.drawSize>INTENDED_FRAME_SIZE)canSpawn = false
                 }
                 if(canSpawn){
+                    canEnterGate = false
                     player.isDead = false
+                    player.currentHp = player.maxHP
                     entsToAdd.add(player)
                 }
-//                dexesToRemove.add(index)
             }
         }
         playersInside.removeIf{!it.isDead}
-//        for(i in dexesToRemove){
-//            playersInside.
-//        }
     }
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(!locked){
             if(other is Player && !other.isDead){
-                other.isDead = true
-                playersInside.add(other)
-//                playersInside++
-                if(playersInside.size>=NumPlayers){
-//                    if(backgate){
-//                        nextMap = previousMap
-//                    }else{
+                if(canEnterGate){
+                    other.isDead = true
+                    playersInside.add(other)
+                    if(playersInside.size>=NumPlayers){
                         nextMap = map
                         nextMapNum = mapnum
                         changeMap = true
-//                    }
-//                    previousMap = currentMap
+                    }
                 }
             }
         }
@@ -395,13 +401,13 @@ class Selector(val owner:Player,xloc: Double):Entity(){
     override var ypos = selectoryspacing[0]
     var indexer = 0
     override fun updateEntity() {
-        if(owner.pCont.dwm.tryConsume()){
+        if(owner.pCont.sht.tryConsume()){
             if(indexer+1<selectoryspacing.size){
                 indexer++
                 ypos=selectoryspacing[indexer]
             }
         }
-        if(owner.pCont.up.tryConsume()){
+        if(owner.pCont.Swp.tryConsume()){
 //            ypos-=vertspacing
             if(indexer-1>=0){
                 indexer--
@@ -412,7 +418,7 @@ class Selector(val owner:Player,xloc: Double):Entity(){
 //        if(ypos<10.0) ypos = 10.0
 //        if(ypos>selectoryspacing.last())ypos = selectoryspacing.last()
 
-        if(owner.pCont.sht.tryConsume()){
+        if(owner.pCont.spinri.tryConsume()){
             when(indexer){
                 0->{
                     owner.speed += 1
@@ -440,7 +446,7 @@ class Selector(val owner:Player,xloc: Double):Entity(){
                     if(owner.primWep.atkSpd+1<200)owner.primWep.atkSpd++
                 }
             }
-        }else if(owner.pCont.Swp.tryConsume()){
+        }else if(owner.pCont.spenlef.tryConsume()){
             when(indexer){
                 0->{
                     val desiredspeed = owner.speed-1

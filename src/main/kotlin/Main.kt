@@ -43,6 +43,12 @@ var myPanel:JPanel =object : JPanel() {
             allEntities.forEach { entity ->
                 entity.drawComponents(g)
             }
+            if(showingmenu){
+                menuEntities.forEach { it.updateEntity() }
+                menuEntities.forEach { entity ->
+                    entity.drawEntity(g)
+                }
+            }
         }
     }
 }.also {
@@ -88,7 +94,6 @@ var menuEntities = mutableListOf<Entity>()
 fun menuTick(){
     menuEntities.forEach { it.updateEntity() }
     menuPanel.repaint()
-
 }
 
 fun gameTick(){
@@ -292,21 +297,24 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                  }
                 val gatex = ind.toDouble()+(ind* mapGridSize)
                 val gatey = starty + (mapGridSize+1)*(outerind+1)
+                val gate = Gateway().also {
+                    it.map = mappy
+                    it.mapnum = charint
+                    it.xpos = gatex
+                    it.ypos = gatey
+                }
                 if(charint==fromMapNum){
                     player1.xpos = gatex
                     player1.ypos = gatey
+                    player1.spawnGate = gate
                     player2.xpos = gatex + (player1.drawSize)
                     player2.ypos = gatey
+                    player2.spawnGate = gate
                     entsToAdd.add(player1)
                     entsToAdd.add(player2)
                 }
 
-                 entsToAdd.add(Gateway().also {
-                     it.map = mappy
-                     it.mapnum = charint
-                     it.xpos = gatex
-                     it.ypos = gatey
-                 })
+                 entsToAdd.add(gate)
                 continue
             }
 
@@ -346,8 +354,8 @@ fun playerKeyPressed(player: Player, e:KeyEvent){
     if (e.keyCode == player.buttonSet.shoot) player.pCont.sht.tryProduce()
     if (e.keyCode == player.buttonSet.right) player.pCont.riri.tryProduce()
     if (e.keyCode == player.buttonSet.left) player.pCont.leflef.tryProduce()
-    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef = true
-    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri = true
+    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.tryProduce()
+    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.tryProduce()
 }
 
 fun playerKeyReleased(player: Player,e: KeyEvent){
@@ -369,8 +377,8 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
     if (e.keyCode == player.buttonSet.left) {
         player.pCont.leflef.release()
     }
-    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef = false
-    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri = false
+    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.release()
+    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
 }
 val selectoryspacing = listOf(0.0,40.0,80.0,120.0,160.0,200.0,240.0)
 fun main() {
@@ -451,14 +459,14 @@ fun main() {
 //                    gamePaused = !gamePaused
                 placeMap(map1,1,1)
             }else if(pressed2.tryConsume()) {
-                if(showingmenu){
-                    myFrame.contentPane = myPanel
-                }else{
-                    myFrame.contentPane = menuPanel
-
-                }
+//                if(showingmenu){
+//                    myFrame.contentPane = myPanel
+//                }else{
+//                    myFrame.contentPane = menuPanel
+//
+//                }
                 showingmenu = !showingmenu
-                myFrame.revalidate()
+//                myFrame.revalidate()
             } else if (pressed1.tryConsume()) {
 //                revivePlayers(true)
                 startWave(4)
@@ -467,12 +475,12 @@ fun main() {
                 placeMap(nextMap,nextMapNum,currentMapNum)
                 revivePlayers(false)
             } else{
-                if(showingmenu)menuTick()
-                else{
+//                if(showingmenu)menuTick()
+//                else{
                     if(!gamePaused){
                         gameTick()
                     }
-                }
+//                }
             }
         }
 }
