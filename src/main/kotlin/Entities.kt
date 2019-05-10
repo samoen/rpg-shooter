@@ -45,10 +45,10 @@ fun getWindowAdjustedPos(pos:Double):Double{
 }
 class Bullet(val shotBy: shoots) : Entity() {
     var bulDir = shotBy.angy + ((Math.random()-0.5)*shotBy.wep.recoil/6.0)
-    override var xpos =  ((shotBy as Entity).getMidpoint().first-(shotBy.wep.bulSize/2))
-    override var ypos = ((shotBy as Entity).getMidpoint().second-(shotBy.wep.bulSize/2))
-    override var speed = shotBy.wep.bulspd
     override var drawSize = shotBy.wep.bulSize
+    override var xpos =  ((shotBy as Entity).getMidpoint().first-(shotBy.wep.bulSize/2))+(Math.cos(shotBy.angy)*0.8*shotBy.drawSize)
+    override var ypos = ((shotBy as Entity).getMidpoint().second-(shotBy.wep.bulSize/2))-(Math.sin(shotBy.angy)*0.8*shotBy.drawSize)
+    override var speed = shotBy.wep.bulspd
     override var color = shotBy.bulColor
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if (((other is Player) ||  other is Enemy || other is Wall )&&shotBy != other) {
@@ -74,7 +74,7 @@ class Weapon(
     var atkSpd:Int = 4,
     var bulspd:Int = 2,
     var recoil:Double = 5.0,
-    var bulSize:Double = 5.0,
+    var bulSize:Double = 6.0,
     var buldmg:Int = 1,
     var framesSinceShottah:Int = 999
 )
@@ -119,8 +119,8 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         atkSpd = 60,
         bulspd = 15,
         recoil = 0.0,
-        bulSize = 20.0,
-        buldmg = 4
+        bulSize = 12.0,
+        buldmg = 3
     )
     var primWep = Weapon()
     override var wep = primWep
@@ -350,6 +350,8 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
     }
 }
 val wallImage = ImageIcon("src/main/resources/brick1.png").image
+val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
+val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 class Wall : Entity(){
     override var drawSize = mapGridSize
     override var color = Color.DARK_GRAY
@@ -371,6 +373,12 @@ class Gateway : Entity(){
 //    }
     var someoneSpawned:Entity = Entity()
     var sumspn = false
+    override fun drawEntity(g: Graphics) {
+        if(locked)
+        g.drawImage(gateClosedImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+        else g.drawImage(gateOpenImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+    }
+
     override fun updateEntity() {
         if(sumspn){
             if(!overlapsOther(someoneSpawned)){
