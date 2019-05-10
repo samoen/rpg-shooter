@@ -116,10 +116,9 @@ fun gameTick(){
                             }else if(ient is Wall){
                                 ient.isDead = true
                             }else{
+                                println("Cannot resolve collision!")
 //                                ient.isDead = true
 //                                jent.isDead = true
-//                                if(ient is Player)ient.dieFromBullet()
-//                                if(jent is Player)jent.dieFromBullet()
                             }
                         }else{
                             triggeredReaction = true
@@ -171,7 +170,7 @@ val map1 =  "        w       " +
             "   1            " +
             "            s   "
 
-val map2 =  "s       w       " +
+val map2 =  "s       we      " +
             "   3            " +
             "      ww     h  " +
             "    h ww        " +

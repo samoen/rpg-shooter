@@ -35,7 +35,6 @@ interface shoots{
         if (lef) {
             var desired = angy+turnSpeed
             if(desired>Math.PI){
-//                val leftover =
                 angy = -Math.PI + (desired-Math.PI)
             }else
                 angy += turnSpeed

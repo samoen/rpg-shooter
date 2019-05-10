@@ -1,11 +1,15 @@
-import java.awt.Color
-import java.awt.Graphics
+import java.awt.*
 import java.io.File
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.swing.ImageIcon
 import kotlin.math.abs
 import kotlin.math.atan2
+import java.awt.geom.AffineTransform
+import java.awt.geom.Path2D
+import java.awt.Rectangle
+
+
 
 open class Entity() {
     open var xpos: Double = 50.0
@@ -224,6 +228,28 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
         blockMovement(other,oldme,oldOther)
         takeDamage(other)
     }
+
+    override fun drawEntity(g: Graphics) {
+        super.drawEntity(g)
+        val r = Rectangle((xpos).toInt(),(ypos - (wep.bulSize/(drawSize))).toInt(),wep.bulSize.toInt(),700)
+        val path = Path2D.Double()
+        path.append(r, false)
+        val t = AffineTransform()
+        t.rotate(-angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
+        path.transform(t)
+        (g as Graphics2D).draw(path)
+
+//        var rec = Rectangle((xpos+(drawSize/2)).toInt(),(ypos+(drawSize/2)).toInt(),5,200)
+//        if(rec.intersects(Rectangle(player0.xpos.toInt(),player0.ypos.toInt(),player0.drawSize.toInt(),player0.drawSize.toInt()))){
+//            g.color = Color.YELLOW
+//        }
+//        var oldtrans = (g as Graphics2D).transform
+//        (g as Graphics2D).rotate(-angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
+//        (g as Graphics2D).draw(rec)
+//        (g as Graphics2D).fill(rec)
+//        (g as Graphics2D).transform = oldtrans
+    }
+
     override fun updateEntity() {
         didHeal = false
         val preupdatePos = Pair(xpos, ypos)
@@ -272,25 +298,33 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
 
             val radtarget = ((atan2( dy , -dx)))
             val absanglediff = abs(radtarget-angy)
-            val shootem = absanglediff<0.1
-            var shoot2 = shootem
+            val shootem =absanglediff<0.1
+            var shoot2 = false
             if(shootem){
-                val walls = allEntities.filter { it is Wall || it is Player }
-                outer@ for( i in 1..400 step 20){
-                    val pointx = (xpos+(drawSize/2))+(Math.cos(angy)*i)
-                    val pointy = ypos+(drawSize/2)-(Math.sin(angy)*(i))
-                    if(pointx>INTENDED_FRAME_SIZE || pointx < 0 || pointy>INTENDED_FRAME_SIZE || pointy<0)
-                        break@outer
-                    for (wall in walls){
-                        if(pointx in wall.xpos..wall.xpos+wall.drawSize){
-                            if(pointy in wall.ypos..wall.ypos+wall.drawSize){
-                                if(wall is Wall)shoot2 = false
-                                    break@outer
-                            }
-
-                        }
-                    }
-                }
+//                val walls = allEntities.filter { it is Wall || it is Player }
+//                outer@ for( i in 1..400 step 20){
+//                    val pointx = (xpos+(drawSize/2))+(Math.cos(angy)*i)
+//                    val pointy = ypos+(drawSize/2)-(Math.sin(angy)*(i))
+//                    if(pointx>INTENDED_FRAME_SIZE || pointx < 0 || pointy>INTENDED_FRAME_SIZE || pointy<0)
+//                        break@outer
+//                    for (wall in walls){
+//                        if(pointx in wall.xpos..wall.xpos+wall.drawSize){
+//                            if(pointy in wall.ypos..wall.ypos+wall.drawSize){
+//                                if(wall is Wall)shoot2 = false
+//                                    break@outer
+//                            }
+//
+//                        }
+//                    }
+//                }
+                val r = Rectangle((xpos).toInt(),(ypos - (wep.bulSize/(drawSize))).toInt(),wep.bulSize.toInt(),700)
+                val path = Path2D.Double()
+                path.append(r, false)
+                val t = AffineTransform()
+                t.rotate(-angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
+                path.transform(t)
+                val intersectors = allEntities.filter {it is Wall || it is Player}.filter {  path.intersects(Rectangle(it.xpos.toInt(),it.ypos.toInt(),it.drawSize.toInt(),it.drawSize.toInt()))}.sortedBy { Math.abs(it.ypos-ypos)+Math.abs(it.xpos-xpos) }
+                if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
             }
             processShooting(shoot2,this.wep)
 
@@ -313,8 +347,6 @@ class Wall : Entity(){
 }
 
 class Gateway : Entity(){
-//    var playersInside = mutableListOf<Player>()
-//    var backgate = false
     var playersInside = mutableListOf<Player>()
     var map = map1
     var mapnum = 1
@@ -324,7 +356,6 @@ class Gateway : Entity(){
     //    override fun drawEntity(g: Graphics) {
 //        super.drawEntity(g)
 //    }
-//    var canEnterGate = true
     var someoneSpawned:Entity = Entity()
     var sumspn = false
     override fun updateEntity() {
@@ -352,15 +383,12 @@ class Gateway : Entity(){
                     sumspn = true
                     someoneSpawned = player
                     player.canEnterGateway = false
-//                    player.isInsideGate = false
                     player.isDead = false
-//                    player.currentHp = player.maxHP
                     entsToAdd.add(player)
                     break
                 }
             }
         }
-//        playersInside.removeIf{!it.isDead}
 //        if(toremove in 0 until playersInside.size)
         if(toremove!=-1)
             playersInside.removeAt(toremove)
@@ -377,8 +405,6 @@ class Gateway : Entity(){
 //                && !playersInside.map { it.playerNumber }.contains(other.playerNumber)
             ){
                 if(other.canEnterGateway&&!other.isDead){
-//                    other.canEnterGateway = false
-//                    other.isInsideGate = true
                     other.isDead = true
                     other.xpos = xpos
                     other.ypos = ypos
@@ -529,12 +555,10 @@ class Gym(val char:Char):Entity(){
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(other is Player){
             if(!other.specificMenus[char]!!){
-//                lockCollide = true
                 other.menuStuff = listOf(
                     StatView({"Run"},other.xpos,other.ypos),
                     StatView({"HP"},other.xpos,statsYSpace+other.ypos),
                     StatView({"Turn"},other.xpos,2*statsYSpace+other.ypos),
-//                    Selector(other, selectorxspacing[other.playerNumber]+30,3),
                     object:Entity(){
                         override var xpos = other.xpos+selectorXSpace
                         override var color = Color.BLUE
@@ -609,96 +633,4 @@ class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity
     }
 }
 
-//class Selector(val owner:Player,xloc: Double,val numStats:Int):Entity(){
-//    override var xpos = xloc
-//    override var color = Color.BLUE
-//    override var drawSize = 20.0
-//    override var ypos = owner.ypos
-//    var indexer = 0
-//    override fun updateEntity() {
-//        if(owner.pCont.sht.tryConsume()){
-//            if(indexer+1<numStats){
-//                indexer++
-//                ypos+=statsYSpace
-//            }
-//        }
-//        if(owner.pCont.Swp.tryConsume()){
-////            ypos-=vertspacing
-//            if(indexer-1>=0){
-//                indexer--
-//                ypos -= statsYSpace
-//            }
-//        }
-//
-////        if(ypos<10.0) ypos = 10.0
-////        if(ypos>selectoryspacing.last())ypos = selectoryspacing.last()
-//
-//        if(owner.pCont.spinri.tryConsume()){
-//            when(indexer){
-//                0->{
-//                    owner.speed += 1
-//                }
-//                1->{
-//                    owner.drawSize  += 10
-//                    owner.maxHP +=10
-//                    owner.currentHp = owner.maxHP
-//                }
-//                2->{
-//                    val desired = "%.4f".format(owner.turnSpeed+0.01f).toFloat()
-//                    if(desired<1) owner.turnSpeed = desired
-//                }
-//                3->{
-//                    owner.primWep.buldmg+=1
-//                    owner.primWep.bulSize+=1
-//                }
-//                4->{
-//                    if(owner.primWep.bulspd+1<30)owner.primWep.bulspd++
-//                }
-//                5->{
-//                    if(owner.primWep.recoil+1<30)owner.primWep.recoil++
-//                }
-//                6->{
-//                    if(owner.primWep.atkSpd+1<200)owner.primWep.atkSpd++
-//                }
-//            }
-//        }else if(owner.pCont.spenlef.tryConsume()){
-//            when(indexer){
-//                0->{
-//                    val desiredspeed = owner.speed-1
-//                    if(desiredspeed>0)owner.speed = desiredspeed
-//                }
-//                1->{
-//                    val desiredSize = owner.drawSize -10
-//                    val desiredHp = owner.maxHP-10
-//                    if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
-//                        owner.drawSize = desiredSize
-//                        owner.maxHP = desiredHp
-//                    }
-//                    owner.currentHp = owner.maxHP
-//                }
-//                2->{
-//                    val desired = "%.4f".format(owner.turnSpeed-0.01f).toFloat()
-//                    if(desired>0) owner.turnSpeed = desired
-//                }
-//                3->{
-//                    val desiredSize = owner.primWep.bulSize -1
-//                    val desiredDmg = owner.primWep.buldmg-1
-//                    if(desiredSize>MIN_ENT_SIZE && desiredDmg>0){
-//                        owner.primWep.bulSize = desiredSize
-//                        owner.primWep.buldmg = desiredDmg
-//                    }
-//                }
-//                4->{
-//                    if(owner.primWep.bulspd-1>1)owner.primWep.bulspd--
-//                }
-//                5->{
-//                    if(owner.primWep.recoil-1>=0)owner.primWep.recoil--
-//                }
-//                6->{
-//                    if(owner.primWep.atkSpd-1>0)owner.primWep.atkSpd--
-//                }
-//            }
-//        }
-//    }
-//}
 const val MIN_ENT_SIZE = 9.0
