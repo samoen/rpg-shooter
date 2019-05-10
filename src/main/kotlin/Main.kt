@@ -116,10 +116,10 @@ fun gameTick(){
                             }else if(ient is Wall){
                                 ient.isDead = true
                             }else{
-                                ient.isDead = true
-                                jent.isDead = true
-                                if(ient is Player)ient.dieFromBullet()
-                                if(jent is Player)jent.dieFromBullet()
+//                                ient.isDead = true
+//                                jent.isDead = true
+//                                if(ient is Player)ient.dieFromBullet()
+//                                if(jent is Player)jent.dieFromBullet()
                             }
                         }else{
                             triggeredReaction = true

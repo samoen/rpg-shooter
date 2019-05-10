@@ -76,6 +76,8 @@ class Weapon(
 )
 
 class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
+    var canEnterGateway:Boolean = true
+    var isInsideGate:Boolean = true
     var menushowign = false
     var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
     var menuStuff:List<Entity> = listOf()
@@ -117,21 +119,20 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     override var wep = primWep
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
-        blockMovement(other,oldme,oldOther)
-        takeDamage(other)
-//        if(other is Gateway){
-//            isDead = true
-//        }
+        if(!isDead){
+            blockMovement(other,oldme,oldOther)
+            takeDamage(other)
+        }
     }
 
     override fun dieFromBullet() {
-//        super.dieFromBullet()
+        super.dieFromBullet()
+        currentHp = maxHP
         menushowign = false
         for (specificMenu in specificMenus) {
             specificMenu.setValue(false)
         }
         spawnGate.playersInside.add(this)
-        currentHp = maxHP
     }
 
     override fun updateEntity() {
@@ -323,45 +324,79 @@ class Gateway : Entity(){
     //    override fun drawEntity(g: Graphics) {
 //        super.drawEntity(g)
 //    }
-    var canEnterGate = true
-
+//    var canEnterGate = true
+    var someoneSpawned:Entity = Entity()
+    var sumspn = false
     override fun updateEntity() {
-        if(!canEnterGate){
-            if(!overlapsOther(player0) && !overlapsOther(player1)){
-                canEnterGate = true
+//            if(!overlapsOther(player0) && !overlapsOther(player1)){
+//                canEnterGate = true
+//            }
+        if(sumspn){
+            if(!overlapsOther(someoneSpawned)){
+                sumspn = false
+                (someoneSpawned as Player).canEnterGateway = true
             }
         }
-        playersInside.forEach { player ->
-            if(player.pCont.sht.booly){
+//        playersInside.forEachIndexed { index, player ->
+//            if(!player.isInsideGate)
+//        }
+//        if(!overlapsOther(player0)){
+//                player0.canEnterGateway = true
+//                playersInside.removeIf { it.playerNumber == player0.playerNumber }
+//        }
+//        if(!overlapsOther(player1)){
+//            player1.canEnterGateway = true
+//            playersInside.removeIf { it.playerNumber == player1.playerNumber }
+//        }
+        var toremove:Int = -1
+
+        for ((index,player) in playersInside.withIndex()){
+            if(player.pCont.sht.tryConsume()){
                 player.xpos = xpos
                 player.ypos = ypos
                 var canSpawn = true
+                if(locked)canSpawn = false
+                else
                 for(ent in allEntities.filter { it is Player || it is Enemy }){
                     if(player.overlapsOther(ent))canSpawn = false
                     if(player.xpos+player.drawSize>INTENDED_FRAME_SIZE || player.ypos+player.drawSize>INTENDED_FRAME_SIZE)canSpawn = false
                 }
                 if(canSpawn){
-                    canEnterGate = false
+                    toremove = index
+                    sumspn = true
+                    someoneSpawned = player
+                    player.canEnterGateway = false
+//                    player.isInsideGate = false
                     player.isDead = false
-                    player.currentHp = player.maxHP
+//                    player.currentHp = player.maxHP
                     entsToAdd.add(player)
+                    break
                 }
             }
         }
-        playersInside.removeIf{!it.isDead}
+//        playersInside.removeIf{!it.isDead}
+//        if(toremove in 0 until playersInside.size)
+        if(toremove!=-1)
+            playersInside.removeAt(toremove)
+        if(playersInside.size>=NumPlayers){
+            nextMap = map
+            nextMapNum = mapnum
+            changeMap = true
+        }
     }
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(!locked){
-            if(other is Player && !other.isDead){
-                if(canEnterGate){
+            if(other is Player
+//                && !playersInside.map { it.playerNumber }.contains(other.playerNumber)
+            ){
+                if(other.canEnterGateway&&!other.isDead){
+//                    other.canEnterGateway = false
+//                    other.isInsideGate = true
                     other.isDead = true
+                    other.xpos = xpos
+                    other.ypos = ypos
                     playersInside.add(other)
-                    if(playersInside.size>=NumPlayers){
-                        nextMap = map
-                        nextMapNum = mapnum
-                        changeMap = true
-                    }
                 }
             }
         }
