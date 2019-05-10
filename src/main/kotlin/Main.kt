@@ -4,9 +4,11 @@ import javax.swing.*
 
 val allEntities = mutableListOf<Entity>()
 val entsToAdd = mutableListOf<Entity>()
-
-val selectoryspacing = listOf(0.0,40.0,80.0,120.0,160.0,200.0,240.0)
-val selectorxspacing = listOf(100.0,170.0)
+val statsYSpace = 20.0
+val statsXSpace = 30.0
+val selectorXSpace = 45.0
+//val selectoryspacing = listOf(0.0,40.0,80.0,120.0,160.0,200.0,240.0)
+//val selectorxspacing = listOf(100.0,170.0)
 val player0 = Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD1,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD7,KeyEvent.VK_NUMPAD9),0).also { it.speed = 8 }
 val player1 = Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B),1).also{
     it.xpos=150.0
@@ -48,14 +50,14 @@ var myPanel:JPanel =object : JPanel() {
             }
             var eitherShowing = false
 //            for(i in 0..1){
-                if(player0.menushowign){
+                if(player0.menushowign || player0.specificMenus.values.any { it }){
                     eitherShowing = true
                     player0.menuStuff.forEach {
                         it.updateEntity()
                         it.drawEntity(g)
                     }
                 }
-                if(player1.menushowign){
+                if(player1.menushowign|| player1.specificMenus.values.any { it }){
                     eitherShowing = true
                     player1.menuStuff.forEach {
                         it.updateEntity()
@@ -63,11 +65,11 @@ var myPanel:JPanel =object : JPanel() {
                     }
                 }
 //            }
-            if(eitherShowing){
-                menuEntities.forEach { entity ->
-                    entity.drawEntity(g)
-                }
-            }
+//            if(eitherShowing){
+//                menuEntities.forEach { entity ->
+//                    entity.drawEntity(g)
+//                }
+//            }
         }
     }
 }.also {
@@ -106,15 +108,15 @@ var myFrame=object:JFrame(){
 //        }
 //    })
 }
-var menuEntities:MutableList<Entity> = mutableListOf(
-            StatView({"Run Speed"},0.0,selectoryspacing[0]),
-            StatView({"Health"},0.0,selectoryspacing[1]),
-            StatView({"Turn Speed"},0.0,selectoryspacing[2]),
-            StatView({"Wep1 Damage"},0.0,selectoryspacing[3]),
-            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4]),
-            StatView({"Wep1 Recoil"},0.0,selectoryspacing[5]),
-            StatView({"Wep1 Reload"},0.0,selectoryspacing[6])
-        )
+//var menuEntities:MutableList<Entity> = mutableListOf(
+//            StatView({"Run Speed"},0.0,selectoryspacing[0]),
+//            StatView({"Health"},0.0,selectoryspacing[1]),
+//            StatView({"Turn Speed"},0.0,selectoryspacing[2]),
+//            StatView({"Wep1 Damage"},0.0,selectoryspacing[3]),
+//            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4]),
+//            StatView({"Wep1 Recoil"},0.0,selectoryspacing[5]),
+//            StatView({"Wep1 Reload"},0.0,selectoryspacing[6])
+//        )
 
 
 //fun menuTick(){
@@ -205,7 +207,7 @@ val map1 =  "        w       " +
             "  wh  www     ww" +
             "  w   www     ww" +
             "  w    h    w   w" +
-            "  w    b    wh  " +
+            "  g    b    wh  " +
             "            2   " +
             "   1            " +
             "            s   "
@@ -294,7 +296,14 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                 continue
             }
             if(ch == 'b'){
-                entsToAdd.add(WeaponSmith().also {
+                entsToAdd.add(WeaponSmith('b').also {
+                    it.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                })
+                continue
+            }
+            if(ch == 'g'){
+                entsToAdd.add(Gym('g').also {
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(outerind+1)
                 })
@@ -422,6 +431,7 @@ fun main() {
         player1
 //        , Wall()
     ))
+    playSound(player0.deathNoise)
 
 
 

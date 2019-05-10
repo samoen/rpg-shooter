@@ -78,16 +78,18 @@ class Weapon(
 class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
 //    var insideGate = false
     var menushowign = false
+    var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
     var menuStuff:List<Entity> =
     listOf(
-    Selector(this, selectorxspacing[playerNumber]+30),
-    StatView({ this.speed.toString() }, selectorxspacing[playerNumber], selectoryspacing[0]),
-    StatView({ this.maxHP.toInt().toString() }, selectorxspacing[playerNumber], selectoryspacing[1]),
-    StatView({ this.turnSpeed.toString() }, selectorxspacing[playerNumber], selectoryspacing[2]),
-    StatView({ this.primWep.buldmg.toString() }, selectorxspacing[playerNumber], selectoryspacing[3]),
-    StatView({ this.primWep.bulspd.toString() }, selectorxspacing[playerNumber], selectoryspacing[4]),
-    StatView({ this.primWep.recoil.toString() }, selectorxspacing[playerNumber], selectoryspacing[5]),
-    StatView({ this.primWep.atkSpd.toString() }, selectorxspacing[playerNumber], selectoryspacing[6]))
+//    Selector(this, selectorxspacing[playerNumber]+30),
+//    StatView({ this.speed.toString() }, selectorxspacing[playerNumber], selectoryspacing[0]),
+//    StatView({ this.maxHP.toInt().toString() }, selectorxspacing[playerNumber], selectoryspacing[1]),
+//    StatView({ this.turnSpeed.toString() }, selectorxspacing[playerNumber], selectoryspacing[2]),
+//    StatView({ this.primWep.buldmg.toString() }, selectorxspacing[playerNumber], selectoryspacing[3]),
+//    StatView({ this.primWep.bulspd.toString() }, selectorxspacing[playerNumber], selectoryspacing[4]),
+//    StatView({ this.primWep.recoil.toString() }, selectorxspacing[playerNumber], selectoryspacing[5]),
+//    StatView({ this.primWep.atkSpd.toString() }, selectorxspacing[playerNumber], selectoryspacing[6])
+    )
 
     var spawnGate:Gateway = Gateway()
     val stillImage = ImageIcon("src/main/resources/gunman.png").image
@@ -137,6 +139,9 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     override fun dieFromBullet() {
         super.dieFromBullet()
         menushowign = false
+        for (specificMenu in specificMenus) {
+            specificMenu.setValue(false)
+        }
         spawnGate.playersInside.add(this)
     }
 
@@ -162,7 +167,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         ypos += toMovey
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(preControl)
-        if(!menushowign){
+        if(!menushowign && specificMenus.values.all { !it }){
             processTurning(pCont.spenlef.booly,pCont.spinri.booly)
             if(pCont.Swp.tryConsume()){
                 playSound(swapNoise)
@@ -400,7 +405,7 @@ class MedPack : Entity() {
     }
 }
 
-class WeaponSmith:Entity(){
+class WeaponSmith(val char:Char):Entity(){
     override var color = Color.CYAN
     override var drawSize = 35.0
 //    var smithShowing = mutableMapOf<Int,Boolean>(1 to false, 2 to false)
@@ -429,119 +434,280 @@ class WeaponSmith:Entity(){
             if(!other.menushowign){
 //                lockCollide = true
                 other.menuStuff = listOf(
-                    Selector(other, selectorxspacing[other.playerNumber]+30),
-                    StatView({other.speed.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[0]),
-                    StatView({other.maxHP.toInt().toString() }, selectorxspacing[other.playerNumber], selectoryspacing[1]),
-                    StatView({other.turnSpeed.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[2]),
-                    StatView({other.primWep.buldmg.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[3]),
-                    StatView({other.primWep.bulspd.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[4]),
-                    StatView({other.primWep.recoil.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[5]),
-                    StatView({other.primWep.atkSpd.toString() }, selectorxspacing[other.playerNumber], selectoryspacing[6]))
+                    StatView({"Dmg"},other.xpos,0+other.ypos),
+                    StatView({"Vel"},other.xpos,statsYSpace+other.ypos),
+                    StatView({"Rec"},other.xpos,statsYSpace*2+other.ypos),
+                    StatView({"Rel"},other.xpos,statsYSpace*3+other.ypos),
+                    object:Entity(){
+                        override var xpos = other.xpos+selectorXSpace
+                        override var color = Color.BLUE
+                        override var drawSize = 20.0
+                        override var ypos = other.ypos
+                        var indexer = 0
+                        override fun updateEntity() {
+                            if(other.pCont.sht.tryConsume()){
+                                if(indexer+1<4){
+                                    indexer++
+                                    ypos+=statsYSpace
+                                }
+                            }
+                            if(other.pCont.Swp.tryConsume()){
+                                if(indexer-1>=0){
+                                    indexer--
+                                    ypos -= statsYSpace
+                                }
+                            }
+                            if(other.pCont.spinri.tryConsume()){
+                                when(indexer){
+                                    0->{
+                                        other.primWep.buldmg+=1
+                                        other.primWep.bulSize+=1
+                                    }
+                                    1->{
+                                        if(other.primWep.bulspd+1<30)other.primWep.bulspd++
+                                    }
+                                    2->{
+                                        if(other.primWep.recoil+1<30)other.primWep.recoil++
+                                    }
+                                    3->{
+                                        if(other.primWep.atkSpd+1<200)other.primWep.atkSpd++
+                                    }
+                                }
+                            }else if(other.pCont.spenlef.tryConsume()){
+                                when(indexer){
+                                    0->{
+                                        val desiredSize = other.primWep.bulSize -1
+                                        val desiredDmg = other.primWep.buldmg-1
+                                        if(desiredSize>MIN_ENT_SIZE && desiredDmg>0){
+                                            other.primWep.bulSize = desiredSize
+                                            other.primWep.buldmg = desiredDmg
+                                        }
+                                    }
+                                    1->{
+                                        if(other.primWep.bulspd-1>1)other.primWep.bulspd--
+                                    }
+                                    2->{
+                                        if(other.primWep.recoil-1>=0)other.primWep.recoil--
+                                    }
+                                    3->{
+                                        if(other.primWep.atkSpd-1>0)other.primWep.atkSpd--
+                                    }
+                                }
+                            }
+                        }
+                    },
+//                    Selector(other, other.xpos+30,4),
+                    StatView({other.primWep.buldmg.toString() }, statsXSpace+other.xpos, other.ypos),
+                    StatView({other.primWep.bulspd.toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
+                    StatView({other.primWep.recoil.toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
+                    StatView({other.primWep.atkSpd.toString() }, statsXSpace+other.xpos,  3*statsYSpace+other.ypos))
 
                 other.menushowign = true
             }
         }
     }
-
-    
 }
+class Gym(val char:Char):Entity(){
 
+    override var color = Color.WHITE
+    override var drawSize = 35.0
+    //    var smithShowing = mutableMapOf<Int,Boolean>(1 to false, 2 to false)
+    override fun updateEntity() {
+//        for ((num,showing) in smithShowing){
+//        }
+//        if(smithShowing[1]!!) if(!overlapsOther(player0)){smithShowing[1] = false
+//        if(smithShowing[2]!!) if(!overlapsOther(player1))smithShowing[2] = false
+        if(player0.specificMenus[char]!!){
+            if(!overlapsOther(player0)){
+                player0.specificMenus[char] = false
+//                player0.menushowign = false
+//                lockCollide = false
+            }
+        }
+        if(player1.specificMenus[char]!!){
+            if(!overlapsOther(player1)){
+                player1.specificMenus[char]=false
+//                player1.menushowign = false
+//                lockCollide = false
+            }
+        }
+
+    }
+//    var lockCollide = false
+
+    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
+        if(other is Player){
+            if(!other.specificMenus[char]!!){
+//                lockCollide = true
+                other.menuStuff = listOf(
+                    StatView({"Run"},other.xpos,other.ypos),
+                    StatView({"HP"},other.xpos,statsYSpace+other.ypos),
+                    StatView({"Turn"},other.xpos,2*statsYSpace+other.ypos),
+//                    Selector(other, selectorxspacing[other.playerNumber]+30,3),
+                    object:Entity(){
+                        override var xpos = other.xpos+selectorXSpace
+                        override var color = Color.BLUE
+                        override var drawSize = 20.0
+                        override var ypos = other.ypos
+                        var indexer = 0
+                        override fun updateEntity() {
+                            if(other.pCont.sht.tryConsume()){
+                                if(indexer+1<3){
+                                    indexer++
+                                    ypos+=statsYSpace
+                                }
+                            }
+                            if(other.pCont.Swp.tryConsume()){
+                                if(indexer-1>=0){
+                                    indexer--
+                                    ypos -= statsYSpace
+                                }
+                            }
+                            if(other.pCont.spinri.tryConsume()){
+                                when(indexer){
+                                    0->{
+                                        other.speed += 1
+                                    }
+                                    1->{
+                                        other.drawSize  += 10
+                                        other.maxHP +=10
+                                        other.currentHp = other.maxHP
+                                    }
+                                    2->{
+                                        val desired = "%.4f".format(other.turnSpeed+0.01f).toFloat()
+                                        if(desired<1) other.turnSpeed = desired
+                                    }
+                                }
+                            }else if(other.pCont.spenlef.tryConsume()){
+                                when(indexer){
+                                    0->{
+                                        val desiredspeed = other.speed-1
+                                        if(desiredspeed>0)other.speed = desiredspeed
+                                    }
+                                    1->{
+                                        val desiredSize = other.drawSize -10
+                                        val desiredHp = other.maxHP-10
+                                        if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
+                                            other.drawSize = desiredSize
+                                            other.maxHP = desiredHp
+                                        }
+                                        other.currentHp = other.maxHP
+                                    }
+                                    2->{
+                                        val desired = "%.4f".format(other.turnSpeed-0.01f).toFloat()
+                                        if(desired>0) other.turnSpeed = desired
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    StatView({other.speed.toString() }, statsXSpace+other.xpos, other.ypos),
+                    StatView({other.maxHP.toInt().toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
+                    StatView({( other.turnSpeed*100).toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos)
+                )
+
+                other.specificMenus[char] = true
+            }
+        }
+    }
+}
 class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity(){
     override fun drawEntity(g: Graphics) {
-          g.drawString(showText(),getWindowAdjustedPos(xloc).toInt(),getWindowAdjustedPos(yloc+15).toInt())
+        g.color = Color.BLUE
+        g.drawString(showText(),getWindowAdjustedPos(xloc).toInt(),getWindowAdjustedPos(yloc+15).toInt())
     }
 }
 
-class Selector(val owner:Player,xloc: Double):Entity(){
-    override var xpos = xloc
-    override var color = Color.BLUE
-    override var drawSize = 20.0
-    override var ypos = selectoryspacing[0]
-    var indexer = 0
-    override fun updateEntity() {
-        if(owner.pCont.sht.tryConsume()){
-            if(indexer+1<selectoryspacing.size){
-                indexer++
-                ypos=selectoryspacing[indexer]
-            }
-        }
-        if(owner.pCont.Swp.tryConsume()){
-//            ypos-=vertspacing
-            if(indexer-1>=0){
-                indexer--
-                ypos = selectoryspacing[indexer]
-            }
-        }
-
-//        if(ypos<10.0) ypos = 10.0
-//        if(ypos>selectoryspacing.last())ypos = selectoryspacing.last()
-
-        if(owner.pCont.spinri.tryConsume()){
-            when(indexer){
-                0->{
-                    owner.speed += 1
-                }
-                1->{
-                    owner.drawSize  += 10
-                    owner.maxHP +=10
-                    owner.currentHp = owner.maxHP
-                }
-                2->{
-                    val desired = "%.4f".format(owner.turnSpeed+0.01f).toFloat()
-                    if(desired<1) owner.turnSpeed = desired
-                }
-                3->{
-                    owner.primWep.buldmg+=1
-                    owner.primWep.bulSize+=1
-                }
-                4->{
-                    if(owner.primWep.bulspd+1<30)owner.primWep.bulspd++
-                }
-                5->{
-                    if(owner.primWep.recoil+1<30)owner.primWep.recoil++
-                }
-                6->{
-                    if(owner.primWep.atkSpd+1<200)owner.primWep.atkSpd++
-                }
-            }
-        }else if(owner.pCont.spenlef.tryConsume()){
-            when(indexer){
-                0->{
-                    val desiredspeed = owner.speed-1
-                    if(desiredspeed>0)owner.speed = desiredspeed
-                }
-                1->{
-                    val desiredSize = owner.drawSize -10
-                    val desiredHp = owner.maxHP-10
-                    if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
-                        owner.drawSize = desiredSize
-                        owner.maxHP = desiredHp
-                    }
-                    owner.currentHp = owner.maxHP
-                }
-                2->{
-                    val desired = "%.4f".format(owner.turnSpeed-0.01f).toFloat()
-                    if(desired>0) owner.turnSpeed = desired
-                }
-                3->{
-                    val desiredSize = owner.primWep.bulSize -1
-                    val desiredDmg = owner.primWep.buldmg-1
-                    if(desiredSize>MIN_ENT_SIZE && desiredDmg>0){
-                        owner.primWep.bulSize = desiredSize
-                        owner.primWep.buldmg = desiredDmg
-                    }
-                }
-                4->{
-                    if(owner.primWep.bulspd-1>1)owner.primWep.bulspd--
-                }
-                5->{
-                    if(owner.primWep.recoil-1>=0)owner.primWep.recoil--
-                }
-                6->{
-                    if(owner.primWep.atkSpd-1>0)owner.primWep.atkSpd--
-                }
-            }
-        }
-    }
-}
+//class Selector(val owner:Player,xloc: Double,val numStats:Int):Entity(){
+//    override var xpos = xloc
+//    override var color = Color.BLUE
+//    override var drawSize = 20.0
+//    override var ypos = owner.ypos
+//    var indexer = 0
+//    override fun updateEntity() {
+//        if(owner.pCont.sht.tryConsume()){
+//            if(indexer+1<numStats){
+//                indexer++
+//                ypos+=statsYSpace
+//            }
+//        }
+//        if(owner.pCont.Swp.tryConsume()){
+////            ypos-=vertspacing
+//            if(indexer-1>=0){
+//                indexer--
+//                ypos -= statsYSpace
+//            }
+//        }
+//
+////        if(ypos<10.0) ypos = 10.0
+////        if(ypos>selectoryspacing.last())ypos = selectoryspacing.last()
+//
+//        if(owner.pCont.spinri.tryConsume()){
+//            when(indexer){
+//                0->{
+//                    owner.speed += 1
+//                }
+//                1->{
+//                    owner.drawSize  += 10
+//                    owner.maxHP +=10
+//                    owner.currentHp = owner.maxHP
+//                }
+//                2->{
+//                    val desired = "%.4f".format(owner.turnSpeed+0.01f).toFloat()
+//                    if(desired<1) owner.turnSpeed = desired
+//                }
+//                3->{
+//                    owner.primWep.buldmg+=1
+//                    owner.primWep.bulSize+=1
+//                }
+//                4->{
+//                    if(owner.primWep.bulspd+1<30)owner.primWep.bulspd++
+//                }
+//                5->{
+//                    if(owner.primWep.recoil+1<30)owner.primWep.recoil++
+//                }
+//                6->{
+//                    if(owner.primWep.atkSpd+1<200)owner.primWep.atkSpd++
+//                }
+//            }
+//        }else if(owner.pCont.spenlef.tryConsume()){
+//            when(indexer){
+//                0->{
+//                    val desiredspeed = owner.speed-1
+//                    if(desiredspeed>0)owner.speed = desiredspeed
+//                }
+//                1->{
+//                    val desiredSize = owner.drawSize -10
+//                    val desiredHp = owner.maxHP-10
+//                    if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
+//                        owner.drawSize = desiredSize
+//                        owner.maxHP = desiredHp
+//                    }
+//                    owner.currentHp = owner.maxHP
+//                }
+//                2->{
+//                    val desired = "%.4f".format(owner.turnSpeed-0.01f).toFloat()
+//                    if(desired>0) owner.turnSpeed = desired
+//                }
+//                3->{
+//                    val desiredSize = owner.primWep.bulSize -1
+//                    val desiredDmg = owner.primWep.buldmg-1
+//                    if(desiredSize>MIN_ENT_SIZE && desiredDmg>0){
+//                        owner.primWep.bulSize = desiredSize
+//                        owner.primWep.buldmg = desiredDmg
+//                    }
+//                }
+//                4->{
+//                    if(owner.primWep.bulspd-1>1)owner.primWep.bulspd--
+//                }
+//                5->{
+//                    if(owner.primWep.recoil-1>=0)owner.primWep.recoil--
+//                }
+//                6->{
+//                    if(owner.primWep.atkSpd-1>0)owner.primWep.atkSpd--
+//                }
+//            }
+//        }
+//    }
+//}
 const val MIN_ENT_SIZE = 9.0
