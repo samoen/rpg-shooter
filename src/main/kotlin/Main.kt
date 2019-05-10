@@ -106,7 +106,7 @@ fun gameTick(){
                     jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
                     collided = true
                 }
-                if(collided) {
+                if(collided && !ient.isDead && !jent.isDead) {
                     val iBlockedTrigger = (jent is movementGetsBlocked && jent.doIGetBlockedBy(ient))
                     val jBlockedTrigger = (ient is movementGetsBlocked && ient.doIGetBlockedBy(jent))
                     if (iBlockedTrigger||jBlockedTrigger) {

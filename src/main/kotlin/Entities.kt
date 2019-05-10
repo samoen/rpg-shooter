@@ -328,26 +328,12 @@ class Gateway : Entity(){
     var someoneSpawned:Entity = Entity()
     var sumspn = false
     override fun updateEntity() {
-//            if(!overlapsOther(player0) && !overlapsOther(player1)){
-//                canEnterGate = true
-//            }
         if(sumspn){
             if(!overlapsOther(someoneSpawned)){
                 sumspn = false
                 (someoneSpawned as Player).canEnterGateway = true
             }
         }
-//        playersInside.forEachIndexed { index, player ->
-//            if(!player.isInsideGate)
-//        }
-//        if(!overlapsOther(player0)){
-//                player0.canEnterGateway = true
-//                playersInside.removeIf { it.playerNumber == player0.playerNumber }
-//        }
-//        if(!overlapsOther(player1)){
-//            player1.canEnterGateway = true
-//            playersInside.removeIf { it.playerNumber == player1.playerNumber }
-//        }
         var toremove:Int = -1
 
         for ((index,player) in playersInside.withIndex()){
