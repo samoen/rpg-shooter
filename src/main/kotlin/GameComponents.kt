@@ -77,7 +77,7 @@ interface shoots{
     }
     fun drawCrosshair(g: Graphics){
         g.color = Color.CYAN
-        val strkw = if(this is Player)2f
+        val strkw = if(this is Player)1.1f
         else 5f
         (g as Graphics2D).stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
         val arcdiameter = (this as Entity).drawSize

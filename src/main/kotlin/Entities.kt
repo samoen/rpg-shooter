@@ -66,7 +66,7 @@ class Bullet(val shotBy: shoots) : Entity() {
 
     override fun drawEntity(g: Graphics) {
         g.color = color
-        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedSize()*1.2).toInt(), (getWindowAdjustedSize().toInt()))
+        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedSize()*1.3).toInt(), (getWindowAdjustedSize()*1.3).toInt())
     }
 }
 
@@ -74,7 +74,7 @@ class Weapon(
     var atkSpd:Int = 4,
     var bulspd:Int = 2,
     var recoil:Double = 5.0,
-    var bulSize:Double = 10.0,
+    var bulSize:Double = 5.0,
     var buldmg:Int = 1,
     var framesSinceShottah:Int = 999
 )
@@ -86,9 +86,9 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
     var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
-    val stillImage = ImageIcon("src/main/resources/gunman.png").image
-    val runImage = ImageIcon("src/main/resources/rungunman.png").image
-    val pewImage = ImageIcon("src/main/resources/grass.png").image
+    val stillImage = ImageIcon("src/main/resources/main.png").image
+    val runImage = ImageIcon("src/main/resources/walk.png").image
+    val pewImage = ImageIcon("src/main/resources/shoot1.png").image
     val pCont:playControls = playControls()
     var swapNoise:Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/swapnoise.wav").getAbsoluteFile()))
@@ -102,6 +102,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     override var deathNoise: Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
     }
+    var movedRight = false
     var didMove = false
     var didShoot = false
     override var speed = 10
@@ -118,8 +119,8 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         atkSpd = 60,
         bulspd = 15,
         recoil = 0.0,
-        bulSize = 40.0,
-        buldmg = 5
+        bulSize = 20.0,
+        buldmg = 4
     )
     var primWep = Weapon()
     override var wep = primWep
@@ -161,6 +162,8 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         }
         xpos += toMovex
         ypos += toMovey
+        if(toMovex>0)movedRight = true
+        if(toMovex<0)movedRight = false
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(preControl)
         if(!menushowign && specificMenus.values.all { !it }){
@@ -205,7 +208,11 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         }else{
             gaitcount = 0
         }
-        g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+        if(angy>Math.PI/2 || angy<-Math.PI/2){
+            g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+        }else{
+            g.drawImage(todraw,getWindowAdjustedPos(xpos+drawSize).toInt(),getWindowAdjustedPos(ypos).toInt(),-getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+        }
     }
     var gaitcount = 0
     var pewframecount = 0
@@ -342,10 +349,14 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
         drawCrosshair(g)
     }
 }
-
+val wallImage = ImageIcon("src/main/resources/brick1.png").image
 class Wall : Entity(){
     override var drawSize = mapGridSize
     override var color = Color.DARK_GRAY
+    override fun drawEntity(g: Graphics) {
+//        super.drawEntity(g)
+        g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+    }
 }
 
 class Gateway : Entity(){
@@ -490,7 +501,7 @@ class WeaponSmith(val char:Char):Entity(){
                                 when(indexer){
                                     0->{
                                         other.wep.buldmg+=1
-                                        other.wep.bulSize+=1
+                                        other.wep.bulSize+=3
                                     }
                                     1->{
                                         if(other.wep.bulspd+1<30)other.wep.bulspd++
@@ -505,9 +516,9 @@ class WeaponSmith(val char:Char):Entity(){
                             }else if(other.pCont.spenlef.tryConsume()){
                                 when(indexer){
                                     0->{
-                                        val desiredSize = other.wep.bulSize -1
                                         val desiredDmg = other.wep.buldmg-1
-                                        if(desiredSize>MIN_ENT_SIZE && desiredDmg>0){
+                                        val desiredSize = other.wep.bulSize -3
+                                        if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
                                             other.wep.bulSize = desiredSize
                                             other.wep.buldmg = desiredDmg
                                         }
@@ -586,7 +597,7 @@ class Gym(val char:Char):Entity(){
                                         other.speed += 1
                                     }
                                     1->{
-                                        other.drawSize  += 10
+                                        other.drawSize  += 3
                                         other.maxHP +=10
                                         other.currentHp = other.maxHP
                                     }
@@ -602,7 +613,7 @@ class Gym(val char:Char):Entity(){
                                         if(desiredspeed>0)other.speed = desiredspeed
                                     }
                                     1->{
-                                        val desiredSize = other.drawSize -10
+                                        val desiredSize = other.drawSize-3
                                         val desiredHp = other.maxHP-10
                                         if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
                                             other.drawSize = desiredSize
