@@ -2,6 +2,7 @@ import java.awt.*
 import java.io.File
 import javax.sound.sampled.*
 import kotlin.math.abs
+import kotlin.reflect.KMutableProperty0
 
 val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
 
@@ -137,7 +138,7 @@ interface movementGetsBlocked{
     }
     fun blockMovement(other: Entity, oldme: EntDimens,oldOther:EntDimens){
         
-        fun specialk(diff:Double,mepos:Double,otherpos:Double,oldotherpos:Double,oldmecoord:Double,oldothercoord:Double):Double{
+        fun specialk(cordSet:KMutableProperty0.Setter<Double>,diff:Double,mepos:Double,otherpos:Double,oldotherpos:Double,oldmecoord:Double,oldothercoord:Double){
             if(diff!=0.0){
                 val otherxdiff = otherpos - oldotherpos
                 val xright = oldmecoord<oldothercoord
@@ -159,10 +160,9 @@ interface movementGetsBlocked{
                 var takebackx: Double = (meMovingatOtherx / (meMovingatOtherx+otherMovingAtMex)) * overlapx
                 if (xright) takebackx = takebackx * -1.0
                 if(abs(takebackx)<(this as Entity).speed+2) {
-                    return takebackx
+                    cordSet(mepos+takebackx)
                 }
             }
-            return 0.0
         }
         
         if(doIGetBlockedBy(other)){
@@ -171,9 +171,9 @@ interface movementGetsBlocked{
             val midDistX =  abs(abs(oldOther.getMidpoint().first)-abs(oldme.getMidpoint().first))
             val midDistY = abs(abs(oldOther.getMidpoint().second)-abs(oldme.getMidpoint().second))
             if(midDistX>midDistY){
-                (this as Entity).xpos +=  specialk(xdiff,this.xpos,other.xpos,oldOther.xpos,oldme.getMidpoint().first,oldOther.getMidpoint().first)
+                specialk((this as Entity)::xpos.setter,xdiff,this.xpos,other.xpos,oldOther.xpos,oldme.getMidpoint().first,oldOther.getMidpoint().first)
             }else{
-                (this as Entity).ypos +=  specialk(ydiff,this.ypos,other.ypos,oldOther.ypos,oldme.getMidpoint().second,oldOther.getMidpoint().second)
+                specialk((this as Entity)::ypos.setter,ydiff,this.ypos,other.ypos,oldOther.ypos,oldme.getMidpoint().second,oldOther.getMidpoint().second)
             }
         }
     }
