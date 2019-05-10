@@ -7,8 +7,6 @@ val entsToAdd = mutableListOf<Entity>()
 val statsYSpace = 20.0
 val statsXSpace = 30.0
 val selectorXSpace = 45.0
-//val selectoryspacing = listOf(0.0,40.0,80.0,120.0,160.0,200.0,240.0)
-//val selectorxspacing = listOf(100.0,170.0)
 val player0 = Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD1,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD7,KeyEvent.VK_NUMPAD9),0).also { it.speed = 8 }
 val player1 = Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B),1).also{
     it.xpos=150.0
@@ -20,12 +18,9 @@ var pressed1 = OneShotChannel()
 var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
 
-var showingmenu = false
-var playersMenuShowing = mutableMapOf(0 to false, 1 to false)
-
 const val INTENDED_FRAME_SIZE = 900
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
-//const val TICK_INTERVAL = 30
+const val TICK_INTERVAL = 30.toLong()
 
 val backgroundImage = ImageIcon("src/main/resources/grass.png").image
 var myrepaint = false
@@ -48,45 +43,24 @@ var myPanel:JPanel =object : JPanel() {
             allEntities.forEach { entity ->
                 entity.drawComponents(g)
             }
-            var eitherShowing = false
-//            for(i in 0..1){
                 if(player0.menushowign || player0.specificMenus.values.any { it }){
-                    eitherShowing = true
                     player0.menuStuff.forEach {
                         it.updateEntity()
                         it.drawEntity(g)
                     }
                 }
                 if(player1.menushowign|| player1.specificMenus.values.any { it }){
-                    eitherShowing = true
                     player1.menuStuff.forEach {
                         it.updateEntity()
                         it.drawEntity(g)
                     }
                 }
-//            }
-//            if(eitherShowing){
-//                menuEntities.forEach { entity ->
-//                    entity.drawEntity(g)
-//                }
-//            }
         }
     }
 }.also {
 //    it.isDoubleBuffered = true
 //    it.background = Color.DARK_GRAY
 }
-
-//var menuPanel:JPanel = object:JPanel(){
-//    override fun paint(g: Graphics) {
-//        super.paint(g)
-//        menuEntities.forEach { entity ->
-//            entity.drawEntity(g)
-//        }
-//    }
-//}.also {
-//    it.background = Color.PINK
-//}
 
 var myFrame=object:JFrame(){
 
@@ -108,21 +82,6 @@ var myFrame=object:JFrame(){
 //        }
 //    })
 }
-//var menuEntities:MutableList<Entity> = mutableListOf(
-//            StatView({"Run Speed"},0.0,selectoryspacing[0]),
-//            StatView({"Health"},0.0,selectoryspacing[1]),
-//            StatView({"Turn Speed"},0.0,selectoryspacing[2]),
-//            StatView({"Wep1 Damage"},0.0,selectoryspacing[3]),
-//            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4]),
-//            StatView({"Wep1 Recoil"},0.0,selectoryspacing[5]),
-//            StatView({"Wep1 Reload"},0.0,selectoryspacing[6])
-//        )
-
-
-//fun menuTick(){
-//    menuEntities.forEach { it.updateEntity() }
-//    menuPanel.repaint()
-//}
 
 fun gameTick(){
     val preupdateEnts = mutableListOf<EntDimens>()
@@ -309,28 +268,6 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                 })
                 continue
             }
-//            if(ch == 'x'){
-////            if(ch == 'a' || ch=='A'){
-//                val spawnGate = Gateway()
-////                spawnGate.backgate = true
-////                if(ch=='A'){
-//                    spawnGate.map = map1
-////                }else{
-//                    spawnGate.mapnum = 1
-////                }
-//                playerSpawn = Pair(ind.toDouble()+(ind* mapGridSize),starty + (mapGridSize+1)*(outerind+1))
-//                spawnGate.xpos = playerSpawn.first
-//                spawnGate.ypos = playerSpawn.second
-//                player0.xpos = playerSpawn.first
-//                player0.ypos = playerSpawn.second
-//                player1.xpos = playerSpawn.first + (player0.drawSize)
-//                player1.ypos = playerSpawn.second
-//                entsToAdd.add(player0)
-//                entsToAdd.add(player1)
-//                entsToAdd.add(spawnGate)
-//                continue
-//            }
-
             val charint :Int= Character.getNumericValue(ch)
             if(charint in 1..9){
                  val mappy:String =when(charint){
@@ -358,7 +295,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                     entsToAdd.add(player1)
                 }
 
-                 entsToAdd.add(gate)
+                entsToAdd.add(gate)
                 continue
             }
 
@@ -433,40 +370,6 @@ fun main() {
     ))
     playSound(player0.deathNoise)
 
-
-
-//    menuEntities.addAll(
-//        listOf(
-//            StatView({"Run Speed"},0.0,selectoryspacing[0]),
-//            StatView({"Health"},0.0,selectoryspacing[1]),
-//            StatView({"Turn Speed"},0.0,selectoryspacing[2]),
-//            StatView({"Wep1 Damage"},0.0,selectoryspacing[3]),
-//            StatView({"Wep1 Velocity"},0.0,selectoryspacing[4]),
-//            StatView({"Wep1 Recoil"},0.0,selectoryspacing[5]),
-//            StatView({"Wep1 Reload"},0.0,selectoryspacing[6])
-//        )
-//    )
-
-//    menuEntities.addAll(
-//        listOf(
-//            Selector(player0, selectorxspacing[0]+30),
-//            StatView({ player0.speed.toString() }, selectorxspacing[0], selectoryspacing[0]),
-//            StatView({ player0.maxHP.toInt().toString() }, selectorxspacing[0], selectoryspacing[1]),
-//            StatView({ player0.turnSpeed.toString() }, selectorxspacing[0], selectoryspacing[2]),
-//            StatView({ player0.primWep.buldmg.toString() }, selectorxspacing[0], selectoryspacing[3]),
-//            StatView({ player0.primWep.bulspd.toString() }, selectorxspacing[0], selectoryspacing[4]),
-//            StatView({ player0.primWep.recoil.toString() }, selectorxspacing[0], selectoryspacing[5]),
-//            StatView({ player0.primWep.atkSpd.toString() }, selectorxspacing[0], selectoryspacing[6]),
-//            Selector(player1, selectorxspacing[1]+30),
-//            StatView({ player1.speed.toString() }, selectorxspacing[1], selectoryspacing[0]),
-//            StatView({ player1.maxHP.toInt().toString() }, selectorxspacing[1], selectoryspacing[1]),
-//            StatView({ player1.turnSpeed.toString() }, selectorxspacing[1], selectoryspacing[2]),
-//            StatView({ player1.primWep.buldmg.toString() }, selectorxspacing[1], selectoryspacing[3]),
-//            StatView({ player1.primWep.bulspd.toString() }, selectorxspacing[1], selectoryspacing[4]),
-//            StatView({ player1.primWep.recoil.toString() }, selectorxspacing[1], selectoryspacing[5]),
-//            StatView({ player1.primWep.atkSpd.toString() }, selectorxspacing[1], selectoryspacing[6])
-//        )
-//    )
     myFrame.addKeyListener(
         object :KeyListener{
             override fun keyTyped(e: KeyEvent?) {}
@@ -499,19 +402,11 @@ fun main() {
     myFrame.isVisible = true
     myFrame.contentPane = myPanel
         while (true){
-            Thread.sleep(30)
+            Thread.sleep(TICK_INTERVAL)
             if(pressed3.tryConsume()){
-//                    gamePaused = !gamePaused
                 placeMap(map1,1,1)
             }else if(pressed2.tryConsume()) {
-//                if(showingmenu){
-//                    myFrame.contentPane = myPanel
-//                }else{
-//                    myFrame.contentPane = menuPanel
-//
-//                }
-                showingmenu = !showingmenu
-//                myFrame.revalidate()
+                gamePaused = !gamePaused
             } else if (pressed1.tryConsume()) {
 //                revivePlayers(true)
                 startWave(4)
@@ -520,12 +415,9 @@ fun main() {
                 placeMap(nextMap,nextMapNum,currentMapNum)
                 revivePlayers(false)
             } else{
-//                if(showingmenu)menuTick()
-//                else{
                     if(!gamePaused){
                         gameTick()
                     }
-//                }
             }
         }
 }

@@ -76,21 +76,9 @@ class Weapon(
 )
 
 class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
-//    var insideGate = false
     var menushowign = false
     var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
-    var menuStuff:List<Entity> =
-    listOf(
-//    Selector(this, selectorxspacing[playerNumber]+30),
-//    StatView({ this.speed.toString() }, selectorxspacing[playerNumber], selectoryspacing[0]),
-//    StatView({ this.maxHP.toInt().toString() }, selectorxspacing[playerNumber], selectoryspacing[1]),
-//    StatView({ this.turnSpeed.toString() }, selectorxspacing[playerNumber], selectoryspacing[2]),
-//    StatView({ this.primWep.buldmg.toString() }, selectorxspacing[playerNumber], selectoryspacing[3]),
-//    StatView({ this.primWep.bulspd.toString() }, selectorxspacing[playerNumber], selectoryspacing[4]),
-//    StatView({ this.primWep.recoil.toString() }, selectorxspacing[playerNumber], selectoryspacing[5]),
-//    StatView({ this.primWep.atkSpd.toString() }, selectorxspacing[playerNumber], selectoryspacing[6])
-    )
-
+    var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
     val stillImage = ImageIcon("src/main/resources/gunman.png").image
     val runImage = ImageIcon("src/main/resources/rungunman.png").image
@@ -137,12 +125,13 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     }
 
     override fun dieFromBullet() {
-        super.dieFromBullet()
+//        super.dieFromBullet()
         menushowign = false
         for (specificMenu in specificMenus) {
             specificMenu.setValue(false)
         }
         spawnGate.playersInside.add(this)
+        currentHp = maxHP
     }
 
     override fun updateEntity() {
@@ -408,31 +397,22 @@ class MedPack : Entity() {
 class WeaponSmith(val char:Char):Entity(){
     override var color = Color.CYAN
     override var drawSize = 35.0
-//    var smithShowing = mutableMapOf<Int,Boolean>(1 to false, 2 to false)
     override fun updateEntity() {
-//        for ((num,showing) in smithShowing){
-//        }
-//        if(smithShowing[1]!!) if(!overlapsOther(player0)){smithShowing[1] = false
-//        if(smithShowing[2]!!) if(!overlapsOther(player1))smithShowing[2] = false
         if(player0.menushowign){
             if(!overlapsOther(player0)){
                 player0.menushowign = false
-//                lockCollide = false
             }
         }
         if(player1.menushowign){
             if(!overlapsOther(player1)){
                 player1.menushowign = false
-//                lockCollide = false
             }
         }
     }
-//    var lockCollide = false
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(other is Player){
             if(!other.menushowign){
-//                lockCollide = true
                 other.menuStuff = listOf(
                     StatView({"Dmg"},other.xpos,0+other.ypos),
                     StatView({"Vel"},other.xpos,statsYSpace+other.ypos),
@@ -460,47 +440,47 @@ class WeaponSmith(val char:Char):Entity(){
                             if(other.pCont.spinri.tryConsume()){
                                 when(indexer){
                                     0->{
-                                        other.primWep.buldmg+=1
-                                        other.primWep.bulSize+=1
+                                        other.wep.buldmg+=1
+                                        other.wep.bulSize+=1
                                     }
                                     1->{
-                                        if(other.primWep.bulspd+1<30)other.primWep.bulspd++
+                                        if(other.wep.bulspd+1<30)other.wep.bulspd++
                                     }
                                     2->{
-                                        if(other.primWep.recoil+1<30)other.primWep.recoil++
+                                        if(other.wep.recoil+1<30)other.wep.recoil++
                                     }
                                     3->{
-                                        if(other.primWep.atkSpd+1<200)other.primWep.atkSpd++
+                                        if(other.wep.atkSpd+1<200)other.wep.atkSpd++
                                     }
                                 }
                             }else if(other.pCont.spenlef.tryConsume()){
                                 when(indexer){
                                     0->{
-                                        val desiredSize = other.primWep.bulSize -1
-                                        val desiredDmg = other.primWep.buldmg-1
+                                        val desiredSize = other.wep.bulSize -1
+                                        val desiredDmg = other.wep.buldmg-1
                                         if(desiredSize>MIN_ENT_SIZE && desiredDmg>0){
-                                            other.primWep.bulSize = desiredSize
-                                            other.primWep.buldmg = desiredDmg
+                                            other.wep.bulSize = desiredSize
+                                            other.wep.buldmg = desiredDmg
                                         }
                                     }
                                     1->{
-                                        if(other.primWep.bulspd-1>1)other.primWep.bulspd--
+                                        if(other.wep.bulspd-1>1)other.wep.bulspd--
                                     }
                                     2->{
-                                        if(other.primWep.recoil-1>=0)other.primWep.recoil--
+                                        if(other.wep.recoil-1>=0)other.wep.recoil--
                                     }
                                     3->{
-                                        if(other.primWep.atkSpd-1>0)other.primWep.atkSpd--
+                                        if(other.wep.atkSpd-1>0)other.wep.atkSpd--
                                     }
                                 }
                             }
                         }
                     },
 //                    Selector(other, other.xpos+30,4),
-                    StatView({other.primWep.buldmg.toString() }, statsXSpace+other.xpos, other.ypos),
-                    StatView({other.primWep.bulspd.toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
-                    StatView({other.primWep.recoil.toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
-                    StatView({other.primWep.atkSpd.toString() }, statsXSpace+other.xpos,  3*statsYSpace+other.ypos))
+                    StatView({other.wep.buldmg.toString() }, statsXSpace+other.xpos, other.ypos),
+                    StatView({other.wep.bulspd.toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
+                    StatView({other.wep.recoil.toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
+                    StatView({other.wep.atkSpd.toString() }, statsXSpace+other.xpos,  3*statsYSpace+other.ypos))
 
                 other.menushowign = true
             }
@@ -511,29 +491,19 @@ class Gym(val char:Char):Entity(){
 
     override var color = Color.WHITE
     override var drawSize = 35.0
-    //    var smithShowing = mutableMapOf<Int,Boolean>(1 to false, 2 to false)
     override fun updateEntity() {
-//        for ((num,showing) in smithShowing){
-//        }
-//        if(smithShowing[1]!!) if(!overlapsOther(player0)){smithShowing[1] = false
-//        if(smithShowing[2]!!) if(!overlapsOther(player1))smithShowing[2] = false
         if(player0.specificMenus[char]!!){
             if(!overlapsOther(player0)){
                 player0.specificMenus[char] = false
-//                player0.menushowign = false
-//                lockCollide = false
             }
         }
         if(player1.specificMenus[char]!!){
             if(!overlapsOther(player1)){
                 player1.specificMenus[char]=false
-//                player1.menushowign = false
-//                lockCollide = false
             }
         }
 
     }
-//    var lockCollide = false
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(other is Player){
