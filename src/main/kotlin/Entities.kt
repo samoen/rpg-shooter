@@ -88,12 +88,13 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     var spawnGate:Gateway = Gateway()
     val stillImage = ImageIcon("src/main/resources/gunman.png").image
     val runImage = ImageIcon("src/main/resources/rungunman.png").image
+    val pewImage = ImageIcon("src/main/resources/grass.png").image
     val pCont:playControls = playControls()
     var swapNoise:Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/swapnoise.wav").getAbsoluteFile()))
     }
     override var shootNoise: Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/longypew.wav").getAbsoluteFile()))
+        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/newlongpew.wav").getAbsoluteFile()))
     }
     override var ouchNoise: Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
@@ -102,6 +103,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
     }
     var didMove = false
+    var didShoot = false
     override var speed = 10
     override var drawSize = 40.0
     override var didHeal=false
@@ -184,7 +186,16 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
 
     override fun drawEntity(g: Graphics) {
         var todraw = stillImage
-        if(didMove ){
+        if(didShoot){
+            pewframecount++
+            if(pewframecount < 3){
+                todraw = pewImage
+            }else {
+                pewframecount = 0
+                didShoot=false
+            }
+        }
+        if(didMove){
             gaitcount++
             if(gaitcount < 3){
                 todraw = runImage
@@ -197,6 +208,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
     }
     var gaitcount = 0
+    var pewframecount = 0
 }
 class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
     override var shootNoise: Clip = AudioSystem.getClip().also{
@@ -231,23 +243,13 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
 
     override fun drawEntity(g: Graphics) {
         super.drawEntity(g)
-        val r = Rectangle((xpos).toInt(),(ypos - (wep.bulSize/(drawSize))).toInt(),wep.bulSize.toInt(),700)
-        val path = Path2D.Double()
-        path.append(r, false)
-        val t = AffineTransform()
-        t.rotate(-angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
-        path.transform(t)
-        (g as Graphics2D).draw(path)
-
-//        var rec = Rectangle((xpos+(drawSize/2)).toInt(),(ypos+(drawSize/2)).toInt(),5,200)
-//        if(rec.intersects(Rectangle(player0.xpos.toInt(),player0.ypos.toInt(),player0.drawSize.toInt(),player0.drawSize.toInt()))){
-//            g.color = Color.YELLOW
-//        }
-//        var oldtrans = (g as Graphics2D).transform
-//        (g as Graphics2D).rotate(-angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
-//        (g as Graphics2D).draw(rec)
-//        (g as Graphics2D).fill(rec)
-//        (g as Graphics2D).transform = oldtrans
+//        val r = Rectangle((xpos).toInt(),(ypos - (wep.bulSize/(drawSize))).toInt(),wep.bulSize.toInt(),700)
+//        val path = Path2D.Double()
+//        path.append(r, false)
+//        val t = AffineTransform()
+//        t.rotate(-angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
+//        path.transform(t)
+//        (g as Graphics2D).draw(path)
     }
 
     override fun updateEntity() {

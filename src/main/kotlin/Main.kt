@@ -1,5 +1,7 @@
 import java.awt.*
 import java.awt.event.*
+import java.io.File
+import javax.sound.sampled.AudioSystem
 import javax.swing.*
 
 val allEntities = mutableListOf<Entity>()
@@ -362,12 +364,13 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
 }
 
 fun main() {
+//    playerhootNoise.open(playshoostrm)
     entsToAdd.addAll(listOf(
         player0,
         player1
 //        , Wall()
     ))
-    playSound(player0.deathNoise)
+    playSound(player0.shootNoise)
 
     myFrame.addKeyListener(
         object :KeyListener{

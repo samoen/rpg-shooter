@@ -1,10 +1,14 @@
 import java.awt.*
 import java.io.File
+import java.util.*
+import java.util.logging.Handler
 import javax.sound.sampled.*
 import kotlin.math.abs
 import kotlin.reflect.KMutableProperty0
 
 val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
+//val playerhootNoise: Clip = AudioSystem.getClip()
+//val playshoostrm = AudioSystem.getAudioInputStream(File("src/main/resources/longypew.wav").getAbsoluteFile())
 
 fun playSound(clip:Clip){
     if(clip.isRunning){
@@ -24,13 +28,39 @@ interface shoots{
     var bulColor:Color
     fun processShooting(sht:Boolean,weap:Weapon){
         if (sht && weap.framesSinceShottah > this.wep.atkSpd) {
-            playSound(this.shootNoise)
             weap.framesSinceShottah = 0
+            if(this is Player)this.didShoot=true
             entsToAdd.add(Bullet(this))
+
+            if(shootNoise.isRunning){
+                val newclip = AudioSystem.getClip().also{
+                    it.open(AudioSystem.getAudioInputStream(File("src/main/resources/newlongpew.wav").getAbsoluteFile()))
+                }
+                newclip.start()
+//                Thread(Runnable({
+//                    shootNoise.stop()
+//                                        shootNoise.flush()
+//                    shootNoise.framePosition = 0
+//                    shootNoise.drain()
+//                })).start()
+//                shootNoise.stop()
+//                (shootNoise.getControl(BooleanControl.Type.MUTE)as BooleanControl).value = true
+//                shootNoise.start()
+//                shootNoise.framePosition = 0
+//                shootNoise=newclip
+//                (shootNoise.getControl(FloatControl.Type.MASTER_GAIN)as FloatControl).value -=40
+//                shootNoise.start()
+
+
+            }else{
+                shootNoise.framePosition=0
+                shootNoise.start()
+            }
         }
         weap.framesSinceShottah++
 
     }
+
     fun processTurning(lef:Boolean,righ:Boolean){
         if (lef) {
             var desired = angy+turnSpeed
