@@ -24,7 +24,7 @@ const val INTENDED_FRAME_SIZE = 900
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 const val TICK_INTERVAL = 30.toLong()
 
-val backgroundImage = ImageIcon("src/main/resources/grass.png").image
+val backgroundImage = ImageIcon("src/main/resources/floor1.png").image
 var myrepaint = false
 var myPanel:JPanel =object : JPanel() {
     override fun paint(g: Graphics) {
@@ -404,7 +404,8 @@ fun main() {
     myFrame.isVisible = true
     myFrame.contentPane = myPanel
         while (true){
-            Thread.sleep(TICK_INTERVAL)
+
+            val pretime = System.currentTimeMillis()
             if(pressed3.tryConsume()){
                 placeMap(map1,1,1)
             }else if(pressed2.tryConsume()) {
@@ -421,6 +422,9 @@ fun main() {
                         gameTick()
                     }
             }
+            val tickdiff = System.currentTimeMillis() - pretime
+            if(tickdiff<40)
+                Thread.sleep(40-tickdiff)
         }
 }
 var gamePaused = false
