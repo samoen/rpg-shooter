@@ -25,7 +25,10 @@ open class Entity() {
     open fun updateEntity() {}
     open fun drawComponents(g: Graphics) {}
     fun overlapsOther(other: Entity):Boolean{
-        return this.ypos+this.drawSize > other.ypos && this.ypos<other.ypos+other.drawSize && this.xpos+this.drawSize > other.xpos && this.xpos<other.xpos+other.drawSize
+        return this.ypos+this.drawSize > other.ypos &&
+                this.ypos<other.ypos+other.drawSize &&
+                this.xpos+this.drawSize > other.xpos &&
+                this.xpos<other.xpos+other.drawSize
     }
     fun getMidpoint():Pair<Double,Double>{
         return Pair((xpos+(drawSize/2)),ypos+(drawSize/2))

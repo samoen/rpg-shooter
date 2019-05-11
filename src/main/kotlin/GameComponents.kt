@@ -188,6 +188,8 @@ interface movementGetsBlocked{
 
                 var takebackx: Double = (meMovingatOtherx / (meMovingatOtherx+otherMovingAtMex)) * overlapx
                 if (xright) takebackx = takebackx * -1.0
+                if(takebackx>0)takebackx+=0.001
+                else if(takebackx<0)takebackx-=0.001
                 if(abs(takebackx)<(this as Entity).speed+2) {
                     cordSet(mepos+takebackx)
                 }

@@ -1,7 +1,5 @@
 import java.awt.*
 import java.awt.event.*
-import java.io.File
-import javax.sound.sampled.AudioSystem
 import javax.swing.*
 
 val allEntities = mutableListOf<Entity>()
@@ -22,7 +20,7 @@ var pressed3 = OneShotChannel()
 
 const val INTENDED_FRAME_SIZE = 900
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
-const val TICK_INTERVAL = 30.toLong()
+const val TICK_INTERVAL = 40
 
 val backgroundImage = ImageIcon("src/main/resources/floor1.png").image
 var myrepaint = false
@@ -108,17 +106,18 @@ fun gameTick(){
                     jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
                     collided = true
                 }
-                if(collided && !ient.isDead && !jent.isDead) {
+                if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient) && ient.overlapsOther(jent)) {
                     val iBlockedTrigger = (jent is movementGetsBlocked && jent.doIGetBlockedBy(ient))
                     val jBlockedTrigger = (ient is movementGetsBlocked && ient.doIGetBlockedBy(jent))
                     if (iBlockedTrigger||jBlockedTrigger) {
-                        if(timesTried > 100){
+                        if(timesTried > 10){
+                            println("Cannot resolve collision!")
                             if(jent is Wall){
-                                jent.isDead = true
+//                                jent.isDead = true
                             }else if(ient is Wall){
-                                ient.isDead = true
+//                                ient.isDead = true
                             }else{
-                                println("Cannot resolve collision!")
+
 //                                ient.isDead = true
 //                                jent.isDead = true
                             }
@@ -403,28 +402,26 @@ fun main() {
     myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, 40+INTENDED_FRAME_SIZE.toInt())
     myFrame.isVisible = true
     myFrame.contentPane = myPanel
-        while (true){
-
-            val pretime = System.currentTimeMillis()
-            if(pressed3.tryConsume()){
-                placeMap(map1,1,1)
-            }else if(pressed2.tryConsume()) {
-                gamePaused = !gamePaused
-            } else if (pressed1.tryConsume()) {
+    while (true){
+        val pretime = System.currentTimeMillis()
+        if(pressed3.tryConsume()){
+            placeMap(map1,1,1)
+        }else if(pressed2.tryConsume()) {
+            gamePaused = !gamePaused
+        } else if (pressed1.tryConsume()) {
 //                revivePlayers(true)
-                startWave(4)
-            } else if(changeMap){
-                changeMap=false
-                placeMap(nextMap,nextMapNum,currentMapNum)
-                revivePlayers(false)
-            } else{
-                    if(!gamePaused){
-                        gameTick()
-                    }
-            }
-            val tickdiff = System.currentTimeMillis() - pretime
-            if(tickdiff<40)
-                Thread.sleep(40-tickdiff)
+            startWave(4)
+        } else if(changeMap){
+            changeMap=false
+            placeMap(nextMap,nextMapNum,currentMapNum)
+            revivePlayers(false)
+        } else{
+                if(!gamePaused){
+                    gameTick()
+                }
         }
+        val tickdiff = System.currentTimeMillis() - pretime
+        if(tickdiff<TICK_INTERVAL) Thread.sleep(TICK_INTERVAL-tickdiff)
+    }
 }
 var gamePaused = false
