@@ -7,7 +7,7 @@ val entsToAdd = mutableListOf<Entity>()
 val statsYSpace = 20.0
 val statsXSpace = 30.0
 val selectorXSpace = 45.0
-val player0 = Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD1,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD7,KeyEvent.VK_NUMPAD9),0).also { it.speed = 8 }
+val player0 = Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6),0).also { it.speed = 8 }
 val player1 = Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B),1).also{
     it.xpos=150.0
     it.speed = 8
@@ -43,18 +43,18 @@ var myPanel:JPanel =object : JPanel() {
             allEntities.forEach { entity ->
                 entity.drawComponents(g)
             }
-                if(player0.menushowign || player0.specificMenus.values.any { it }){
-                    player0.menuStuff.forEach {
-                        it.updateEntity()
-                        it.drawEntity(g)
-                    }
+            if(player0.menushowign || player0.specificMenus.values.any { it }){
+                player0.menuStuff.forEach {
+                    it.updateEntity()
+                    it.drawEntity(g)
                 }
-                if(player1.menushowign|| player1.specificMenus.values.any { it }){
-                    player1.menuStuff.forEach {
-                        it.updateEntity()
-                        it.drawEntity(g)
-                    }
+            }
+            if(player1.menushowign|| player1.specificMenus.values.any { it }){
+                player1.menuStuff.forEach {
+                    it.updateEntity()
+                    it.drawEntity(g)
                 }
+            }
         }
     }
 }.also {
@@ -106,7 +106,7 @@ fun gameTick(){
                     jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
                     collided = true
                 }
-                if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient) && ient.overlapsOther(jent)) {
+                if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient)) {
                     val iBlockedTrigger = (jent is movementGetsBlocked && jent.doIGetBlockedBy(ient))
                     val jBlockedTrigger = (ient is movementGetsBlocked && ient.doIGetBlockedBy(jent))
                     if (iBlockedTrigger||jBlockedTrigger) {
@@ -370,6 +370,7 @@ fun main() {
 //        , Wall()
     ))
     playSound(player0.shootNoise)
+//    player0.collide(player1,EntDimens(player0.xpos,player0.ypos,player0.drawSize),EntDimens(player1.xpos,player1.ypos,player1.drawSize))
 
     myFrame.addKeyListener(
         object :KeyListener{

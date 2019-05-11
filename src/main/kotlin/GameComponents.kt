@@ -148,7 +148,7 @@ interface damagedByBullets{
             }
         }else if (other is MedPack && (this as hasHealth).currentHp<maxHP){
             didHeal = true
-            val desiredhp = (this as hasHealth).currentHp+5
+            val desiredhp = (this as hasHealth).currentHp+20
             if (desiredhp>maxHP){
                 this.currentHp = maxHP
             }else{
@@ -160,51 +160,50 @@ interface damagedByBullets{
         (this as Entity).isDead = true
     }
 }
+fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,otherpos:Double,oldotherpos:Double,oldmecoord:Double,oldothercoord:Double):Double{
+    if(diff!=0.0){
+        val otherxdiff = otherpos - oldotherpos
+        val xright = oldmecoord<oldothercoord
 
+        val meMovingatOtherx =
+            if(diff>0 && xright) diff
+            else if(diff<0 && !xright) -diff
+            else 0.0
+
+        val otherMovingAtMex =
+            if(otherxdiff>0 && !xright) otherxdiff
+            else if(otherxdiff<0 && xright) -otherxdiff
+            else 0.0
+
+        val overlapx =
+            if(xright) mepos + mesize - otherpos
+            else otherpos + othersize - mepos
+
+        var takebackx: Double = (meMovingatOtherx / (meMovingatOtherx+otherMovingAtMex)) * overlapx
+        if (xright) takebackx = takebackx * -1.0
+        if(takebackx>0)takebackx+=0.001
+        else if(takebackx<0)takebackx-=0.001
+        if(abs(takebackx)<mespd+2) {
+            return(takebackx)
+        }
+    }
+    return 0.0
+}
 interface movementGetsBlocked{
     fun doIGetBlockedBy(entity: Entity):Boolean {
         return (entity is Wall) || (entity is Enemy) || entity is Player
     }
     fun blockMovement(other: Entity, oldme: EntDimens,oldOther:EntDimens){
-        
-        fun specialk(cordSet:KMutableProperty0.Setter<Double>,diff:Double,mepos:Double,otherpos:Double,oldotherpos:Double,oldmecoord:Double,oldothercoord:Double){
-            if(diff!=0.0){
-                val otherxdiff = otherpos - oldotherpos
-                val xright = oldmecoord<oldothercoord
 
-                val meMovingatOtherx =
-                if(diff>0 && xright) diff
-                else if(diff<0 && !xright) -diff
-                else 0.0
-
-                val otherMovingAtMex =
-                if(otherxdiff>0 && !xright) otherxdiff
-                else if(otherxdiff<0 && xright) -otherxdiff
-                else 0.0
-
-                val overlapx =
-                if(xright) mepos + (this as Entity).drawSize - otherpos
-                else otherpos + other.drawSize - mepos
-
-                var takebackx: Double = (meMovingatOtherx / (meMovingatOtherx+otherMovingAtMex)) * overlapx
-                if (xright) takebackx = takebackx * -1.0
-                if(takebackx>0)takebackx+=0.001
-                else if(takebackx<0)takebackx-=0.001
-                if(abs(takebackx)<(this as Entity).speed+2) {
-                    cordSet(mepos+takebackx)
-                }
-            }
-        }
-        
         if(doIGetBlockedBy(other)){
             val xdiff = (this as Entity).xpos - oldme.xpos
             val ydiff = (this as Entity).ypos - oldme.ypos
             val midDistX =  abs(abs(oldOther.getMidpoint().first)-abs(oldme.getMidpoint().first))
             val midDistY = abs(abs(oldOther.getMidpoint().second)-abs(oldme.getMidpoint().second))
             if(midDistX>midDistY){
-                specialk((this as Entity)::xpos.setter,xdiff,this.xpos,other.xpos,oldOther.xpos,oldme.getMidpoint().first,oldOther.getMidpoint().first)
+                xpos += specialk((this as Entity).drawSize,this.speed,other.drawSize,xdiff,this.xpos,other.xpos,oldOther.xpos,oldme.getMidpoint().first,oldOther.getMidpoint().first)
             }else{
-                specialk((this as Entity)::ypos.setter,ydiff,this.ypos,other.ypos,oldOther.ypos,oldme.getMidpoint().second,oldOther.getMidpoint().second)
+                ypos += specialk((this as Entity).drawSize,this.speed,other.drawSize,ydiff,this.ypos,other.ypos,oldOther.ypos,oldme.getMidpoint().second,oldOther.getMidpoint().second)
             }
         }
     }
