@@ -30,7 +30,18 @@ interface shoots{
         if (sht && weap.framesSinceShottah > this.wep.atkSpd) {
             weap.framesSinceShottah = 0
             if(this is Player)this.didShoot=true
+            val b = Bullet(this)
+            var canspawn = true
+            allEntities.forEach { if(it is Wall && it.overlapsOther(b))canspawn = false }
+            if(canspawn)
             entsToAdd.add(Bullet(this))
+            else {
+                val imp = Impact()
+                imp.drawSize = b.drawSize
+                imp.xpos = (b).xpos
+                imp.ypos = (b).ypos
+                entsToAdd.add(imp)
+            }
 
             if(shootNoise.isRunning){
                 val newclip = AudioSystem.getClip().also{
@@ -77,7 +88,7 @@ interface shoots{
     }
     fun drawCrosshair(g: Graphics){
         g.color = Color.CYAN
-        val strkw = if(this is Player)1.1f
+        val strkw = if(this is Player)1.2f
         else 5f
         (g as Graphics2D).stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
         val arcdiameter = (this as Entity).drawSize

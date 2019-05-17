@@ -19,7 +19,9 @@ var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
 
 const val INTENDED_FRAME_SIZE = 900
+const val INTENDED_FRAME_WIDTH = INTENDED_FRAME_SIZE*2
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
+val YFRAMEMAGIC = 40
 const val TICK_INTERVAL = 40
 
 val backgroundImage = ImageIcon("src/main/resources/floor1.png").image
@@ -29,7 +31,7 @@ var myPanel:JPanel =object : JPanel() {
         super.paint(g)
         if(myrepaint){
             myrepaint = false
-            g.drawImage(backgroundImage,0,0,myFrame.width,myFrame.width,null)
+            g.drawImage(backgroundImage,0,0, (myFrame.width).toInt(),myFrame.width,null)
             val players = mutableListOf<Entity>()
             allEntities.forEach { entity ->
                 if(entity is Player){
@@ -152,7 +154,7 @@ fun revivePlayers(heal:Boolean){
         player1.currentHp = player1.maxHP
     }
 }
-const val mapGridSize = 55.0
+
 const val mapGridColumns = 16
 const val mapGridRows = 15
 val map1 =  "        w       " +
@@ -218,53 +220,54 @@ val map3 =  "                " +
 //}
 
 fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
+    val mapGridSize = (INTENDED_FRAME_SIZE/mapGridColumns.toDouble())-2
     currentMapNum = mapNum
     allEntities.clear()
     val starty = 0
-    var rownum = 0
-    for((outerind,i) in (0..(mapGridColumns*mapGridRows)-7 step mapGridColumns).withIndex()){
-        rownum++
-        for((ind:Int,ch:Char) in map.substring(i,i+mapGridColumns).withIndex()){
+    for(rownumber in 0 until (map.length/mapGridColumns)){
+        for((ind:Int,ch:Char) in map.substring(rownumber*mapGridColumns,(rownumber*mapGridColumns)+mapGridColumns).withIndex()){
             if(ch=='w'){
                 entsToAdd.add(Wall().also {
                     it.drawSize = mapGridSize
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize)*(outerind)
+                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if (ch == 'h'){
                 entsToAdd.add(MedPack().also {
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if (ch == 'e'){
                 entsToAdd.add(randEnemy().also {
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if(ch == 's'){
                 entsToAdd.add(GateSwitch().also {
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if(ch == 'b'){
-                entsToAdd.add(WeaponSmith('b').also {
+                entsToAdd.add(BlackSmith('b').also {
+                    it.drawSize = mapGridSize
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if(ch == 'g'){
                 entsToAdd.add(Gym('g').also {
+                    it.drawSize = mapGridSize
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(outerind+1)
+                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
@@ -277,12 +280,13 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                      else ->map1
                  }
                 val gatex = ind.toDouble()+(ind* mapGridSize)
-                val gatey = starty + (mapGridSize+1)*(outerind+1)
+                val gatey = starty + (mapGridSize+1)*(rownumber+1)
                 val gate = Gateway().also {
                     it.map = mappy
                     it.mapnum = charint
                     it.xpos = gatex
                     it.ypos = gatey
+                    it.drawSize = mapGridSize
                 }
                 if(charint==fromMapNum){
                     player0.xpos = gatex
@@ -400,7 +404,7 @@ fun main() {
 //    myFrame.bufferStrategy.show()
 
     myFrame.title = "Gunplay"
-    myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, 40+INTENDED_FRAME_SIZE.toInt())
+    myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE+YFRAMEMAGIC)
     myFrame.isVisible = true
     myFrame.contentPane = myPanel
     while (true){

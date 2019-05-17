@@ -35,13 +35,8 @@ open class Entity() {
     }
     open fun drawEntity(g: Graphics) {
         g.color = color
-//        g.fillRect(xpos.toInt(), ypos.toInt(), drawSize.toInt(), drawSize.toInt())
-        g.fillRect(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedSize().toInt(), getWindowAdjustedSize().toInt())
+        g.fillRect(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedPos(drawSize).toInt(), getWindowAdjustedPos(drawSize).toInt())
     }
-    fun getWindowAdjustedSize():Double{
-        return drawSize * myFrame.width/INTENDED_FRAME_SIZE
-    }
-
 }
 fun getWindowAdjustedPos(pos:Double):Double{
     return pos * myFrame.width/INTENDED_FRAME_SIZE
@@ -56,6 +51,11 @@ class Bullet(val shotBy: shoots) : Entity() {
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if (((other is Player) ||  other is Enemy || other is Wall )&&shotBy != other) {
             isDead = true
+            val imp = Impact()
+            imp.drawSize = drawSize
+            imp.xpos = xpos
+            imp.ypos = ypos
+            entsToAdd.add(imp)
         }
     }
     override fun updateEntity() {
@@ -69,7 +69,7 @@ class Bullet(val shotBy: shoots) : Entity() {
 
     override fun drawEntity(g: Graphics) {
         g.color = color
-        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedSize()*1.3).toInt(), (getWindowAdjustedSize()*1.3).toInt())
+        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedPos(drawSize)*1.3).toInt(), (getWindowAdjustedPos(drawSize)*1.3).toInt())
     }
 }
 
@@ -212,9 +212,9 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
             gaitcount = 0
         }
         if(angy>Math.PI/2 || angy<-Math.PI/2){
-            g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+            g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
         }else{
-            g.drawImage(todraw,getWindowAdjustedPos(xpos+drawSize).toInt(),getWindowAdjustedPos(ypos).toInt(),-getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+            g.drawImage(todraw,getWindowAdjustedPos(xpos+drawSize).toInt(),getWindowAdjustedPos(ypos).toInt(),-getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
         }
     }
     var gaitcount = 0
@@ -356,11 +356,11 @@ val wallImage = ImageIcon("src/main/resources/brick1.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 class Wall : Entity(){
-    override var drawSize = mapGridSize
+    override var drawSize = 20.0
     override var color = Color.DARK_GRAY
     override fun drawEntity(g: Graphics) {
 //        super.drawEntity(g)
-        g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+        g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
     }
 }
 
@@ -369,7 +369,7 @@ class Gateway : Entity(){
     var map = map1
     var mapnum = 1
     var locked = true
-    override var drawSize = mapGridSize
+    override var drawSize = 20.0
     override var color = Color.PINK
     //    override fun drawEntity(g: Graphics) {
 //        super.drawEntity(g)
@@ -378,8 +378,8 @@ class Gateway : Entity(){
     var sumspn = false
     override fun drawEntity(g: Graphics) {
         if(locked)
-        g.drawImage(gateClosedImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
-        else g.drawImage(gateOpenImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedSize().toInt(),getWindowAdjustedSize().toInt(),null)
+        g.drawImage(gateClosedImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+        else g.drawImage(gateOpenImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
     }
 
     override fun updateEntity() {
@@ -439,7 +439,7 @@ class Gateway : Entity(){
     }
 }
 class GateSwitch:Entity(){
-    override var drawSize = mapGridSize
+    override var drawSize = 20.0
     override var color = Color.YELLOW
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(other is Player){
@@ -457,6 +457,19 @@ var currentMapNum = 1
 var changeMap = false
 var NumPlayers = 2
 
+class Impact : Entity(){
+    override fun drawEntity(g: Graphics) {
+//        super.drawEntity(g)
+        g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+    }
+
+    var liveFrames = 4
+    override fun updateEntity() {
+       liveFrames--
+        if(liveFrames<0)isDead=true
+    }
+}
+
 class MedPack : Entity() {
     override var color = Color.GREEN
     override var drawSize = 20.0
@@ -465,7 +478,7 @@ class MedPack : Entity() {
     }
 }
 
-class WeaponSmith(val char:Char):Entity(){
+class BlackSmith(val char:Char):Entity(){
     override var color = Color.CYAN
     override var drawSize = 35.0
     override fun updateEntity() {
@@ -515,7 +528,7 @@ class WeaponSmith(val char:Char):Entity(){
                                         other.wep.bulSize+=3
                                     }
                                     1->{
-                                        if(other.wep.bulspd+1<30)other.wep.bulspd++
+                                        if(other.wep.bulspd+1<50)other.wep.bulspd++
                                     }
                                     2->{
                                         if(other.wep.recoil+1<30)other.wep.recoil++
@@ -653,6 +666,7 @@ class Gym(val char:Char):Entity(){
 class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity(){
     override fun drawEntity(g: Graphics) {
         g.color = Color.BLUE
+        g.font = g.font.deriveFont((myFrame.width/70).toFloat())
         g.drawString(showText(),getWindowAdjustedPos(xloc).toInt(),getWindowAdjustedPos(yloc+15).toInt())
     }
 }
