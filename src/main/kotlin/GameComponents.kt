@@ -1,3 +1,6 @@
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.awt.*
 import java.io.File
 import java.util.*
@@ -144,32 +147,37 @@ interface shoots{
         }
     }
 }
-
-interface damagedByBullets{
-    val ouchNoise:Clip
-    val deathNoise:Clip
-    fun takeDamage(other:Entity){
-        if(other is Bullet && other.shotBy::class!=this::class) {
-            (this as hasHealth).currentHp -= (other.shotBy as shoots).wep.buldmg
-            if((this as hasHealth).currentHp<1){
-                playSound(deathNoise)
-                dieFromBullet()
-            }else{
-                playSound(ouchNoise)
-            }
-        }else if (other is MedPack && (this as hasHealth).currentHp<maxHP){
-            didHeal = true
-            val desiredhp = (this as hasHealth).currentHp+20
-            if (desiredhp>maxHP){
-                this.currentHp = maxHP
-            }else{
-                currentHp = desiredhp
-            }
+fun takeDamage(other:Entity,me:Entity):Boolean{
+    if(other is Bullet && other.shotBy::class!=me::class) {
+        (me as hasHealth).currentHp -= (other.shotBy as shoots).wep.buldmg
+        if((me as hasHealth).currentHp<1){
+            playSound((me as demByBuls).damagedByBul.deathNoise)
+            me.isDead = true
+            return true
+        }else{
+            playSound((me as demByBuls).damagedByBul.ouchNoise)
+            me.damagedByBul.didGetShot = true
+            me.damagedByBul.gotShotFrames = me.damagedByBul.DAMAGED_ANIMATION_FRAMES
+        }
+    }else if (other is MedPack && (me as hasHealth).currentHp<me.maxHP){
+        me.didHeal = true
+        val desiredhp = (me as hasHealth).currentHp+20
+        if (desiredhp>me.maxHP){
+            me.currentHp = me.maxHP
+        }else{
+            me.currentHp = desiredhp
         }
     }
-    fun dieFromBullet(){
-        (this as Entity).isDead = true
-    }
+    return false
+}
+interface demByBuls{
+    val damagedByBul:damagedByBullets
+}
+class damagedByBullets(val ouchNoise:Clip,
+                       val deathNoise:Clip){
+    val DAMAGED_ANIMATION_FRAMES = 3
+    var didGetShot:Boolean = false
+    var gotShotFrames = DAMAGED_ANIMATION_FRAMES
 }
 fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,otherpos:Double,oldotherpos:Double,oldmecoord:Double,oldothercoord:Double):Double{
     if(diff!=0.0){

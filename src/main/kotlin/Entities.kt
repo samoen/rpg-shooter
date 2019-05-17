@@ -49,11 +49,13 @@ class Bullet(val shotBy: shoots) : Entity() {
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if (((other is Player) ||  other is Enemy || other is Wall )&&shotBy != other) {
             isDead = true
-            val imp = Impact()
-            imp.drawSize = drawSize
-            imp.xpos = xpos
-            imp.ypos = ypos
-            entsToAdd.add(imp)
+            if(other is Wall){
+                val imp = Impact()
+                imp.drawSize = drawSize
+                imp.xpos = xpos
+                imp.ypos = ypos
+                entsToAdd.add(imp)
+            }
         }
     }
     override fun updateEntity() {
@@ -80,7 +82,12 @@ class Weapon(
     var framesSinceShottah:Int = 999
 )
 
-class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
+class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, hasHealth,movementGetsBlocked,demByBuls {
+    override val damagedByBul = damagedByBullets(AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
+    },AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
+    })
     var canEnterGateway:Boolean = true
     var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
     var menuStuff:List<Entity> = listOf()
@@ -94,12 +101,6 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     }
     override var shootNoise: Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/newlongpew.wav").getAbsoluteFile()))
-    }
-    override var ouchNoise: Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
-    }
-    override var deathNoise: Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
     }
     var movedRight = false
     var didMove = false
@@ -127,17 +128,15 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
         if(!isDead){
             blockMovement(other,oldme,oldOther)
-            takeDamage(other)
+            val died = takeDamage(other,this)
+            if(died){
+                currentHp = maxHP
+                for (specificMenu in specificMenus) {
+                    specificMenu.setValue(false)
+                }
+                spawnGate.playersInside.add(this)
+            }
         }
-    }
-
-    override fun dieFromBullet() {
-        super.dieFromBullet()
-        currentHp = maxHP
-        for (specificMenu in specificMenus) {
-            specificMenu.setValue(false)
-        }
-        spawnGate.playersInside.add(this)
     }
 
     override fun updateEntity() {
@@ -206,6 +205,14 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         }else{
             gaitcount = 0
         }
+        if (damagedByBul.didGetShot) {
+            if(damagedByBul.gotShotFrames>0) {
+                todraw = backgroundImage
+                damagedByBul.gotShotFrames--
+            } else {
+                damagedByBul.didGetShot = false
+            }
+        }
         if(angy>Math.PI/2 || angy<-Math.PI/2){
             g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
         }else{
@@ -215,17 +222,15 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     var gaitcount = 0
     var pewframecount = 0
 }
-class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
+class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,demByBuls{
+    override val damagedByBul = damagedByBullets(AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
+    },AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
+    })
     override var shootNoise: Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/enemypew.wav").getAbsoluteFile()))
     }
-    override var ouchNoise: Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
-    }
-    override var deathNoise: Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
-    }
-
     override var wep = Weapon(atkSpd = 20)
     override var speed = 1
     override var xpos = 150.0
@@ -243,7 +248,7 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         blockMovement(other,oldme,oldOther)
-        takeDamage(other)
+        takeDamage(other,this)
     }
 
     override fun drawEntity(g: Graphics) {
@@ -258,6 +263,15 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
     }
 
     override fun updateEntity() {
+        if (damagedByBul.didGetShot) {
+            if(damagedByBul.gotShotFrames>0) {
+                color = Color.ORANGE
+                damagedByBul.gotShotFrames--
+            } else {
+                color = Color.BLUE
+                damagedByBul.didGetShot = false
+            }
+        }
         didHeal = false
         val preupdatePos = Pair(xpos, ypos)
         val willgoforpack = currentHp<maxHP
