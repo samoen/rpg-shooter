@@ -45,13 +45,13 @@ var myPanel:JPanel =object : JPanel() {
             allEntities.forEach { entity ->
                 entity.drawComponents(g)
             }
-            if(player0.menushowign || player0.specificMenus.values.any { it }){
+            if(player0.specificMenus.values.any { it }){
                 player0.menuStuff.forEach {
                     it.updateEntity()
                     it.drawEntity(g)
                 }
             }
-            if(player1.menushowign|| player1.specificMenus.values.any { it }){
+            if(player1.specificMenus.values.any { it }){
                 player1.menuStuff.forEach {
                     it.updateEntity()
                     it.drawEntity(g)

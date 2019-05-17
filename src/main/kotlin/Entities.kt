@@ -9,8 +9,6 @@ import java.awt.geom.AffineTransform
 import java.awt.geom.Path2D
 import java.awt.Rectangle
 
-
-
 open class Entity() {
     open var xpos: Double = 50.0
     open var ypos: Double = 50.0
@@ -84,8 +82,6 @@ class Weapon(
 
 class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, hasHealth,movementGetsBlocked,damagedByBullets {
     var canEnterGateway:Boolean = true
-    var isInsideGate:Boolean = true
-    var menushowign = false
     var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
     var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
@@ -138,7 +134,6 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     override fun dieFromBullet() {
         super.dieFromBullet()
         currentHp = maxHP
-        menushowign = false
         for (specificMenu in specificMenus) {
             specificMenu.setValue(false)
         }
@@ -169,7 +164,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         if(toMovex<0)movedRight = false
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(preControl)
-        if(!menushowign && specificMenus.values.all { !it }){
+        if(specificMenus.values.all { !it }){
             processTurning(pCont.spenlef.booly,pCont.spinri.booly)
             if(pCont.Swp.tryConsume()){
                 playSound(swapNoise)
@@ -313,22 +308,6 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
             val shootem =absanglediff<0.1
             var shoot2 = false
             if(shootem){
-//                val walls = allEntities.filter { it is Wall || it is Player }
-//                outer@ for( i in 1..400 step 20){
-//                    val pointx = (xpos+(drawSize/2))+(Math.cos(angy)*i)
-//                    val pointy = ypos+(drawSize/2)-(Math.sin(angy)*(i))
-//                    if(pointx>INTENDED_FRAME_SIZE || pointx < 0 || pointy>INTENDED_FRAME_SIZE || pointy<0)
-//                        break@outer
-//                    for (wall in walls){
-//                        if(pointx in wall.xpos..wall.xpos+wall.drawSize){
-//                            if(pointy in wall.ypos..wall.ypos+wall.drawSize){
-//                                if(wall is Wall)shoot2 = false
-//                                    break@outer
-//                            }
-//
-//                        }
-//                    }
-//                }
                 val r = Rectangle((xpos).toInt(),(ypos - (wep.bulSize/(drawSize))).toInt(),wep.bulSize.toInt(),700)
                 val path = Path2D.Double()
                 path.append(r, false)
@@ -339,7 +318,6 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,damagedByBullets{
                 if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
             }
             processShooting(shoot2,this.wep)
-
             val fix = absanglediff>Math.PI-turnSpeed
             var lef = radtarget>=angy
             if(fix)lef = !lef
@@ -482,21 +460,21 @@ class BlackSmith(val char:Char):Entity(){
     override var color = Color.CYAN
     override var drawSize = 35.0
     override fun updateEntity() {
-        if(player0.menushowign){
+        if(player0.specificMenus[char]==true){
             if(!overlapsOther(player0)){
-                player0.menushowign = false
+                player0.specificMenus[char] = false
             }
         }
-        if(player1.menushowign){
+        if(player1.specificMenus[char] == true){
             if(!overlapsOther(player1)){
-                player1.menushowign = false
+                player1.specificMenus[char] = false
             }
         }
     }
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(other is Player){
-            if(!other.menushowign){
+            if(other.specificMenus[char]==false){
                 other.menuStuff = listOf(
                     StatView({"Dmg"},other.xpos,0+other.ypos),
                     StatView({"Vel"},other.xpos,statsYSpace+other.ypos),
@@ -566,7 +544,7 @@ class BlackSmith(val char:Char):Entity(){
                     StatView({other.wep.recoil.toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
                     StatView({other.wep.atkSpd.toString() }, statsXSpace+other.xpos,  3*statsYSpace+other.ypos))
 
-                other.menushowign = true
+                other.specificMenus[char] = true
             }
         }
     }
@@ -591,7 +569,7 @@ class Gym(val char:Char):Entity(){
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(other is Player){
-            if(!other.specificMenus[char]!!){
+            if(other.specificMenus[char]==false){
                 other.menuStuff = listOf(
                     StatView({"Run"},other.xpos,other.ypos),
                     StatView({"HP"},other.xpos,statsYSpace+other.ypos),
