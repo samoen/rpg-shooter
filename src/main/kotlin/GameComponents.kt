@@ -21,36 +21,28 @@ fun playSound(clip:Clip){
     clip.framePosition = 0
     clip.start()
 }
+fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
+    if (sht && weap.framesSinceShottah > me.wep.atkSpd) {
+        weap.framesSinceShottah = 0
+        if(me is Player)me.didShoot=true
+        val b = Bullet(me)
+        var canspawn = true
+        allEntities.forEach { if(it is Wall && it.overlapsOther(b))canspawn = false }
+        if(canspawn)
+            entsToAdd.add(Bullet(me))
+        else {
+            val imp = Impact()
+            imp.drawSize = b.drawSize
+            imp.xpos = (b).xpos
+            imp.ypos = (b).ypos
+            entsToAdd.add(imp)
+        }
 
-
-interface shoots{
-    var shootNoise:Clip
-    var angy :Double
-    var wep:Weapon
-    var turnSpeed:Float
-    var bulColor:Color
-    fun processShooting(sht:Boolean,weap:Weapon){
-        if (sht && weap.framesSinceShottah > this.wep.atkSpd) {
-            weap.framesSinceShottah = 0
-            if(this is Player)this.didShoot=true
-            val b = Bullet(this)
-            var canspawn = true
-            allEntities.forEach { if(it is Wall && it.overlapsOther(b))canspawn = false }
-            if(canspawn)
-            entsToAdd.add(Bullet(this))
-            else {
-                val imp = Impact()
-                imp.drawSize = b.drawSize
-                imp.xpos = (b).xpos
-                imp.ypos = (b).ypos
-                entsToAdd.add(imp)
+        if(me.shootNoise.isRunning){
+            val newclip = AudioSystem.getClip().also{
+                it.open(AudioSystem.getAudioInputStream(File("src/main/resources/newlongpew.wav").getAbsoluteFile()))
             }
-
-            if(shootNoise.isRunning){
-                val newclip = AudioSystem.getClip().also{
-                    it.open(AudioSystem.getAudioInputStream(File("src/main/resources/newlongpew.wav").getAbsoluteFile()))
-                }
-                newclip.start()
+            newclip.start()
 //                Thread(Runnable({
 //                    shootNoise.stop()
 //                                        shootNoise.flush()
@@ -66,91 +58,96 @@ interface shoots{
 //                shootNoise.start()
 
 
-            }else{
-                shootNoise.framePosition=0
-                shootNoise.start()
-            }
-        }
-        weap.framesSinceShottah++
-
-    }
-
-    fun processTurning(lef:Boolean,righ:Boolean){
-        if (lef) {
-            var desired = angy+turnSpeed
-            if(desired>Math.PI){
-                angy = -Math.PI + (desired-Math.PI)
-            }else
-                angy += turnSpeed
-        }
-        if (righ){
-            val desired = angy-turnSpeed
-            if(desired<-Math.PI)angy = Math.PI - (-Math.PI-desired)
-            else angy -= turnSpeed
-        }
-    }
-    fun drawCrosshair(g: Graphics){
-        g.color = Color.CYAN
-        val strkw = if(this is Player)1.2f
-        else 5f
-        (g as Graphics2D).stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
-        val arcdiameter = (this as Entity).drawSize
-        fun doarc(diver:Double,timeser:Double){
-            val spread = (7)*(wep.recoil+1)
-            val bspd = wep.bulspd*2
-            g.drawArc(
-                getWindowAdjustedPos(((this as Entity).xpos)+(diver)).toInt()-bspd,
-                getWindowAdjustedPos(((this as Entity).ypos)+(diver)).toInt()-bspd,
-                (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
-                (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
-                ((angy*180/Math.PI)-spread/2).toInt(),
-                spread.toInt()
-            )
-        }
-        if(this is Player){
-            doarc(drawSize/4,0.5)
-            doarc(-drawSize/3.5,1.55)
-            doarc(0.0,1.0)
-            doarc(-drawSize/1.7,2.15)
         }else{
-            g.drawArc(
-                getWindowAdjustedPos(((this as Entity).xpos)).toInt(),
-                getWindowAdjustedPos(((this as Entity).ypos)).toInt(),
-                (getWindowAdjustedPos((arcdiameter))).toInt(),
-                (getWindowAdjustedPos((arcdiameter))).toInt(),
-                ((angy*180/Math.PI)-5/2).toInt(),
-                5.toInt()
-            )
+            me.shootNoise.framePosition=0
+            me.shootNoise.start()
         }
+    }
+    weap.framesSinceShottah++
+
+}
+fun processTurning(me:shoots,lef:Boolean,righ:Boolean){
+    if (lef) {
+        var desired = me.angy+me.turnSpeed
+        if(desired>Math.PI){
+            me.angy = -Math.PI + (desired-Math.PI)
+        }else
+            me.angy += me.turnSpeed
+    }
+    if (righ){
+        val desired = me.angy-me.turnSpeed
+        if(desired<-Math.PI)me.angy = Math.PI - (-Math.PI-desired)
+        else me.angy -= me.turnSpeed
+    }
+}
+fun drawCrosshair(me:shoots,g: Graphics){
+    g.color = Color.CYAN
+    val strkw = if(me is Player)1.2f
+    else 5f
+    (g as Graphics2D).stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
+    val arcdiameter = (me as Entity).drawSize
+    fun doarc(diver:Double,timeser:Double){
+        val spread = (7)*(me.wep.recoil+1)
+        val bspd = me.wep.bulspd*2
+        g.drawArc(
+            getWindowAdjustedPos(((me as Entity).xpos)+(diver)).toInt()-bspd,
+            getWindowAdjustedPos(((me as Entity).ypos)+(diver)).toInt()-bspd,
+            (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
+            (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
+            ((me.angy*180/Math.PI)-spread/2).toInt(),
+            spread.toInt()
+        )
+    }
+    if(me is Player){
+        doarc(me.drawSize/4,0.5)
+        doarc(-me.drawSize/3.5,1.55)
+        doarc(0.0,1.0)
+        doarc(-me.drawSize/1.7,2.15)
+    }else{
+        g.drawArc(
+            getWindowAdjustedPos(((me as Entity).xpos)).toInt(),
+            getWindowAdjustedPos(((me as Entity).ypos)).toInt(),
+            (getWindowAdjustedPos((arcdiameter))).toInt(),
+            (getWindowAdjustedPos((arcdiameter))).toInt(),
+            ((me.angy*180/Math.PI)-5/2).toInt(),
+            5.toInt()
+        )
+    }
 //        doarc(-drawSize,3.0)
 //        g.color = Color.ORANGE
-        (g as Graphics2D).stroke = BasicStroke(1f)
-    }
-    fun drawReload(g: Graphics,weap: Weapon){
-        if(weap.framesSinceShottah<wep.atkSpd){
-            g.color = Color.CYAN
-            (g as Graphics2D).stroke = BasicStroke(2f)
+    (g as Graphics2D).stroke = BasicStroke(1f)
+}
+fun drawReload(me:shoots,g: Graphics,weap: Weapon){
+    if(weap.framesSinceShottah<me.wep.atkSpd){
+        g.color = Color.CYAN
+        (g as Graphics2D).stroke = BasicStroke(2f)
 
-            g.drawLine(
-                getWindowAdjustedPos ((this as Entity).xpos).toInt(),
-                getWindowAdjustedPos((this as Entity).ypos).toInt()-2,
-                getWindowAdjustedPos  ( (xpos + (drawSize * (wep.atkSpd - weap.framesSinceShottah) / wep.atkSpd)) ).toInt(),
-                getWindowAdjustedPos(ypos).toInt()-2
-            )
-            g.drawLine(
-                getWindowAdjustedPos ((this as Entity).xpos).toInt(),
-                getWindowAdjustedPos((this as Entity).ypos).toInt()-4,
-                getWindowAdjustedPos  ( (xpos + (drawSize * (wep.atkSpd - weap.framesSinceShottah) / wep.atkSpd)) ).toInt(),
-                getWindowAdjustedPos(ypos).toInt()-4
-            )
-            g.stroke = BasicStroke(1f)
-        }
+        g.drawLine(
+            getWindowAdjustedPos ((me as Entity).xpos).toInt(),
+            getWindowAdjustedPos((me as Entity).ypos).toInt()-2,
+            getWindowAdjustedPos  ( (me.xpos + (me.drawSize * (me.wep.atkSpd - weap.framesSinceShottah) / me.wep.atkSpd)) ).toInt(),
+            getWindowAdjustedPos(me.ypos).toInt()-2
+        )
+        g.drawLine(
+            getWindowAdjustedPos ((me as Entity).xpos).toInt(),
+            getWindowAdjustedPos((me as Entity).ypos).toInt()-4,
+            getWindowAdjustedPos  ( (me.xpos + (me.drawSize * (me.wep.atkSpd - weap.framesSinceShottah) / me.wep.atkSpd)) ).toInt(),
+            getWindowAdjustedPos(me.ypos).toInt()-4
+        )
+        g.stroke = BasicStroke(1f)
     }
+}
+interface shoots{
+    var shootNoise:Clip
+    var angy :Double
+    var wep:Weapon
+    var turnSpeed:Float
+    var bulColor:Color
 }
 fun takeDamage(other:Entity,me:Entity):Boolean{
     if(other is Bullet && other.shotBy::class!=me::class) {
-        (me as hasHealth).currentHp -= (other.shotBy as shoots).wep.buldmg
-        if((me as hasHealth).currentHp<1){
+        (me as hasHealth).hasHealth.currentHp -= (other.shotBy as shoots).wep.buldmg
+        if((me as hasHealth).hasHealth.currentHp<1){
             playSound((me as demByBuls).damagedByBul.deathNoise)
             me.isDead = true
             return true
@@ -159,13 +156,13 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
             me.damagedByBul.didGetShot = true
             me.damagedByBul.gotShotFrames = me.damagedByBul.DAMAGED_ANIMATION_FRAMES
         }
-    }else if (other is MedPack && (me as hasHealth).currentHp<me.maxHP){
-        me.didHeal = true
-        val desiredhp = (me as hasHealth).currentHp+20
-        if (desiredhp>me.maxHP){
-            me.currentHp = me.maxHP
+    }else if (other is MedPack && (me as hasHealth).hasHealth.currentHp<me.hasHealth.maxHP){
+        me.hasHealth.didHeal = true
+        val desiredhp = (me as hasHealth).hasHealth.currentHp+20
+        if (desiredhp>me.hasHealth.maxHP){
+            me.hasHealth.currentHp = me.hasHealth.maxHP
         }else{
-            me.currentHp = desiredhp
+            me.hasHealth.currentHp = desiredhp
         }
     }
     return false
@@ -208,62 +205,65 @@ fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,o
     }
     return 0.0
 }
-interface movementGetsBlocked{
-    fun doIGetBlockedBy(entity: Entity):Boolean {
-        return (entity is Wall) || (entity is Enemy) || entity is Player
-    }
-    fun blockMovement(other: Entity, oldme: EntDimens,oldOther:EntDimens){
+fun doIGetBlockedBy(entity: Entity):Boolean {
+    return (entity is Wall) || (entity is Enemy) || entity is Player
+}
 
-        if(doIGetBlockedBy(other)){
-            val xdiff = (this as Entity).xpos - oldme.xpos
-            val ydiff = (this as Entity).ypos - oldme.ypos
-            val midDistX =  abs(abs(oldOther.getMidpoint().first)-abs(oldme.getMidpoint().first))
-            val midDistY = abs(abs(oldOther.getMidpoint().second)-abs(oldme.getMidpoint().second))
-            if(midDistX>midDistY){
-                xpos += specialk((this as Entity).drawSize,this.speed,other.drawSize,xdiff,this.xpos,other.xpos,oldOther.xpos,oldme.getMidpoint().first,oldOther.getMidpoint().first)
-            }else{
-                ypos += specialk((this as Entity).drawSize,this.speed,other.drawSize,ydiff,this.ypos,other.ypos,oldOther.ypos,oldme.getMidpoint().second,oldOther.getMidpoint().second)
-            }
-        }
-    }
-
-    fun stayInMap(oldme: Pair<Double, Double>){
-        var limit = INTENDED_FRAME_SIZE-(this as Entity).drawSize
-        limit -= XMAXMAGIC/myFrame.width
-        if(xpos>limit){
-            (this as Entity).xpos -= this.xpos - limit
-        }
-        if((this as Entity).xpos<0){
-            (this as Entity).xpos -= this.xpos
-        }
-        if((this as Entity).ypos>INTENDED_FRAME_SIZE-drawSize) {
-            (this as Entity).ypos -= this.ypos - INTENDED_FRAME_SIZE + drawSize
-        }
-        if((this as Entity).ypos<0){
-            (this as Entity).ypos -= this.ypos
+fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
+    if(doIGetBlockedBy(other)){
+        val xdiff = me.xpos - oldme.xpos
+        val ydiff = me.ypos - oldme.ypos
+        val midDistX =  abs(abs(oldOther.getMidpoint().first)-abs(oldme.getMidpoint().first))
+        val midDistY = abs(abs(oldOther.getMidpoint().second)-abs(oldme.getMidpoint().second))
+        if(midDistX>midDistY){
+            me.xpos += specialk(me.drawSize,me.speed,other.drawSize,xdiff,me.xpos,other.xpos,oldOther.xpos,oldme.getMidpoint().first,oldOther.getMidpoint().first)
+        }else{
+            me.ypos += specialk(me.drawSize,me.speed,other.drawSize,ydiff,me.ypos,other.ypos,oldOther.ypos,oldme.getMidpoint().second,oldOther.getMidpoint().second)
         }
     }
 }
-
-interface hasHealth{
-    var didHeal :Boolean
-    var currentHp :Double
-    val maxHP :Double
-    fun drawHealth(g:Graphics){
-        g.color = Color.GREEN
-        (g as Graphics2D).stroke = BasicStroke(2f)
-        g.drawLine(
-            getWindowAdjustedPos((this as Entity).xpos).toInt(),
-            getWindowAdjustedPos((this as Entity).ypos).toInt() - 8,
-            getWindowAdjustedPos(((this as Entity).xpos + ((this as Entity).drawSize * currentHp / maxHP))).toInt(),
-            getWindowAdjustedPos((this as Entity).ypos).toInt() - 8
-        )
-        g.drawLine(
-            getWindowAdjustedPos(xpos).toInt(),
-            getWindowAdjustedPos(ypos).toInt() - 10,
-            getWindowAdjustedPos((this as Entity).xpos + ((this as Entity).drawSize * currentHp / maxHP)).toInt(),
-            getWindowAdjustedPos((this as Entity).ypos).toInt() - 10
-        )
-        g.stroke = BasicStroke(1f)
+fun stayInMap(me:Entity){
+    var limit = INTENDED_FRAME_SIZE-me.drawSize
+    limit -= XMAXMAGIC/myFrame.width
+    if(me.xpos>limit){
+        me.xpos -= me.xpos - limit
     }
+    if(me.xpos<0){
+        me.xpos -= me.xpos
+    }
+    if(me.ypos>INTENDED_FRAME_SIZE-me.drawSize) {
+        me.ypos -= me.ypos - INTENDED_FRAME_SIZE + me.drawSize
+    }
+    if(me.ypos<0){
+        me.ypos -= me.ypos
+    }
+}
+interface movementGetsBlocked{
+    
+}
+fun drawHealth(me:hasHealth, g:Graphics){
+    me as Entity
+    g.color = Color.GREEN
+    (g as Graphics2D).stroke = BasicStroke(2f)
+    g.drawLine(
+        getWindowAdjustedPos(me.xpos).toInt(),
+        getWindowAdjustedPos(me.ypos).toInt() - 8,
+        getWindowAdjustedPos((me.xpos + (me.drawSize * me.hasHealth.currentHp / me.hasHealth.maxHP))).toInt(),
+        getWindowAdjustedPos(me.ypos).toInt() - 8
+    )
+    g.drawLine(
+        getWindowAdjustedPos(me.xpos).toInt(),
+        getWindowAdjustedPos(me.ypos).toInt() - 10,
+        getWindowAdjustedPos(me.xpos + (me.drawSize * me.hasHealth.currentHp / me.hasHealth.maxHP)).toInt(),
+        getWindowAdjustedPos(me.ypos).toInt() - 10
+    )
+    g.stroke = BasicStroke(1f)
+}
+class healthHolder{
+    var didHeal :Boolean = false
+    var currentHp :Double = 10.0
+    var maxHP :Double = 10.0
+}
+interface hasHealth{
+    var hasHealth:healthHolder
 }

@@ -9,19 +9,21 @@ import java.awt.geom.AffineTransform
 import java.awt.geom.Path2D
 import java.awt.Rectangle
 
-open class Entity() {
-    open var xpos: Double = 50.0
-    open var ypos: Double = 50.0
-    open var isDead: Boolean = false
-    open var entityTag: String = "default"
-    open var speed: Int = 2
-    open var drawSize: Double = 10.0
-    open var color: Color = Color.BLUE
-    open fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
+interface Entity {
+    var xpos: Double
+    var ypos: Double
+    var isDead: Boolean
+    var entityTag: String
+    var speed: Int
+    var drawSize: Double
+    var color: Color
+
+
+    fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
 
     }
-    open fun updateEntity() {}
-    open fun drawComponents(g: Graphics) {}
+    fun updateEntity() {}
+    fun drawComponents(g: Graphics) {}
     fun overlapsOther(other: Entity):Boolean{
         return this.ypos+this.drawSize > other.ypos &&
                 this.ypos<other.ypos+other.drawSize &&
@@ -31,7 +33,7 @@ open class Entity() {
     fun getMidpoint():Pair<Double,Double>{
         return Pair((xpos+(drawSize/2)),ypos+(drawSize/2))
     }
-    open fun drawEntity(g: Graphics) {
+    fun drawEntity(g: Graphics) {
         g.color = color
         g.fillRect(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedPos(drawSize).toInt(), getWindowAdjustedPos(drawSize).toInt())
     }
@@ -39,13 +41,16 @@ open class Entity() {
 fun getWindowAdjustedPos(pos:Double):Double{
     return pos * myFrame.width/INTENDED_FRAME_SIZE
 }
-class Bullet(val shotBy: shoots) : Entity() {
+class Bullet(val shotBy: shoots) : Entity {
     var bulDir = shotBy.angy + ((Math.random()-0.5)*shotBy.wep.recoil/6.0)
     override var drawSize = shotBy.wep.bulSize
     override var xpos =  ((shotBy as Entity).getMidpoint().first-(shotBy.wep.bulSize/2))+(Math.cos(shotBy.angy)*0.8*shotBy.drawSize)
     override var ypos = ((shotBy as Entity).getMidpoint().second-(shotBy.wep.bulSize/2))-(Math.sin(shotBy.angy)*0.8*shotBy.drawSize)
     override var speed = shotBy.wep.bulspd
     override var color = shotBy.bulColor
+
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if (((other is Player) ||  other is Enemy || other is Wall )&&shotBy != other) {
             isDead = true
@@ -82,7 +87,8 @@ class Weapon(
     var framesSinceShottah:Int = 999
 )
 
-class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, hasHealth,movementGetsBlocked,demByBuls {
+class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, hasHealth,movementGetsBlocked,demByBuls {
+
     override val damagedByBul = damagedByBullets(AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
     },AudioSystem.getClip().also{
@@ -107,10 +113,11 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     var didShoot = false
     override var speed = 10
     override var drawSize = 40.0
-    override var didHeal=false
+    override var hasHealth=healthHolder().also {
+        it.maxHP=drawSize
+        it.currentHp = it.maxHP
+    }
     override var angy = 0.0
-    override var maxHP = drawSize
-    override var currentHp = maxHP
     override var bulColor = Color.LIGHT_GRAY
     override var turnSpeed = 0.1f
     var primaryEquipped = true
@@ -124,13 +131,17 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     )
     var primWep = Weapon()
     override var wep = primWep
-
+    override var xpos: Double = 50.0
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var color: Color = Color.BLUE
     override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
         if(!isDead){
-            blockMovement(other,oldme,oldOther)
+            blockMovement(this,other,oldme,oldOther)
             val died = takeDamage(other,this)
             if(died){
-                currentHp = maxHP
+                hasHealth.currentHp = hasHealth.maxHP
                 for (specificMenu in specificMenus) {
                     specificMenu.setValue(false)
                 }
@@ -141,7 +152,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
 
     override fun updateEntity() {
         didMove = false
-        didHeal = false
+        hasHealth.didHeal = false
         var preControl = Pair(xpos, ypos)
         var toMovex = 0.0
         var toMovey = 0.0
@@ -162,9 +173,9 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
         if(toMovex>0)movedRight = true
         if(toMovex<0)movedRight = false
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
-        stayInMap(preControl)
+        stayInMap(this)
         if(specificMenus.values.all { !it }){
-            processTurning(pCont.spenlef.booly,pCont.spinri.booly)
+            processTurning(this,pCont.spenlef.booly,pCont.spinri.booly)
             if(pCont.Swp.tryConsume()){
                 playSound(swapNoise)
                 if (primaryEquipped){
@@ -174,14 +185,14 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
                 }
                 primaryEquipped = !primaryEquipped
             }
-            processShooting(pCont.sht.booly,this.wep)
+            processShooting(this,pCont.sht.booly,this.wep)
         }
     }
 
     override fun drawComponents(g: Graphics) {
-        drawCrosshair(g)
-        drawReload(g,this.wep)
-        drawHealth(g)
+        drawCrosshair(this,g)
+        drawReload(this,g,this.wep)
+        drawHealth(this,g)
     }
 
     override fun drawEntity(g: Graphics) {
@@ -222,7 +233,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity(), shoots, h
     var gaitcount = 0
     var pewframecount = 0
 }
-class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,demByBuls{
+class Enemy : Entity, shoots, hasHealth, movementGetsBlocked,demByBuls{
     override val damagedByBul = damagedByBullets(AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
     },AudioSystem.getClip().also{
@@ -236,18 +247,22 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,demByBuls{
     override var xpos = 150.0
     override var drawSize = 25.0
     override var angy = 0.0
-    override var didHeal=false
-    override var maxHP = drawSize
-    override var currentHp = maxHP
+    override var hasHealth=healthHolder().also {
+        it.maxHP=drawSize
+        it.currentHp = it.maxHP
+    }
     override var bulColor = Color.RED
     override var turnSpeed = 0.05f
     var framesSinceDrift = 100
     var randnumx = 0.0
     var randnumy = 0.0
     var iTried = Pair(-1.0,-1.0)
-
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var color: Color = Color.BLUE
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        blockMovement(other,oldme,oldOther)
+        blockMovement(this,other,oldme,oldOther)
         takeDamage(other,this)
     }
 
@@ -272,9 +287,9 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,demByBuls{
                 damagedByBul.didGetShot = false
             }
         }
-        didHeal = false
+        hasHealth.didHeal = false
         val preupdatePos = Pair(xpos, ypos)
-        val willgoforpack = currentHp<maxHP
+        val willgoforpack = hasHealth.currentHp<hasHealth.maxHP
         val filteredEnts = allEntities
             .filter { it is Player }
             .sortedBy { abs(it.xpos - xpos) + abs(it.ypos - ypos) }
@@ -312,7 +327,7 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,demByBuls{
                 }
             }
             iTried = Pair(xpos,ypos)
-            stayInMap(preupdatePos)
+            stayInMap(this)
 
             val dx = getMidpoint().first - filteredEnts.first().getMidpoint().first
             val dy = getMidpoint().second - filteredEnts.first().getMidpoint().second
@@ -331,32 +346,38 @@ class Enemy : Entity(), shoots, hasHealth, movementGetsBlocked,demByBuls{
                 val intersectors = allEntities.filter {it is Wall || it is Player}.filter {  path.intersects(Rectangle(it.xpos.toInt(),it.ypos.toInt(),it.drawSize.toInt(),it.drawSize.toInt()))}.sortedBy { Math.abs(it.ypos-ypos)+Math.abs(it.xpos-xpos) }
                 if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
             }
-            processShooting(shoot2,this.wep)
+            processShooting(this,shoot2,this.wep)
             val fix = absanglediff>Math.PI-turnSpeed
             var lef = radtarget>=angy
             if(fix)lef = !lef
-            processTurning(lef && !shootem,!lef && !shootem)
+            processTurning(this,lef && !shootem,!lef && !shootem)
         }
     }
 
     override fun drawComponents(g: Graphics) {
-        drawHealth(g)
-        drawCrosshair(g)
+        drawHealth(this,g)
+        drawCrosshair(this,g)
     }
 }
 val wallImage = ImageIcon("src/main/resources/brick1.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
-class Wall : Entity(){
+class Wall : Entity{
+
     override var drawSize = 20.0
     override var color = Color.DARK_GRAY
+    override var xpos: Double = 50.0
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var speed: Int = 2
     override fun drawEntity(g: Graphics) {
 //        super.drawEntity(g)
         g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
     }
 }
 
-class Gateway : Entity(){
+class Gateway : Entity{
     var playersInside = mutableListOf<Player>()
     var map = map1
     var mapnum = 1
@@ -366,8 +387,13 @@ class Gateway : Entity(){
     //    override fun drawEntity(g: Graphics) {
 //        super.drawEntity(g)
 //    }
-    var someoneSpawned:Entity = Entity()
+    var someoneSpawned:Entity = this
     var sumspn = false
+    override var xpos: Double = 50.0
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var speed: Int = 2
     override fun drawEntity(g: Graphics) {
         if(locked)
         g.drawImage(gateClosedImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
@@ -430,9 +456,14 @@ class Gateway : Entity(){
         }
     }
 }
-class GateSwitch:Entity(){
+class GateSwitch:Entity{
     override var drawSize = 20.0
     override var color = Color.YELLOW
+    override var xpos: Double = 50.0
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var speed: Int = 2
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(other is Player){
          allEntities.filter { it is Gateway }.forEach {
@@ -449,7 +480,14 @@ var currentMapNum = 1
 var changeMap = false
 var NumPlayers = 2
 
-class Impact : Entity(){
+class Impact : Entity{
+    override var xpos: Double = 50.0
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var speed: Int = 2
+    override var drawSize: Double = 10.0
+    override var color: Color = Color.BLUE
     override fun drawEntity(g: Graphics) {
 //        super.drawEntity(g)
         g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
@@ -462,17 +500,27 @@ class Impact : Entity(){
     }
 }
 
-class MedPack : Entity() {
+class MedPack : Entity {
     override var color = Color.GREEN
     override var drawSize = 20.0
+    override var xpos: Double = 50.0
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var speed: Int = 2
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if (other is hasHealth && (other.currentHp<other.maxHP || other.didHeal)) isDead = true
+        if (other is hasHealth && (other.hasHealth.currentHp<other.hasHealth.maxHP || other.hasHealth.didHeal)) isDead = true
     }
 }
 
-class BlackSmith(val char:Char):Entity(){
+class BlackSmith(val char:Char):Entity{
     override var color = Color.CYAN
     override var drawSize = 35.0
+    override var xpos: Double = 50.0
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var speed: Int = 2
     override fun updateEntity() {
         if(player0.specificMenus[char]==true){
             if(!overlapsOther(player0)){
@@ -494,12 +542,15 @@ class BlackSmith(val char:Char):Entity(){
                     StatView({"Vel"},other.xpos,statsYSpace+other.ypos),
                     StatView({"Rec"},other.xpos,statsYSpace*2+other.ypos),
                     StatView({"Rel"},other.xpos,statsYSpace*3+other.ypos),
-                    object:Entity(){
+                    object:Entity{
                         override var xpos = other.xpos+selectorXSpace
+                        override var ypos = other.ypos
                         override var color = Color.BLUE
                         override var drawSize = 20.0
-                        override var ypos = other.ypos
                         var indexer = 0
+                        override var isDead: Boolean = false
+                        override var entityTag: String = "default"
+                        override var speed: Int = 2
                         override fun updateEntity() {
                             if(other.pCont.sht.tryConsume()){
                                 if(indexer+1<4){
@@ -563,10 +614,15 @@ class BlackSmith(val char:Char):Entity(){
         }
     }
 }
-class Gym(val char:Char):Entity(){
+class Gym(val char:Char):Entity{
 
     override var color = Color.WHITE
     override var drawSize = 35.0
+    override var xpos: Double = 50.0
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var speed: Int = 2
     override fun updateEntity() {
         if(player0.specificMenus[char]!!){
             if(!overlapsOther(player0)){
@@ -588,12 +644,15 @@ class Gym(val char:Char):Entity(){
                     StatView({"Run"},other.xpos,other.ypos),
                     StatView({"HP"},other.xpos,statsYSpace+other.ypos),
                     StatView({"Turn"},other.xpos,2*statsYSpace+other.ypos),
-                    object:Entity(){
+                    object:Entity{
                         override var xpos = other.xpos+selectorXSpace
                         override var color = Color.BLUE
                         override var drawSize = 20.0
                         override var ypos = other.ypos
                         var indexer = 0
+                        override var isDead: Boolean = false
+                        override var entityTag: String = "default"
+                        override var speed: Int = 2
                         override fun updateEntity() {
                             if(other.pCont.sht.tryConsume()){
                                 if(indexer+1<3){
@@ -614,8 +673,8 @@ class Gym(val char:Char):Entity(){
                                     }
                                     1->{
                                         other.drawSize  += 3
-                                        other.maxHP +=10
-                                        other.currentHp = other.maxHP
+                                        other.hasHealth.maxHP +=10
+                                        other.hasHealth.currentHp = other.hasHealth.maxHP
                                     }
                                     2->{
                                         val desired = "%.4f".format(other.turnSpeed+0.01f).toFloat()
@@ -630,12 +689,12 @@ class Gym(val char:Char):Entity(){
                                     }
                                     1->{
                                         val desiredSize = other.drawSize-3
-                                        val desiredHp = other.maxHP-10
+                                        val desiredHp = other.hasHealth.maxHP-10
                                         if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
                                             other.drawSize = desiredSize
-                                            other.maxHP = desiredHp
+                                            other.hasHealth.maxHP = desiredHp
                                         }
-                                        other.currentHp = other.maxHP
+                                        other.hasHealth.currentHp = other.hasHealth.maxHP
                                     }
                                     2->{
                                         val desired = "%.4f".format(other.turnSpeed-0.01f).toFloat()
@@ -646,7 +705,7 @@ class Gym(val char:Char):Entity(){
                         }
                     },
                     StatView({other.speed.toString() }, statsXSpace+other.xpos, other.ypos),
-                    StatView({other.maxHP.toInt().toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
+                    StatView({other.hasHealth.maxHP.toInt().toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
                     StatView({( other.turnSpeed*100).toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos)
                 )
 
@@ -655,7 +714,14 @@ class Gym(val char:Char):Entity(){
         }
     }
 }
-class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity(){
+class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity{
+    override var xpos: Double = 50.0
+    override var ypos: Double = 50.0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var speed: Int = 2
+    override var drawSize: Double = 10.0
+    override var color: Color = Color.BLUE
     override fun drawEntity(g: Graphics) {
         g.color = Color.BLUE
         g.font = g.font.deriveFont((myFrame.width/70).toFloat())

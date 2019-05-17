@@ -109,8 +109,8 @@ fun gameTick(){
                     collided = true
                 }
                 if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient)) {
-                    val iBlockedTrigger = (jent is movementGetsBlocked && jent.doIGetBlockedBy(ient))
-                    val jBlockedTrigger = (ient is movementGetsBlocked && ient.doIGetBlockedBy(jent))
+                    val iBlockedTrigger = (jent is movementGetsBlocked && doIGetBlockedBy(ient))
+                    val jBlockedTrigger = (ient is movementGetsBlocked && doIGetBlockedBy(jent))
                     if (iBlockedTrigger||jBlockedTrigger) {
                         if(timesTried > 10){
                             println("Cannot resolve collision!")
@@ -150,8 +150,8 @@ fun revivePlayers(heal:Boolean){
 //    player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize)
 //    player1.xpos = (player0.drawSize)
     if(heal){
-        player0.currentHp = player0.maxHP
-        player1.currentHp = player1.maxHP
+        player0.hasHealth.currentHp = player0.hasHealth.maxHP
+        player1.hasHealth.currentHp = player1.hasHealth.maxHP
     }
 }
 
@@ -311,8 +311,8 @@ fun randEnemy():Enemy{
     val se = Enemy()
     se.turnSpeed = (0.01+(Math.random()/15)).toFloat()
     se.drawSize = 20+(Math.random()*30)
-    se.maxHP = (se.drawSize/2)
-    se.currentHp = se.maxHP
+    se.hasHealth.maxHP = (se.drawSize/2)
+    se.hasHealth.currentHp = se.hasHealth.maxHP
     se.speed = (Math.random()*3).toInt()+1
     se.wep.bulSize = 8.0+(Math.random()*40)
     se.wep.buldmg = se.wep.bulSize.toInt()
