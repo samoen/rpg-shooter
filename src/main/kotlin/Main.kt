@@ -309,15 +309,15 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
 
 fun randEnemy():Enemy{
     val se = Enemy()
-    se.turnSpeed = (0.01+(Math.random()/15)).toFloat()
+    se.tshd.turnSpeed = (0.01+(Math.random()/15)).toFloat()
     se.drawSize = 20+(Math.random()*30)
     se.hasHealth.maxHP = (se.drawSize/2)
     se.hasHealth.currentHp = se.hasHealth.maxHP
     se.speed = (Math.random()*3).toInt()+1
-    se.wep.bulSize = 8.0+(Math.random()*40)
-    se.wep.buldmg = se.wep.bulSize.toInt()
-    se.wep.atkSpd = (Math.random()*20).toInt()+10
-    se.wep.bulspd = (Math.random()*10).toInt()+3
+    se.tshd.wep.bulSize = 8.0+(Math.random()*40)
+    se.tshd.wep.buldmg = se.tshd.wep.bulSize.toInt()
+    se.tshd.wep.atkSpd = (Math.random()*20).toInt()+10
+    se.tshd.wep.bulspd = (Math.random()*10).toInt()+3
     return  se
 }
 
@@ -373,7 +373,7 @@ fun main() {
         player1
 //        , Wall()
     ))
-    playSound(player0.shootNoise)
+    playSound(player0.tshd.shootNoise)
 //    player0.collide(player1,EntDimens(player0.xpos,player0.ypos,player0.drawSize),EntDimens(player1.xpos,player1.ypos,player1.drawSize))
 
     myFrame.addKeyListener(

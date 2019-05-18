@@ -22,7 +22,7 @@ fun playSound(clip:Clip){
     clip.start()
 }
 fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
-    if (sht && weap.framesSinceShottah > me.wep.atkSpd) {
+    if (sht && weap.framesSinceShottah > me.tshd.wep.atkSpd) {
         weap.framesSinceShottah = 0
         if(me is Player)me.didShoot=true
         val b = Bullet(me)
@@ -38,7 +38,7 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
             entsToAdd.add(imp)
         }
 
-        if(me.shootNoise.isRunning){
+        if(me.tshd.shootNoise.isRunning){
             val newclip = AudioSystem.getClip().also{
                 it.open(AudioSystem.getAudioInputStream(File("src/main/resources/newlongpew.wav").getAbsoluteFile()))
             }
@@ -59,8 +59,8 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
 
 
         }else{
-            me.shootNoise.framePosition=0
-            me.shootNoise.start()
+            me.tshd.shootNoise.framePosition=0
+            me.tshd.shootNoise.start()
         }
     }
     weap.framesSinceShottah++
@@ -68,16 +68,16 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
 }
 fun processTurning(me:shoots,lef:Boolean,righ:Boolean){
     if (lef) {
-        var desired = me.angy+me.turnSpeed
+        var desired = me.tshd.angy+me.tshd.turnSpeed
         if(desired>Math.PI){
-            me.angy = -Math.PI + (desired-Math.PI)
+            me.tshd.angy = -Math.PI + (desired-Math.PI)
         }else
-            me.angy += me.turnSpeed
+            me.tshd.angy += me.tshd.turnSpeed
     }
     if (righ){
-        val desired = me.angy-me.turnSpeed
-        if(desired<-Math.PI)me.angy = Math.PI - (-Math.PI-desired)
-        else me.angy -= me.turnSpeed
+        val desired = me.tshd.angy-me.tshd.turnSpeed
+        if(desired<-Math.PI)me.tshd.angy = Math.PI - (-Math.PI-desired)
+        else me.tshd.angy -= me.tshd.turnSpeed
     }
 }
 fun drawCrosshair(me:shoots,g: Graphics){
@@ -87,14 +87,14 @@ fun drawCrosshair(me:shoots,g: Graphics){
     (g as Graphics2D).stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
     val arcdiameter = (me as Entity).drawSize
     fun doarc(diver:Double,timeser:Double){
-        val spread = (7)*(me.wep.recoil+1)
-        val bspd = me.wep.bulspd*2
+        val spread = (7)*(me.tshd.wep.recoil+1)
+        val bspd = me.tshd.wep.bulspd*2
         g.drawArc(
             getWindowAdjustedPos(((me as Entity).xpos)+(diver)).toInt()-bspd,
             getWindowAdjustedPos(((me as Entity).ypos)+(diver)).toInt()-bspd,
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
-            ((me.angy*180/Math.PI)-spread/2).toInt(),
+            ((me.tshd.angy*180/Math.PI)-spread/2).toInt(),
             spread.toInt()
         )
     }
@@ -109,7 +109,7 @@ fun drawCrosshair(me:shoots,g: Graphics){
             getWindowAdjustedPos(((me as Entity).ypos)).toInt(),
             (getWindowAdjustedPos((arcdiameter))).toInt(),
             (getWindowAdjustedPos((arcdiameter))).toInt(),
-            ((me.angy*180/Math.PI)-5/2).toInt(),
+            ((me.tshd.angy*180/Math.PI)-5/2).toInt(),
             5.toInt()
         )
     }
@@ -118,35 +118,37 @@ fun drawCrosshair(me:shoots,g: Graphics){
     (g as Graphics2D).stroke = BasicStroke(1f)
 }
 fun drawReload(me:shoots,g: Graphics,weap: Weapon){
-    if(weap.framesSinceShottah<me.wep.atkSpd){
+    if(weap.framesSinceShottah<me.tshd.wep.atkSpd){
         g.color = Color.CYAN
         (g as Graphics2D).stroke = BasicStroke(2f)
 
         g.drawLine(
             getWindowAdjustedPos ((me as Entity).xpos).toInt(),
             getWindowAdjustedPos((me as Entity).ypos).toInt()-2,
-            getWindowAdjustedPos  ( (me.xpos + (me.drawSize * (me.wep.atkSpd - weap.framesSinceShottah) / me.wep.atkSpd)) ).toInt(),
+            getWindowAdjustedPos  ( (me.xpos + (me.drawSize * (me.tshd.wep.atkSpd - weap.framesSinceShottah) / me.tshd.wep.atkSpd)) ).toInt(),
             getWindowAdjustedPos(me.ypos).toInt()-2
         )
         g.drawLine(
             getWindowAdjustedPos ((me as Entity).xpos).toInt(),
             getWindowAdjustedPos((me as Entity).ypos).toInt()-4,
-            getWindowAdjustedPos  ( (me.xpos + (me.drawSize * (me.wep.atkSpd - weap.framesSinceShottah) / me.wep.atkSpd)) ).toInt(),
+            getWindowAdjustedPos  ( (me.xpos + (me.drawSize * (me.tshd.wep.atkSpd - weap.framesSinceShottah) / me.tshd.wep.atkSpd)) ).toInt(),
             getWindowAdjustedPos(me.ypos).toInt()-4
         )
         g.stroke = BasicStroke(1f)
     }
 }
+class shd(var shootNoise:Clip){
+    var angy :Double = 0.0
+    var wep:Weapon=Weapon()
+    var turnSpeed:Float = 0.05f
+    var bulColor:Color=Color.RED
+}
 interface shoots{
-    var shootNoise:Clip
-    var angy :Double
-    var wep:Weapon
-    var turnSpeed:Float
-    var bulColor:Color
+    var tshd :shd
 }
 fun takeDamage(other:Entity,me:Entity):Boolean{
     if(other is Bullet && other.shotBy::class!=me::class) {
-        (me as hasHealth).hasHealth.currentHp -= (other.shotBy as shoots).wep.buldmg
+        (me as hasHealth).hasHealth.currentHp -= (other.shotBy as shoots).tshd.wep.buldmg
         if((me as hasHealth).hasHealth.currentHp<1){
             playSound((me as demByBuls).damagedByBul.deathNoise)
             me.isDead = true

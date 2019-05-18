@@ -42,12 +42,12 @@ fun getWindowAdjustedPos(pos:Double):Double{
     return pos * myFrame.width/INTENDED_FRAME_SIZE
 }
 class Bullet(val shotBy: shoots) : Entity {
-    var bulDir = shotBy.angy + ((Math.random()-0.5)*shotBy.wep.recoil/6.0)
-    override var drawSize = shotBy.wep.bulSize
-    override var xpos =  ((shotBy as Entity).getMidpoint().first-(shotBy.wep.bulSize/2))+(Math.cos(shotBy.angy)*0.8*shotBy.drawSize)
-    override var ypos = ((shotBy as Entity).getMidpoint().second-(shotBy.wep.bulSize/2))-(Math.sin(shotBy.angy)*0.8*shotBy.drawSize)
-    override var speed = shotBy.wep.bulspd
-    override var color = shotBy.bulColor
+    var bulDir = shotBy.tshd.angy + ((Math.random()-0.5)*shotBy.tshd.wep.recoil/6.0)
+    override var drawSize = shotBy.tshd.wep.bulSize
+    override var xpos =  ((shotBy as Entity).getMidpoint().first-(shotBy.tshd.wep.bulSize/2))+(Math.cos(shotBy.tshd.angy)*0.8*shotBy.drawSize)
+    override var ypos = ((shotBy as Entity).getMidpoint().second-(shotBy.tshd.wep.bulSize/2))-(Math.sin(shotBy.tshd.angy)*0.8*shotBy.drawSize)
+    override var speed = shotBy.tshd.wep.bulspd
+    override var color = shotBy.tshd.bulColor
 
     override var isDead: Boolean = false
     override var entityTag: String = "default"
@@ -105,8 +105,12 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var swapNoise:Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/swapnoise.wav").getAbsoluteFile()))
     }
-    override var shootNoise: Clip = AudioSystem.getClip().also{
+    var primWep = Weapon()
+    override var tshd=shd(AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/newlongpew.wav").getAbsoluteFile()))
+    }).also {
+        it.bulColor = Color.LIGHT_GRAY
+        it.wep = primWep
     }
     var movedRight = false
     var didMove = false
@@ -117,9 +121,6 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
         it.maxHP=drawSize
         it.currentHp = it.maxHP
     }
-    override var angy = 0.0
-    override var bulColor = Color.LIGHT_GRAY
-    override var turnSpeed = 0.1f
     var primaryEquipped = true
 
     var spareWep:Weapon = Weapon(
@@ -129,8 +130,8 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
         bulSize = 12.0,
         buldmg = 3
     )
-    var primWep = Weapon()
-    override var wep = primWep
+
+//    override var wep = primWep
     override var xpos: Double = 50.0
     override var ypos: Double = 50.0
     override var isDead: Boolean = false
@@ -179,19 +180,19 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
             if(pCont.Swp.tryConsume()){
                 playSound(swapNoise)
                 if (primaryEquipped){
-                    wep = spareWep
+                    tshd.wep = spareWep
                 }else{
-                    wep = primWep
+                    tshd.wep = primWep
                 }
                 primaryEquipped = !primaryEquipped
             }
-            processShooting(this,pCont.sht.booly,this.wep)
+            processShooting(this,pCont.sht.booly,this.tshd.wep)
         }
     }
 
     override fun drawComponents(g: Graphics) {
         drawCrosshair(this,g)
-        drawReload(this,g,this.wep)
+        drawReload(this,g,this.tshd.wep)
         drawHealth(this,g)
     }
 
@@ -224,7 +225,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
                 damagedByBul.didGetShot = false
             }
         }
-        if(angy>Math.PI/2 || angy<-Math.PI/2){
+        if(tshd.angy>Math.PI/2 || tshd.angy<-Math.PI/2){
             g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
         }else{
             g.drawImage(todraw,getWindowAdjustedPos(xpos+drawSize).toInt(),getWindowAdjustedPos(ypos).toInt(),-getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
@@ -234,25 +235,23 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var pewframecount = 0
 }
 class Enemy : Entity, shoots, hasHealth, movementGetsBlocked,demByBuls{
+    override var tshd=shd(AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/enemypew.wav").getAbsoluteFile()))
+    }).also {
+        it.bulColor = Color.RED
+    }
     override val damagedByBul = damagedByBullets(AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
     },AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
     })
-    override var shootNoise: Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/enemypew.wav").getAbsoluteFile()))
-    }
-    override var wep = Weapon(atkSpd = 20)
     override var speed = 1
     override var xpos = 150.0
     override var drawSize = 25.0
-    override var angy = 0.0
     override var hasHealth=healthHolder().also {
         it.maxHP=drawSize
         it.currentHp = it.maxHP
     }
-    override var bulColor = Color.RED
-    override var turnSpeed = 0.05f
     var framesSinceDrift = 100
     var randnumx = 0.0
     var randnumy = 0.0
@@ -333,22 +332,22 @@ class Enemy : Entity, shoots, hasHealth, movementGetsBlocked,demByBuls{
             val dy = getMidpoint().second - filteredEnts.first().getMidpoint().second
 
             val radtarget = ((atan2( dy , -dx)))
-            val absanglediff = abs(radtarget-angy)
+            val absanglediff = abs(radtarget-this.tshd.angy)
             val shootem =absanglediff<0.1
             var shoot2 = false
             if(shootem){
-                val r = Rectangle((xpos).toInt(),(ypos - (wep.bulSize/(drawSize))).toInt(),wep.bulSize.toInt(),700)
+                val r = Rectangle((xpos).toInt(),(ypos - (tshd.wep.bulSize/(drawSize))).toInt(),tshd.wep.bulSize.toInt(),700)
                 val path = Path2D.Double()
                 path.append(r, false)
                 val t = AffineTransform()
-                t.rotate(-angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
+                t.rotate(-tshd.angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
                 path.transform(t)
                 val intersectors = allEntities.filter {it is Wall || it is Player}.filter {  path.intersects(Rectangle(it.xpos.toInt(),it.ypos.toInt(),it.drawSize.toInt(),it.drawSize.toInt()))}.sortedBy { Math.abs(it.ypos-ypos)+Math.abs(it.xpos-xpos) }
                 if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
             }
-            processShooting(this,shoot2,this.wep)
-            val fix = absanglediff>Math.PI-turnSpeed
-            var lef = radtarget>=angy
+            processShooting(this,shoot2,this.tshd.wep)
+            val fix = absanglediff>Math.PI-tshd.turnSpeed
+            var lef = radtarget>=tshd.angy
             if(fix)lef = !lef
             processTurning(this,lef && !shootem,!lef && !shootem)
         }
@@ -567,47 +566,47 @@ class BlackSmith(val char:Char):Entity{
                             if(other.pCont.spinri.tryConsume()){
                                 when(indexer){
                                     0->{
-                                        other.wep.buldmg+=1
-                                        other.wep.bulSize+=3
+                                        other.tshd.wep.buldmg+=1
+                                        other.tshd.wep.bulSize+=3
                                     }
                                     1->{
-                                        if(other.wep.bulspd+1<50)other.wep.bulspd++
+                                        if(other.tshd.wep.bulspd+1<50)other.tshd.wep.bulspd++
                                     }
                                     2->{
-                                        if(other.wep.recoil+1<30)other.wep.recoil++
+                                        if(other.tshd.wep.recoil+1<30)other.tshd.wep.recoil++
                                     }
                                     3->{
-                                        if(other.wep.atkSpd+1<200)other.wep.atkSpd++
+                                        if(other.tshd.wep.atkSpd+1<200)other.tshd.wep.atkSpd++
                                     }
                                 }
                             }else if(other.pCont.spenlef.tryConsume()){
                                 when(indexer){
                                     0->{
-                                        val desiredDmg = other.wep.buldmg-1
-                                        val desiredSize = other.wep.bulSize -3
+                                        val desiredDmg = other.tshd.wep.buldmg-1
+                                        val desiredSize = other.tshd.wep.bulSize -3
                                         if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
-                                            other.wep.bulSize = desiredSize
-                                            other.wep.buldmg = desiredDmg
+                                            other.tshd.wep.bulSize = desiredSize
+                                            other.tshd.wep.buldmg = desiredDmg
                                         }
                                     }
                                     1->{
-                                        if(other.wep.bulspd-1>1)other.wep.bulspd--
+                                        if(other.tshd.wep.bulspd-1>1)other.tshd.wep.bulspd--
                                     }
                                     2->{
-                                        if(other.wep.recoil-1>=0)other.wep.recoil--
+                                        if(other.tshd.wep.recoil-1>=0)other.tshd.wep.recoil--
                                     }
                                     3->{
-                                        if(other.wep.atkSpd-1>0)other.wep.atkSpd--
+                                        if(other.tshd.wep.atkSpd-1>0)other.tshd.wep.atkSpd--
                                     }
                                 }
                             }
                         }
                     },
 //                    Selector(other, other.xpos+30,4),
-                    StatView({other.wep.buldmg.toString() }, statsXSpace+other.xpos, other.ypos),
-                    StatView({other.wep.bulspd.toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
-                    StatView({other.wep.recoil.toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
-                    StatView({other.wep.atkSpd.toString() }, statsXSpace+other.xpos,  3*statsYSpace+other.ypos))
+                    StatView({other.tshd.wep.buldmg.toString() }, statsXSpace+other.xpos, other.ypos),
+                    StatView({other.tshd.wep.bulspd.toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
+                    StatView({other.tshd.wep.recoil.toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
+                    StatView({other.tshd.wep.atkSpd.toString() }, statsXSpace+other.xpos,  3*statsYSpace+other.ypos))
 
                 other.specificMenus[char] = true
             }
@@ -677,8 +676,8 @@ class Gym(val char:Char):Entity{
                                         other.hasHealth.currentHp = other.hasHealth.maxHP
                                     }
                                     2->{
-                                        val desired = "%.4f".format(other.turnSpeed+0.01f).toFloat()
-                                        if(desired<1) other.turnSpeed = desired
+                                        val desired = "%.4f".format(other.tshd.turnSpeed+0.01f).toFloat()
+                                        if(desired<1) other.tshd.turnSpeed = desired
                                     }
                                 }
                             }else if(other.pCont.spenlef.tryConsume()){
@@ -697,8 +696,8 @@ class Gym(val char:Char):Entity{
                                         other.hasHealth.currentHp = other.hasHealth.maxHP
                                     }
                                     2->{
-                                        val desired = "%.4f".format(other.turnSpeed-0.01f).toFloat()
-                                        if(desired>0) other.turnSpeed = desired
+                                        val desired = "%.4f".format(other.tshd.turnSpeed-0.01f).toFloat()
+                                        if(desired>0) other.tshd.turnSpeed = desired
                                     }
                                 }
                             }
@@ -706,7 +705,7 @@ class Gym(val char:Char):Entity{
                     },
                     StatView({other.speed.toString() }, statsXSpace+other.xpos, other.ypos),
                     StatView({other.hasHealth.maxHP.toInt().toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
-                    StatView({( other.turnSpeed*100).toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos)
+                    StatView({( other.tshd.turnSpeed*100).toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos)
                 )
 
                 other.specificMenus[char] = true
