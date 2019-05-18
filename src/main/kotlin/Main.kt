@@ -19,7 +19,7 @@ var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
 
 const val INTENDED_FRAME_SIZE = 900
-const val INTENDED_FRAME_WIDTH = INTENDED_FRAME_SIZE*2
+//const val INTENDED_FRAME_WIDTH = INTENDED_FRAME_SIZE*2
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 val YFRAMEMAGIC = 40
 const val TICK_INTERVAL = 40
@@ -31,6 +31,53 @@ var myPanel:JPanel =object : JPanel() {
         super.paint(g)
         if(myrepaint){
             myrepaint = false
+            val preupdateEnts = mutableListOf<EntDimens>()
+            allEntities.forEach { entity: Entity ->
+                preupdateEnts.add(EntDimens(entity.xpos,entity.ypos,entity.drawSize))
+                entity.updateEntity()
+            }
+            var timesTried = 0
+            do{
+                timesTried++
+                var triggeredReaction = false
+                for (i in 0 until allEntities.size) {
+                    for (j in (i + 1) until allEntities.size) {
+                        val ient = allEntities[i]
+                        val jent = allEntities[j]
+                        var collided = false
+                        if(ient.overlapsOther(jent)){
+                            ient.collide(jent, preupdateEnts[i],preupdateEnts[j])
+                            collided = true
+                        }
+                        if(jent.overlapsOther(ient)){
+                            jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
+                            collided = true
+                        }
+                        if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient)) {
+//                    val iBlockedTrigger = ((jent is movementGetsBlocked) && doIGetBlockedBy(ient))
+//                    val jBlockedTrigger = (ient is movementGetsBlocked && doIGetBlockedBy(jent))
+                            if ((ient is Player || ient is Enemy) && (jent is Player ||jent is Enemy)) {
+                                if(timesTried > 10){
+                                    println("Cannot resolve collision!")
+                                    if(jent is Wall){
+//                                jent.isDead = true
+                                    }else if(ient is Wall){
+//                                ient.isDead = true
+                                    }else{
+
+//                                ient.isDead = true
+//                                jent.isDead = true
+                                    }
+                                }else{
+                                    triggeredReaction = true
+                                }
+                            }
+                        }
+                    }
+                }
+            }while (triggeredReaction)
+            allEntities.removeIf { it.isDead }
+
             g.drawImage(backgroundImage,0,0, (myFrame.width).toInt(),myFrame.width,null)
             val players = mutableListOf<Entity>()
             allEntities.forEach { entity ->
@@ -59,10 +106,11 @@ var myPanel:JPanel =object : JPanel() {
             }
         }
     }
-}.also {
+}
+//    .also {
 //    it.isDoubleBuffered = true
 //    it.background = Color.DARK_GRAY
-}
+//}
 
 var myFrame=object:JFrame(){
 
@@ -85,59 +133,6 @@ var myFrame=object:JFrame(){
 //    })
 }
 
-fun gameTick(){
-    val preupdateEnts = mutableListOf<EntDimens>()
-    allEntities.forEach { entity: Entity ->
-        preupdateEnts.add(EntDimens(entity.xpos,entity.ypos,entity.drawSize))
-        entity.updateEntity()
-    }
-    var timesTried = 0
-    do{
-        timesTried++
-        var triggeredReaction = false
-        for (i in 0 until allEntities.size) {
-            for (j in (i + 1) until allEntities.size) {
-                val ient = allEntities[i]
-                val jent = allEntities[j]
-                var collided = false
-                if(ient.overlapsOther(jent)){
-                    ient.collide(jent, preupdateEnts[i],preupdateEnts[j])
-                    collided = true
-                }
-                if(jent.overlapsOther(ient)){
-                    jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
-                    collided = true
-                }
-                if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient)) {
-                    val iBlockedTrigger = (jent is movementGetsBlocked && doIGetBlockedBy(ient))
-                    val jBlockedTrigger = (ient is movementGetsBlocked && doIGetBlockedBy(jent))
-                    if (iBlockedTrigger||jBlockedTrigger) {
-                        if(timesTried > 10){
-                            println("Cannot resolve collision!")
-                            if(jent is Wall){
-//                                jent.isDead = true
-                            }else if(ient is Wall){
-//                                ient.isDead = true
-                            }else{
-
-//                                ient.isDead = true
-//                                jent.isDead = true
-                            }
-                        }else{
-                            triggeredReaction = true
-                        }
-                    }
-                }
-            }
-        }
-    }while (triggeredReaction)
-    allEntities.removeIf { it.isDead }
-    myrepaint = true
-    myPanel.repaint()
-    allEntities.addAll(entsToAdd)
-    entsToAdd.clear()
-}
-
 
 
 fun revivePlayers(heal:Boolean){
@@ -156,7 +151,7 @@ fun revivePlayers(heal:Boolean){
 }
 
 const val mapGridColumns = 16
-const val mapGridRows = 15
+//const val mapGridRows = 15
 val map1 =  "        w       " +
             "                " +
             "      ww        " +
@@ -373,8 +368,7 @@ fun main() {
         player1
 //        , Wall()
     ))
-    playSound(player0.tshd.shootNoise)
-//    player0.collide(player1,EntDimens(player0.xpos,player0.ypos,player0.drawSize),EntDimens(player1.xpos,player1.ypos,player1.drawSize))
+//    playSound(player0.tshd.shootNoise)
 
     myFrame.addKeyListener(
         object :KeyListener{
@@ -407,6 +401,7 @@ fun main() {
     myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE+YFRAMEMAGIC)
     myFrame.isVisible = true
     myFrame.contentPane = myPanel
+//    Thread.sleep(40)
     while (true){
         val pretime = System.currentTimeMillis()
         if(pressed3.tryConsume()){
@@ -422,7 +417,10 @@ fun main() {
             revivePlayers(false)
         } else{
                 if(!gamePaused){
-                    gameTick()
+                    myrepaint = true
+                    myPanel.repaint()
+                    allEntities.addAll(entsToAdd)
+                    entsToAdd.clear()
                 }
         }
         val tickdiff = System.currentTimeMillis() - pretime

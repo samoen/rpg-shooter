@@ -207,12 +207,12 @@ fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,o
     }
     return 0.0
 }
-fun doIGetBlockedBy(entity: Entity):Boolean {
-    return (entity is Wall) || (entity is Enemy) || entity is Player
-}
+//fun doIGetBlockedBy(entity: Entity):Boolean {
+//    return (entity is Wall) || (entity is Enemy) || entity is Player
+//}
 
 fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
-    if(doIGetBlockedBy(other)){
+    if((other is Wall) || (other is Enemy) || other is Player){
         val xdiff = me.xpos - oldme.xpos
         val ydiff = me.ypos - oldme.ypos
         val midDistX =  abs(abs(oldOther.getMidpoint().first)-abs(oldme.getMidpoint().first))
@@ -241,7 +241,7 @@ fun stayInMap(me:Entity){
     }
 }
 interface movementGetsBlocked{
-    
+
 }
 fun drawHealth(me:hasHealth, g:Graphics){
     me as Entity
