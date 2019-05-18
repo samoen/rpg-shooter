@@ -419,7 +419,7 @@ fun main() {
                 if(!gamePaused){
                     myrepaint = true
                     myPanel.repaint()
-                    allEntities.addAll(entsToAdd)
+                    if(entsToAdd.size>0) allEntities.addAll(entsToAdd)
                     entsToAdd.clear()
                 }
         }

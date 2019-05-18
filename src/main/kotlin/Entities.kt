@@ -87,13 +87,9 @@ class Weapon(
     var framesSinceShottah:Int = 999
 )
 
-class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, hasHealth,movementGetsBlocked,demByBuls {
+class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, hasHealth,demByBuls {
 
-    override val damagedByBul = damagedByBullets(AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
-    },AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
-    })
+    override val damagedByBul = damagedByBullets()
     var canEnterGateway:Boolean = true
     var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
     var menuStuff:List<Entity> = listOf()
@@ -103,15 +99,19 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     val pewImage = ImageIcon("src/main/resources/shoot1.png").image
     val pCont:playControls = playControls()
     var swapNoise:Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/swapnoise.wav").getAbsoluteFile()))
+        it.open(AudioSystem.getAudioInputStream(swapnoiseFile))
     }
     var primWep = Weapon()
-    override var tshd=shd(AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/newlongpew.wav").getAbsoluteFile()))
-    }).also {
-        it.bulColor = Color.LIGHT_GRAY
-        it.wep = primWep
+    override var tshd= let {
+        val s =shd()
+        s.shootNoise = AudioSystem.getClip().also{
+            it.open(AudioSystem.getAudioInputStream(longpewFil))
+        }
+        s.bulColor = Color.LIGHT_GRAY
+        s.wep = primWep
+        s
     }
+
     var movedRight = false
     var didMove = false
     var didShoot = false
@@ -234,17 +234,11 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var gaitcount = 0
     var pewframecount = 0
 }
-class Enemy : Entity, shoots, hasHealth, movementGetsBlocked,demByBuls{
-    override var tshd=shd(AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/enemypew.wav").getAbsoluteFile()))
-    }).also {
+class Enemy : Entity, shoots, hasHealth,demByBuls{
+    override var tshd=shd().also {
         it.bulColor = Color.RED
     }
-    override val damagedByBul = damagedByBullets(AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/ouch.wav").getAbsoluteFile()))
-    },AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(File("src/main/resources/deathclip.wav").getAbsoluteFile()))
-    })
+    override val damagedByBul = damagedByBullets()
     override var speed = 1
     override var xpos = 150.0
     override var drawSize = 25.0

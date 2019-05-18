@@ -21,6 +21,11 @@ fun playSound(clip:Clip){
     clip.framePosition = 0
     clip.start()
 }
+val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
+val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
+val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
+val ouchnoiseFile = File("src/main/resources/ouch.wav").getAbsoluteFile()
+val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
 fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
     if (sht && weap.framesSinceShottah > me.tshd.wep.atkSpd) {
         weap.framesSinceShottah = 0
@@ -40,7 +45,7 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
 
         if(me.tshd.shootNoise.isRunning){
             val newclip = AudioSystem.getClip().also{
-                it.open(AudioSystem.getAudioInputStream(File("src/main/resources/newlongpew.wav").getAbsoluteFile()))
+                it.open(AudioSystem.getAudioInputStream(longpewFil))
             }
             newclip.start()
 //                Thread(Runnable({
@@ -137,7 +142,10 @@ fun drawReload(me:shoots,g: Graphics,weap: Weapon){
         g.stroke = BasicStroke(1f)
     }
 }
-class shd(var shootNoise:Clip){
+class shd{
+    var shootNoise:Clip = AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(enemyPewFile))
+    }
     var angy :Double = 0.0
     var wep:Weapon=Weapon()
     var turnSpeed:Float = 0.05f
@@ -172,8 +180,13 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
 interface demByBuls{
     val damagedByBul:damagedByBullets
 }
-class damagedByBullets(val ouchNoise:Clip,
-                       val deathNoise:Clip){
+class damagedByBullets{
+    val ouchNoise:Clip = AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(ouchnoiseFile))
+    }
+    val deathNoise:Clip = AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(dienoiseFile))
+    }
     val DAMAGED_ANIMATION_FRAMES = 3
     var didGetShot:Boolean = false
     var gotShotFrames = DAMAGED_ANIMATION_FRAMES
@@ -240,9 +253,7 @@ fun stayInMap(me:Entity){
         me.ypos -= me.ypos
     }
 }
-interface movementGetsBlocked{
 
-}
 fun drawHealth(me:hasHealth, g:Graphics){
     me as Entity
     g.color = Color.GREEN
