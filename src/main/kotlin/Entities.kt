@@ -30,8 +30,11 @@ interface Entity {
                 this.xpos+this.drawSize > other.xpos &&
                 this.xpos<other.xpos+other.drawSize
     }
-    fun getMidpoint():Pair<Double,Double>{
-        return Pair((xpos+(drawSize/2)),ypos+(drawSize/2))
+    fun getMidY():Double{
+       return ypos+(drawSize/2)
+    }
+    fun getMidX():Double{
+        return xpos+(drawSize/2)
     }
     fun drawEntity(g: Graphics) {
         g.color = color
@@ -44,8 +47,8 @@ fun getWindowAdjustedPos(pos:Double):Double{
 class Bullet(val shotBy: shoots) : Entity {
     var bulDir = shotBy.tshd.angy + ((Math.random()-0.5)*shotBy.tshd.wep.recoil/6.0)
     override var drawSize = shotBy.tshd.wep.bulSize
-    override var xpos =  ((shotBy as Entity).getMidpoint().first-(shotBy.tshd.wep.bulSize/2))+(Math.cos(shotBy.tshd.angy)*0.8*shotBy.drawSize)
-    override var ypos = ((shotBy as Entity).getMidpoint().second-(shotBy.tshd.wep.bulSize/2))-(Math.sin(shotBy.tshd.angy)*0.8*shotBy.drawSize)
+    override var xpos =  ((shotBy as Entity).getMidX()-(shotBy.tshd.wep.bulSize/2))+(Math.cos(shotBy.tshd.angy)*0.8*shotBy.drawSize)
+    override var ypos = ((shotBy as Entity).getMidY()-(shotBy.tshd.wep.bulSize/2))-(Math.sin(shotBy.tshd.angy)*0.8*shotBy.drawSize)
     override var speed = shotBy.tshd.wep.bulspd
     override var color = shotBy.tshd.bulColor
 
@@ -281,8 +284,6 @@ class Enemy : Entity, shoots, hasHealth,demByBuls{
             }
         }
         hasHealth.didHeal = false
-        val preupdatePos = Pair(xpos, ypos)
-        val willgoforpack = hasHealth.currentHp<hasHealth.maxHP
         val filteredEnts = allEntities
             .filter { it is Player }
             .sortedBy { abs(it.xpos - xpos) + abs(it.ypos - ypos) }
@@ -291,21 +292,24 @@ class Enemy : Entity, shoots, hasHealth,demByBuls{
             .sortedBy { abs(it.xpos - xpos) + abs(it.ypos - ypos) }
 
         if(filteredEnts.isNotEmpty()){
-            framesSinceDrift++
+            var firstplayer = filteredEnts.first()
+            if(framesSinceDrift<ENEMY_DRIFT_FRAMES) framesSinceDrift++
             if(!(iTried.first==xpos && iTried.second==ypos)){
                 randnumx = (Math.random()-0.5)*2
                 randnumy = (Math.random()-0.5)*2
                 framesSinceDrift = 0
             } else{
-                if(framesSinceDrift>40){
-                    var xdiff = 0.0
-                    var ydiff = 0.0
-                    if(willgoforpack && packEnts.isNotEmpty()){
-                        xdiff = packEnts.first().getMidpoint ().first - getMidpoint().first
-                        ydiff = packEnts.first().getMidpoint().second - getMidpoint().second
-                    }else{
-                        xdiff = filteredEnts.first().getMidpoint ().first - getMidpoint().first
-                        ydiff = filteredEnts.first().getMidpoint().second - getMidpoint().second
+                if(framesSinceDrift>=ENEMY_DRIFT_FRAMES){
+                    var xdiff = firstplayer.getMidX() - getMidX()
+                    var ydiff = firstplayer.getMidY() - getMidY()
+                    if(hasHealth.currentHp<hasHealth.maxHP && packEnts.isNotEmpty()){
+                        val firstpack = packEnts.first()
+                        val packxd = firstpack.getMidX() - getMidX()
+                        val packyd = firstpack.getMidY() - getMidY()
+                        if((Math.abs(packxd)+Math.abs(packyd))<(Math.abs(xdiff)+Math.abs(ydiff))){
+                            xdiff = packxd
+                            ydiff = packyd
+                        }
                     }
                     if (xdiff>speed){
                         xpos += speed
@@ -322,8 +326,8 @@ class Enemy : Entity, shoots, hasHealth,demByBuls{
             iTried = Pair(xpos,ypos)
             stayInMap(this)
 
-            val dx = getMidpoint().first - filteredEnts.first().getMidpoint().first
-            val dy = getMidpoint().second - filteredEnts.first().getMidpoint().second
+            val dx = getMidX() - firstplayer.getMidX()
+            val dy = getMidY() - firstplayer.getMidY()
 
             val radtarget = ((atan2( dy , -dx)))
             val absanglediff = abs(radtarget-this.tshd.angy)
@@ -352,6 +356,7 @@ class Enemy : Entity, shoots, hasHealth,demByBuls{
         drawCrosshair(this,g)
     }
 }
+val ENEMY_DRIFT_FRAMES = 30
 val wallImage = ImageIcon("src/main/resources/brick1.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image

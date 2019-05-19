@@ -73,7 +73,7 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
 }
 fun processTurning(me:shoots,lef:Boolean,righ:Boolean){
     if (lef) {
-        var desired = me.tshd.angy+me.tshd.turnSpeed
+        val desired = me.tshd.angy+me.tshd.turnSpeed
         if(desired>Math.PI){
             me.tshd.angy = -Math.PI + (desired-Math.PI)
         }else
@@ -228,12 +228,12 @@ fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
     if((other is Wall) || (other is Enemy) || other is Player){
         val xdiff = me.xpos - oldme.xpos
         val ydiff = me.ypos - oldme.ypos
-        val midDistX =  abs(abs(oldOther.getMidpoint().first)-abs(oldme.getMidpoint().first))
-        val midDistY = abs(abs(oldOther.getMidpoint().second)-abs(oldme.getMidpoint().second))
+        val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
+        val midDistY = abs(abs(oldOther.getMidY())-abs(oldme.getMidY()))
         if(midDistX>midDistY){
-            me.xpos += specialk(me.drawSize,me.speed,other.drawSize,xdiff,me.xpos,other.xpos,oldOther.xpos,oldme.getMidpoint().first,oldOther.getMidpoint().first)
+            me.xpos += specialk(me.drawSize,me.speed,other.drawSize,xdiff,me.xpos,other.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
         }else{
-            me.ypos += specialk(me.drawSize,me.speed,other.drawSize,ydiff,me.ypos,other.ypos,oldOther.ypos,oldme.getMidpoint().second,oldOther.getMidpoint().second)
+            me.ypos += specialk(me.drawSize,me.speed,other.drawSize,ydiff,me.ypos,other.ypos,oldOther.ypos,oldme.getMidY(),oldOther.getMidY())
         }
     }
 }
