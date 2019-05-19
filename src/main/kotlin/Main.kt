@@ -158,11 +158,11 @@ val map1 =  "        w       " +
             "ww wh ww    w   " +
             " whwh          w" +
             "  hwh          w" +
-            " whwh           " +
+            " whwh          h" +
             "            w ww" +
             "  wh  www     ww" +
             "  w   www     ww" +
-            "  w    h    w   w" +
+            "  w    h    w   " +
             "  g    b    wh  " +
             "            2   " +
             "   1            " +

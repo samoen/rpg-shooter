@@ -86,6 +86,7 @@ fun processTurning(me:shoots,lef:Boolean,righ:Boolean){
     }
 }
 fun drawCrosshair(me:shoots,g: Graphics){
+    me as Entity
     g.color = Color.CYAN
     val strkw = if(me is Player)1.2f
     else 5f
@@ -95,8 +96,8 @@ fun drawCrosshair(me:shoots,g: Graphics){
         val spread = (7)*(me.tshd.wep.recoil+1)
         val bspd = me.tshd.wep.bulspd*2
         g.drawArc(
-            getWindowAdjustedPos(((me as Entity).xpos)+(diver)).toInt()-bspd,
-            getWindowAdjustedPos(((me as Entity).ypos)+(diver)).toInt()-bspd,
+            getWindowAdjustedPos((me.xpos)+(diver)).toInt()-bspd,
+            getWindowAdjustedPos((me.ypos)+(diver)).toInt()-bspd,
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
             ((me.tshd.angy*180/Math.PI)-spread/2).toInt(),
@@ -110,8 +111,8 @@ fun drawCrosshair(me:shoots,g: Graphics){
         doarc(-me.drawSize/1.7,2.15)
     }else{
         g.drawArc(
-            getWindowAdjustedPos(((me as Entity).xpos)).toInt(),
-            getWindowAdjustedPos(((me as Entity).ypos)).toInt(),
+            getWindowAdjustedPos((me.xpos)).toInt(),
+            getWindowAdjustedPos((me.ypos)).toInt(),
             (getWindowAdjustedPos((arcdiameter))).toInt(),
             (getWindowAdjustedPos((arcdiameter))).toInt(),
             ((me.tshd.angy*180/Math.PI)-5/2).toInt(),
@@ -123,20 +124,21 @@ fun drawCrosshair(me:shoots,g: Graphics){
     (g as Graphics2D).stroke = BasicStroke(1f)
 }
 fun drawReload(me:shoots,g: Graphics,weap: Weapon){
+    me as Entity
     if(weap.framesSinceShottah<me.tshd.wep.atkSpd){
         g.color = Color.CYAN
         (g as Graphics2D).stroke = BasicStroke(2f)
 
         g.drawLine(
-            getWindowAdjustedPos ((me as Entity).xpos).toInt(),
-            getWindowAdjustedPos((me as Entity).ypos).toInt()-2,
+            getWindowAdjustedPos (me.xpos).toInt(),
+            getWindowAdjustedPos(me.ypos).toInt()-2,
             getWindowAdjustedPos  ( (me.xpos + (me.drawSize * (me.tshd.wep.atkSpd - weap.framesSinceShottah) / me.tshd.wep.atkSpd)) ).toInt(),
             getWindowAdjustedPos(me.ypos).toInt()-2
         )
         g.drawLine(
-            getWindowAdjustedPos ((me as Entity).xpos).toInt(),
-            getWindowAdjustedPos((me as Entity).ypos).toInt()-4,
-            getWindowAdjustedPos  ( (me.xpos + (me.drawSize * (me.tshd.wep.atkSpd - weap.framesSinceShottah) / me.tshd.wep.atkSpd)) ).toInt(),
+            getWindowAdjustedPos (me.xpos).toInt(),
+            getWindowAdjustedPos(me.ypos).toInt()-4,
+            getWindowAdjustedPos  ((me.xpos + (me.drawSize * (me.tshd.wep.atkSpd - weap.framesSinceShottah) / me.tshd.wep.atkSpd)) ).toInt(),
             getWindowAdjustedPos(me.ypos).toInt()-4
         )
         g.stroke = BasicStroke(1f)

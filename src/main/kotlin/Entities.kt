@@ -47,8 +47,8 @@ fun getWindowAdjustedPos(pos:Double):Double{
 class Bullet(val shotBy: shoots) : Entity {
     var bulDir = shotBy.tshd.angy + ((Math.random()-0.5)*shotBy.tshd.wep.recoil/6.0)
     override var drawSize = shotBy.tshd.wep.bulSize
-    override var xpos =  ((shotBy as Entity).getMidX()-(shotBy.tshd.wep.bulSize/2))+(Math.cos(shotBy.tshd.angy)*0.8*shotBy.drawSize)
-    override var ypos = ((shotBy as Entity).getMidY()-(shotBy.tshd.wep.bulSize/2))-(Math.sin(shotBy.tshd.angy)*0.8*shotBy.drawSize)
+    override var xpos =  ((shotBy as Entity).getMidX()-(shotBy.tshd.wep.bulSize/2))+(Math.cos(shotBy.tshd.angy)*shotBy.drawSize/2)+(Math.cos(shotBy.tshd.angy)*shotBy.tshd.wep.bulSize/2)
+    override var ypos = ((shotBy as Entity).getMidY()-(shotBy.tshd.wep.bulSize/2))-(Math.sin(shotBy.tshd.angy)*shotBy.drawSize/2)-(Math.sin(shotBy.tshd.angy)*shotBy.tshd.wep.bulSize/2)
     override var speed = shotBy.tshd.wep.bulspd
     override var color = shotBy.tshd.bulColor
 
@@ -77,7 +77,7 @@ class Bullet(val shotBy: shoots) : Entity {
 
     override fun drawEntity(g: Graphics) {
         g.color = color
-        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedPos(drawSize)*1.3).toInt(), (getWindowAdjustedPos(drawSize)*1.3).toInt())
+        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedPos(drawSize)).toInt(), (getWindowAdjustedPos(drawSize)).toInt())
     }
 }
 
@@ -85,8 +85,8 @@ class Weapon(
     var atkSpd:Int = 4,
     var bulspd:Int = 2,
     var recoil:Double = 5.0,
-    var bulSize:Double = 6.0,
-    var buldmg:Int = 1,
+    var bulSize:Double = 9.0,
+    var buldmg:Int = 3,
     var framesSinceShottah:Int = 999
 )
 
@@ -131,7 +131,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
         bulspd = 15,
         recoil = 0.0,
         bulSize = 12.0,
-        buldmg = 3
+        buldmg = 4
     )
 
 //    override var wep = primWep
@@ -361,7 +361,6 @@ val wallImage = ImageIcon("src/main/resources/brick1.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 class Wall : Entity{
-
     override var drawSize = 20.0
     override var color = Color.DARK_GRAY
     override var xpos: Double = 50.0
