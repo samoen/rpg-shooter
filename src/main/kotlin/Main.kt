@@ -78,7 +78,7 @@ var myPanel:JPanel =object : JPanel() {
             }while (triggeredReaction)
             allEntities.removeIf { it.isDead }
 
-            g.drawImage(backgroundImage,0,0, (myFrame.width).toInt(),myFrame.width,null)
+            g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
             val players = mutableListOf<Entity>()
             allEntities.forEach { entity ->
                 if(entity is Player){
