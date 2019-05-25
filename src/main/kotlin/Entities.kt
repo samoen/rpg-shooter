@@ -201,7 +201,6 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
         }
         if(tshd.angy>Math.PI/2 || tshd.angy<-Math.PI/2){
             drawAsSprite(this,todraw,g)
-//            g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
         }else{
             g.drawImage(todraw,getWindowAdjustedPos(xpos+drawSize).toInt(),getWindowAdjustedPos(ypos).toInt(),-getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
         }
@@ -334,6 +333,7 @@ class Enemy : Entity, shoots, hasHealth{
 }
 val ENEMY_DRIFT_FRAMES = 30
 val wallImage = ImageIcon("src/main/resources/brick1.png").image
+val impactImage = ImageIcon("src/main/resources/shrapnel.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 class Wall : Entity{
@@ -345,8 +345,7 @@ class Wall : Entity{
     override var entityTag: String = "default"
     override var speed: Int = 2
     override fun drawEntity(g: Graphics) {
-//        super.drawEntity(g)
-        g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+        drawAsSprite(this,wallImage,g)
     }
 }
 
@@ -369,8 +368,8 @@ class Gateway : Entity{
     override var speed: Int = 2
     override fun drawEntity(g: Graphics) {
         if(locked)
-        g.drawImage(gateClosedImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
-        else g.drawImage(gateOpenImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+            drawAsSprite(this,gateClosedImage,g)
+        else drawAsSprite(this,gateOpenImage,g)
     }
 
     override fun updateEntity() {
@@ -462,8 +461,7 @@ class Impact : Entity{
     override var drawSize: Double = 10.0
     override var color: Color = Color.BLUE
     override fun drawEntity(g: Graphics) {
-//        super.drawEntity(g)
-        g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+        drawAsSprite(this,impactImage,g)
     }
 
     var liveFrames = 4

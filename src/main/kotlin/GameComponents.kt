@@ -233,8 +233,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
                 override var drawSize: Double = me.drawSize
                 override var color: Color = Color.BLUE
                 override fun drawEntity(g: Graphics) {
-//        super.drawEntity(g)
-                    g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+                    drawAsSprite(this,wallImage,g)
                 }
 
                 var liveFrames = 8
