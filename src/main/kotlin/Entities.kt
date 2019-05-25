@@ -9,42 +9,7 @@ import java.awt.geom.AffineTransform
 import java.awt.geom.Path2D
 import java.awt.Rectangle
 
-interface Entity {
-    var xpos: Double
-    var ypos: Double
-    var isDead: Boolean
-    var entityTag: String
-    var speed: Int
-    var drawSize: Double
-    var color: Color
 
-
-    fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
-
-    }
-    fun updateEntity() {}
-    fun drawComponents(g: Graphics) {}
-    fun overlapsOther(other: Entity):Boolean{
-        return this.ypos+this.drawSize > other.ypos &&
-                this.ypos<other.ypos+other.drawSize &&
-                this.xpos+this.drawSize > other.xpos &&
-                this.xpos<other.xpos+other.drawSize
-    }
-    fun getMidY():Double{
-       return ypos+(drawSize/2)
-    }
-    fun getMidX():Double{
-        return xpos+(drawSize/2)
-    }
-    fun drawEntity(g: Graphics) {
-        g.color = color
-        g.fillRect(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedPos(drawSize).toInt(), getWindowAdjustedPos(drawSize).toInt())
-    }
-}
-fun getWindowAdjustedPos(pos:Double):Double{
-    return pos * myFrame.width/INTENDED_FRAME_SIZE
-}
-val BULLET_ALIVE = 14
 class Bullet(val shotBy: shoots) : Entity {
     var damage = shotBy.tshd.wep.buldmg
     var framesAlive = 0
@@ -94,9 +59,7 @@ class Bullet(val shotBy: shoots) : Entity {
     }
 }
 
-val stillImage = ImageIcon("src/main/resources/main.png").image
-val runImage = ImageIcon("src/main/resources/walk.png").image
-val pewImage = ImageIcon("src/main/resources/shoot1.png").image
+
 
 class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, hasHealth {
 
@@ -106,15 +69,12 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
     val pCont:playControls = playControls()
-    var swapNoise:Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(swapnoiseFile))
-    }
     var primWep = Weapon()
     override var tshd= let {
         val s =shd()
-        s.shootNoise = AudioSystem.getClip().also{
-            it.open(AudioSystem.getAudioInputStream(longpewFil))
-        }
+//        s.shootNoise = AudioSystem.getClip().also{
+//            it.open(AudioSystem.getAudioInputStream(longpewFil))
+//        }
         s.bulColor = Color.LIGHT_GRAY
         s.wep = primWep
         s
@@ -191,7 +151,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
         if(specificMenus.values.all { !it }){
             processTurning(this,pCont.spenlef.booly,pCont.spinri.booly)
             if(pCont.Swp.tryConsume()){
-                playSound(swapNoise)
+                playSound(soundBank["swap"]!!)
                 if (primaryEquipped){
                     tshd.wep = spareWep
                 }else{
@@ -239,7 +199,8 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
             }
         }
         if(tshd.angy>Math.PI/2 || tshd.angy<-Math.PI/2){
-            g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+            drawAsSprite(this,todraw,g)
+//            g.drawImage(todraw,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
         }else{
             g.drawImage(todraw,getWindowAdjustedPos(xpos+drawSize).toInt(),getWindowAdjustedPos(ypos).toInt(),-getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
         }
@@ -535,7 +496,7 @@ class Shop:Entity{
     override var speed: Int = 2
     var image = backgroundImage
     override fun drawEntity(g: Graphics) {
-        g.drawImage(image,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+        drawAsSprite(this,image,g)
     }
 
     override fun updateEntity() {
@@ -615,4 +576,4 @@ class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity
     }
 }
 
-const val MIN_ENT_SIZE = 9.0
+

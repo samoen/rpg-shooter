@@ -2,6 +2,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.awt.*
+import java.awt.event.KeyEvent
 import java.io.File
 import java.util.*
 import java.util.logging.Handler
@@ -9,11 +10,11 @@ import javax.sound.sampled.*
 import kotlin.math.abs
 import kotlin.reflect.KMutableProperty0
 
-val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
-//val playerhootNoise: Clip = AudioSystem.getClip()
-//val playshoostrm = AudioSystem.getAudioInputStream(File("src/main/resources/longypew.wav").getAbsoluteFile())
+fun drawAsSprite(entity: Entity,image:Image,g:Graphics){
+    g.drawImage(image,getWindowAdjustedPos(entity.xpos).toInt(),getWindowAdjustedPos(entity.ypos).toInt(),getWindowAdjustedPos(entity.drawSize).toInt(),getWindowAdjustedPos(entity.drawSize).toInt(),null)
+}
 
-fun playSound(clip:Clip){
+fun playSound(clip: Clip){
     if(clip.isRunning){
         clip.stop()
         AudioSystem.getAudioInputStream(enBulFile)
@@ -21,56 +22,113 @@ fun playSound(clip:Clip){
     clip.framePosition = 0
     clip.start()
 }
-val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
-val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
-val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
-val ouchnoiseFile = File("src/main/resources/ouch.wav").getAbsoluteFile()
-val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
+fun revivePlayers(heal:Boolean){
+    if(!allEntities.contains(player0) && !entsToAdd.contains(player0))entsToAdd.add(player0)
+    if(!allEntities.contains(player1) && !entsToAdd.contains(player1)) entsToAdd.add(player1)
+    player0.isDead = false
+    player1.isDead = false
+//    player0.ypos = (INTENDED_FRAME_SIZE - player0.drawSize)
+//    player0.xpos = 0.0
+//    player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize)
+//    player1.xpos = (player0.drawSize)
+    if(heal){
+        player0.hasHealth.currentHp = player0.hasHealth.maxHP
+        player1.hasHealth.currentHp = player1.hasHealth.maxHP
+    }
+}
+
+fun randEnemy():Enemy{
+    val se = Enemy()
+    se.tshd.turnSpeed = (0.01+(Math.random()/14)).toFloat()
+    se.drawSize = 20+(Math.random()*30)
+    se.hasHealth.maxHP = (se.drawSize/2)
+    se.hasHealth.currentHp = se.hasHealth.maxHP
+    se.speed = (Math.random()*4).toInt()+1
+    se.tshd.wep.bulSize = 8.0+(Math.random()*40)
+    se.tshd.wep.buldmg = se.tshd.wep.bulSize.toInt()
+    se.tshd.wep.atkSpd = (Math.random()*20).toInt()+10
+    se.tshd.wep.bulspd = (Math.random()*10).toInt()+3
+    return  se
+}
+
+fun startWave(numberofenemies: Int) {
+    var lastsize = 0.0
+    for (i in 1..numberofenemies) {
+        val e = randEnemy()
+        e.xpos = (lastsize)
+        lastsize += e.drawSize
+        e.ypos = 10.0
+        entsToAdd.add(e)
+    }
+}
+
+fun playerKeyPressed(player: Player, e: KeyEvent){
+    if (e.keyCode == player.buttonSet.swapgun) player.pCont.Swp.tryProduce()
+    if (e.keyCode == player.buttonSet.up) player.pCont.up.tryProduce()
+    if (e.keyCode == player.buttonSet.down) player.pCont.dwm.tryProduce()
+    if (e.keyCode == player.buttonSet.shoot) player.pCont.sht.tryProduce()
+    if (e.keyCode == player.buttonSet.right) player.pCont.riri.tryProduce()
+    if (e.keyCode == player.buttonSet.left) player.pCont.leflef.tryProduce()
+    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.tryProduce()
+    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.tryProduce()
+}
+
+fun playerKeyReleased(player: Player,e: KeyEvent){
+    if (e.keyCode == player.buttonSet.swapgun) {
+        player.pCont.Swp.release()
+    }
+    if (e.keyCode == player.buttonSet.up) {
+        player.pCont.up.release()
+    }
+    if (e.keyCode == player.buttonSet.down) {
+        player.pCont.dwm.release()
+    }
+    if (e.keyCode == player.buttonSet.shoot){
+        player.pCont.sht.release()
+    }
+    if (e.keyCode == player.buttonSet.right){
+        player.pCont.riri.release()
+    }
+    if (e.keyCode == player.buttonSet.left) {
+        player.pCont.leflef.release()
+    }
+    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.release()
+    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
+}
 
 fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
     if (sht && weap.framesSinceShottah > me.tshd.wep.atkSpd) {
         weap.framesSinceShottah = 0
         if(me is Player)me.didShoot=true
-        val b = Bullet(me)
-        var canspawn = true
-        allEntities.forEach { if(it is Wall && it.overlapsOther(b))canspawn = false }
-        if(canspawn)
-            entsToAdd.add(Bullet(me))
-        else {
-            val imp = Impact()
-            imp.drawSize = b.drawSize
-            imp.xpos = (b).xpos
-            imp.ypos = (b).ypos
-            entsToAdd.add(imp)
-        }
-
-        if(me.tshd.shootNoise.isRunning){
-            val newclip = AudioSystem.getClip().also{
-                it.open(AudioSystem.getAudioInputStream(longpewFil))
+        var numproj = 1
+//        if(me.tshd.wep.recoil>5)
+        numproj = ((me.tshd.wep.recoil/me.tshd.wep.bulspd)).toInt()
+        for( i in 0..numproj){
+            val b = Bullet(me)
+            var canspawn = true
+            allEntities.forEach { if(it is Wall && it.overlapsOther(b))canspawn = false }
+            if(canspawn)
+                entsToAdd.add(Bullet(me))
+            else {
+                val imp = Impact()
+                imp.drawSize = b.drawSize
+                imp.xpos = (b).xpos
+                imp.ypos = (b).ypos
+                entsToAdd.add(imp)
             }
-            newclip.start()
-//                Thread(Runnable({
-//                    shootNoise.stop()
-//                                        shootNoise.flush()
-//                    shootNoise.framePosition = 0
-//                    shootNoise.drain()
-//                })).start()
-//                shootNoise.stop()
-//                (shootNoise.getControl(BooleanControl.Type.MUTE)as BooleanControl).value = true
-//                shootNoise.start()
-//                shootNoise.framePosition = 0
-//                shootNoise=newclip
-//                (shootNoise.getControl(FloatControl.Type.MASTER_GAIN)as FloatControl).value -=40
-//                shootNoise.start()
-
-
-        }else{
-            me.tshd.shootNoise.framePosition=0
-            me.tshd.shootNoise.start()
         }
+        playSound(soundBank["shoot"]!!)
+//        if(soundBank["shoot"]!!.isRunning){
+//            val newclip = AudioSystem.getClip().also{
+//                it.open(AudioSystem.getAudioInputStream(longpewFil))
+//            }
+//            newclip.start()
+//        }else{
+//            me.tshd.shootNoise.framePosition=0
+//            me.tshd.shootNoise.start()
+//        }
     }
     weap.framesSinceShottah++
-
 }
 fun processTurning(me:shoots,lef:Boolean,righ:Boolean){
     if (lef) {
@@ -146,9 +204,9 @@ fun drawReload(me:shoots,g: Graphics,weap: Weapon){
     }
 }
 class shd{
-    var shootNoise:Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(enemyPewFile))
-    }
+//    var shootNoise:Clip = AudioSystem.getClip().also{
+//        it.open(AudioSystem.getAudioInputStream(enemyPewFile))
+//    }
     var angy :Double = 0.0
     var wep:Weapon=Weapon()
     var turnSpeed:Float = 0.05f
@@ -161,11 +219,31 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
     if(other is Bullet && other.shotBy::class!=me::class) {
         (me as hasHealth).hasHealth.currentHp -= other.damage
         if((me as hasHealth).hasHealth.currentHp<1){
-            playSound((me as hasHealth).damagedByBul.deathNoise)
+            playSound(soundBank["die"]!!)
             me.isDead = true
+            val deathEnt = object: Entity{
+                override var xpos: Double = me.xpos
+                override var ypos: Double = me.ypos
+                override var isDead: Boolean = false
+                override var entityTag: String = "default"
+                override var speed: Int = 2
+                override var drawSize: Double = me.drawSize
+                override var color: Color = Color.BLUE
+                override fun drawEntity(g: Graphics) {
+//        super.drawEntity(g)
+                    g.drawImage(wallImage,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+                }
+
+                var liveFrames = 8
+                override fun updateEntity() {
+                    liveFrames--
+                    if(liveFrames<0)isDead=true
+                }
+            }
+            entsToAdd.add(deathEnt)
             return true
         }else{
-            playSound((me as hasHealth).damagedByBul.ouchNoise)
+            playSound(soundBank["ouch"]!!)
             me.damagedByBul.didGetShot = true
             me.damagedByBul.gotShotFrames = me.damagedByBul.DAMAGED_ANIMATION_FRAMES
         }
@@ -181,13 +259,15 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
     return false
 }
 
+
+
 class damagedByBullets{
-    val ouchNoise:Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(ouchnoiseFile))
-    }
-    val deathNoise:Clip = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(dienoiseFile))
-    }
+//    val ouchNoise:Clip = AudioSystem.getClip().also{
+//        it.open(AudioSystem.getAudioInputStream(ouchnoiseFile))
+//    }
+//    val deathNoise:Clip = AudioSystem.getClip().also{
+//        it.open(AudioSystem.getAudioInputStream(dienoiseFile))
+//    }
     val DAMAGED_ANIMATION_FRAMES = 3
     var didGetShot:Boolean = false
     var gotShotFrames = DAMAGED_ANIMATION_FRAMES
@@ -221,9 +301,6 @@ fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,o
     }
     return 0.0
 }
-//fun doIGetBlockedBy(entity: Entity):Boolean {
-//    return (entity is Wall) || (entity is Enemy) || entity is Player
-//}
 
 fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
     if((other is Wall) || (other is Enemy) || other is Player){

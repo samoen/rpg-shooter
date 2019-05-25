@@ -1,6 +1,12 @@
-import java.awt.*
-import java.awt.event.*
-import javax.swing.*
+import java.awt.Graphics
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
+import java.io.File
+import javax.sound.sampled.AudioSystem
+import javax.sound.sampled.Clip
+import javax.swing.ImageIcon
+import javax.swing.JFrame
+import javax.swing.JPanel
 
 val allEntities = mutableListOf<Entity>()
 val entsToAdd = mutableListOf<Entity>()
@@ -18,138 +24,33 @@ var pressed1 = OneShotChannel()
 var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
 
+var gamePaused = false
 const val INTENDED_FRAME_SIZE = 900
-//const val INTENDED_FRAME_WIDTH = INTENDED_FRAME_SIZE*2
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 val YFRAMEMAGIC = 40
 const val TICK_INTERVAL = 40
-
+const val MIN_ENT_SIZE = 9.0
+val BULLET_ALIVE = 14
+val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
+val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
+val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
+val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
+val ouchnoiseFile = File("src/main/resources/ouch.wav").getAbsoluteFile()
+val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
+val stillImage = ImageIcon("src/main/resources/main.png").image
+val runImage = ImageIcon("src/main/resources/walk.png").image
+val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 val backgroundImage = ImageIcon("src/main/resources/floor1.png").image
 var myrepaint = false
-var myPanel:JPanel =object : JPanel() {
-    override fun paint(g: Graphics) {
-        super.paint(g)
-        if(myrepaint){
-            myrepaint = false
-            val preupdateEnts = mutableListOf<EntDimens>()
-            allEntities.forEach { entity: Entity ->
-                preupdateEnts.add(EntDimens(entity.xpos,entity.ypos,entity.drawSize))
-                entity.updateEntity()
-            }
-            var timesTried = 0
-            do{
-                timesTried++
-                var triggeredReaction = false
-                for (i in 0 until allEntities.size) {
-                    for (j in (i + 1) until allEntities.size) {
-                        val ient = allEntities[i]
-                        val jent = allEntities[j]
-                        var collided = false
-                        if(ient.overlapsOther(jent)){
-                            ient.collide(jent, preupdateEnts[i],preupdateEnts[j])
-                            collided = true
-                        }
-                        if(jent.overlapsOther(ient)){
-                            jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
-                            collided = true
-                        }
-                        if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient)) {
-                            if ((ient is Player || ient is Enemy) && (jent is Player ||jent is Enemy)) {
-                                if(timesTried > 10){
-                                    println("Cannot resolve collision!")
-                                    if(jent is Wall){
-//                                jent.isDead = true
-                                    }else if(ient is Wall){
-//                                ient.isDead = true
-                                    }else{
-
-//                                ient.isDead = true
-//                                jent.isDead = true
-                                    }
-                                }else{
-                                    triggeredReaction = true
-                                }
-                            }
-                        }
-                    }
-                }
-            }while (triggeredReaction)
-            allEntities.removeIf { it.isDead }
-
-            g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
-            val players = mutableListOf<Entity>()
-            allEntities.forEach { entity ->
-                if(entity is Player){
-                    players.add(entity)
-                }else entity.drawEntity(g)
-            }
-            players.forEach {
-                it.drawEntity(g)
-            }
-
-            allEntities.forEach { entity ->
-                entity.drawComponents(g)
-            }
-            if(player0.specificMenus.values.any { it }){
-                player0.menuStuff.forEach {
-                    it.updateEntity()
-                    it.drawEntity(g)
-                }
-            }
-            if(player1.specificMenus.values.any { it }){
-                player1.menuStuff.forEach {
-                    it.updateEntity()
-                    it.drawEntity(g)
-                }
-            }
-        }
-    }
-}
-//    .also {
-//    it.isDoubleBuffered = true
-//    it.background = Color.DARK_GRAY
-//}
-
+val soundBank:MutableMap<String, Clip> = mutableMapOf()
 var myFrame=object:JFrame(){
 
 }.also {
     it.isFocusable = true
     it.iconImage = ImageIcon("gunman.png").image
-//    it.addComponentListener(object :ComponentListener{
-//        override fun componentResized(e: ComponentEvent?) {
-//            newframesize = it.width
-//        }
-//
-//        override fun componentMoved(e: ComponentEvent?) {
-//        }
-//
-//        override fun componentHidden(e: ComponentEvent?) {
-//        }
-//
-//        override fun componentShown(e: ComponentEvent?) {
-//        }
-//    })
-}
-
-
-
-fun revivePlayers(heal:Boolean){
-    if(!allEntities.contains(player0) && !entsToAdd.contains(player0))entsToAdd.add(player0)
-    if(!allEntities.contains(player1) && !entsToAdd.contains(player1)) entsToAdd.add(player1)
-    player0.isDead = false
-    player1.isDead = false
-//    player0.ypos = (INTENDED_FRAME_SIZE - player0.drawSize)
-//    player0.xpos = 0.0
-//    player1.ypos = (INTENDED_FRAME_SIZE - player1.drawSize)
-//    player1.xpos = (player0.drawSize)
-    if(heal){
-        player0.hasHealth.currentHp = player0.hasHealth.maxHP
-        player1.hasHealth.currentHp = player1.hasHealth.maxHP
-    }
 }
 
 const val mapGridColumns = 16
-//const val mapGridRows = 15
 val map1 =  "        w       " +
             "       e        " +
             " e    ww    e   " +
@@ -197,20 +98,6 @@ val map3 =  "                " +
             "               w" +
             "                " +
             "                "
-
-//fun locToMapCoord(x:Double,y:Double):Pair<Int,Int>{
-//    var row = (y/mapGridSize).toInt()
-//    var col = (x/mapGridSize).toInt()
-//    return Pair(col,row)
-//}
-//fun locToIndex(x:Double,y:Double):Int{
-//    var fromrows = mapGridColumns*(locToMapCoord(x,y).second)
-//    var lastcol = locToMapCoord(x,y).first
-//    var result = fromrows+lastcol
-//    if(result<1)result = 1
-//    if(result>map1.length-1)result = map1.length-1
-//    return result
-//}
 
 fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
     val mapGridSize = (INTENDED_FRAME_SIZE/mapGridColumns.toDouble())-2
@@ -274,7 +161,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         },{
                             if(other.tshd.wep.bulspd-1>1)other.tshd.wep.bulspd--
                         },{
-                            if(other.tshd.wep.recoil+1<30)other.tshd.wep.recoil++
+                            if(other.tshd.wep.recoil+1<23)other.tshd.wep.recoil++
                         },{
                             if(other.tshd.wep.recoil-1>=0)other.tshd.wep.recoil--
                         },{
@@ -374,67 +261,19 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
     }
 }
 
-fun randEnemy():Enemy{
-    val se = Enemy()
-    se.tshd.turnSpeed = (0.01+(Math.random()/14)).toFloat()
-    se.drawSize = 20+(Math.random()*30)
-    se.hasHealth.maxHP = (se.drawSize/2)
-    se.hasHealth.currentHp = se.hasHealth.maxHP
-    se.speed = (Math.random()*4).toInt()+1
-    se.tshd.wep.bulSize = 8.0+(Math.random()*40)
-    se.tshd.wep.buldmg = se.tshd.wep.bulSize.toInt()
-    se.tshd.wep.atkSpd = (Math.random()*20).toInt()+10
-    se.tshd.wep.bulspd = (Math.random()*10).toInt()+3
-    return  se
-}
-
-fun startWave(numberofenemies: Int) {
-    var lastsize = 0.0
-    for (i in 1..numberofenemies) {
-        val e = randEnemy()
-        e.xpos = (lastsize)
-        lastsize += e.drawSize
-        e.ypos = 10.0
-        entsToAdd.add(e)
-    }
-}
-
-fun playerKeyPressed(player: Player, e:KeyEvent){
-    if (e.keyCode == player.buttonSet.swapgun) player.pCont.Swp.tryProduce()
-    if (e.keyCode == player.buttonSet.up) player.pCont.up.tryProduce()
-    if (e.keyCode == player.buttonSet.down) player.pCont.dwm.tryProduce()
-    if (e.keyCode == player.buttonSet.shoot) player.pCont.sht.tryProduce()
-    if (e.keyCode == player.buttonSet.right) player.pCont.riri.tryProduce()
-    if (e.keyCode == player.buttonSet.left) player.pCont.leflef.tryProduce()
-    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.tryProduce()
-    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.tryProduce()
-}
-
-fun playerKeyReleased(player: Player,e: KeyEvent){
-    if (e.keyCode == player.buttonSet.swapgun) {
-        player.pCont.Swp.release()
-    }
-    if (e.keyCode == player.buttonSet.up) {
-        player.pCont.up.release()
-    }
-    if (e.keyCode == player.buttonSet.down) {
-        player.pCont.dwm.release()
-    }
-    if (e.keyCode == player.buttonSet.shoot){
-        player.pCont.sht.release()
-    }
-    if (e.keyCode == player.buttonSet.right){
-        player.pCont.riri.release()
-    }
-    if (e.keyCode == player.buttonSet.left) {
-        player.pCont.leflef.release()
-    }
-    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.release()
-    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
-}
-
 fun main() {
-//    playerhootNoise.open(playshoostrm)
+    soundBank["ouch"]= AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(ouchnoiseFile))
+    }
+    soundBank["die"]= AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(dienoiseFile))
+    }
+    soundBank["swap"] = AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(swapnoiseFile))
+    }
+    soundBank["shoot"] = AudioSystem.getClip().also{
+                    it.open(AudioSystem.getAudioInputStream(longpewFil))
+    }
     entsToAdd.addAll(listOf(
         player0,
         player1
@@ -468,12 +307,90 @@ fun main() {
 //    myFrame.createBufferStrategy(3)
 //    myFrame.graphics.dispose()
 //    myFrame.bufferStrategy.show()
+    val myPanel:JPanel =object : JPanel() {
+        override fun paint(g: Graphics) {
+            super.paint(g)
+            if(myrepaint){
+                myrepaint = false
+                val preupdateEnts = mutableListOf<EntDimens>()
+                allEntities.forEach { entity: Entity ->
+                    preupdateEnts.add(EntDimens(entity.xpos,entity.ypos,entity.drawSize))
+                    entity.updateEntity()
+                }
+                var timesTried = 0
+                do{
+                    timesTried++
+                    var triggeredReaction = false
+                    for (i in 0 until allEntities.size) {
+                        for (j in (i + 1) until allEntities.size) {
+                            val ient = allEntities[i]
+                            val jent = allEntities[j]
+                            var collided = false
+                            if(ient.overlapsOther(jent)){
+                                ient.collide(jent, preupdateEnts[i],preupdateEnts[j])
+                                collided = true
+                            }
+                            if(jent.overlapsOther(ient)){
+                                jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
+                                collided = true
+                            }
+                            if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient)) {
+                                if ((ient is Player || ient is Enemy) && (jent is Player ||jent is Enemy)) {
+                                    if(timesTried > 10){
+                                        println("Cannot resolve collision!")
+                                        if(jent is Wall){
+//                                jent.isDead = true
+                                        }else if(ient is Wall){
+//                                ient.isDead = true
+                                        }else{
 
+//                                ient.isDead = true
+//                                jent.isDead = true
+                                        }
+                                    }else{
+                                        triggeredReaction = true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }while (triggeredReaction)
+                allEntities.removeIf { it.isDead }
+
+                g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
+                val players = mutableListOf<Entity>()
+                allEntities.forEach { entity ->
+                    if(entity is Player){
+                        players.add(entity)
+                    }else entity.drawEntity(g)
+                }
+                players.forEach {
+                    it.drawEntity(g)
+                }
+
+                allEntities.forEach { entity ->
+                    entity.drawComponents(g)
+                }
+                if(player0.specificMenus.values.any { it }){
+                    player0.menuStuff.forEach {
+                        it.updateEntity()
+                        it.drawEntity(g)
+                    }
+                }
+                if(player1.specificMenus.values.any { it }){
+                    player1.menuStuff.forEach {
+                        it.updateEntity()
+                        it.drawEntity(g)
+                    }
+                }
+            }
+        }
+    }
+    myFrame.contentPane = myPanel
     myFrame.title = "Gunplay"
     myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE+YFRAMEMAGIC)
     myFrame.isVisible = true
-    myFrame.contentPane = myPanel
-//    Thread.sleep(40)
+
     while (true){
         val pretime = System.currentTimeMillis()
         if(pressed3.tryConsume()){
@@ -499,4 +416,3 @@ fun main() {
         if(tickdiff<TICK_INTERVAL) Thread.sleep(TICK_INTERVAL-tickdiff)
     }
 }
-var gamePaused = false
