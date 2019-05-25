@@ -107,7 +107,7 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
     if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
 }
 
-fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
+fun processShooting(me:shoots,sht:Boolean,weap:Weapon,bulImage:Image){
     if (sht && weap.framesSinceShottah > me.tshd.wep.atkSpd) {
         weap.framesSinceShottah = 0
         if(me is Player)me.didShoot=true
@@ -115,10 +115,11 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
         numproj = ((me.tshd.wep.recoil/(me.tshd.wep.bulspd+me.tshd.wep.buldmg))).toInt()
         for( i in 0..numproj){
             val b = Bullet(me)
+            b.bulImage = bulImage
             var canspawn = true
             allEntities.forEach { if(it is Wall && it.overlapsOther(b))canspawn = false }
             if(canspawn)
-                entsToAdd.add(Bullet(me))
+                entsToAdd.add(b)
             else {
                 val imp = Impact()
                 imp.drawSize = b.drawSize

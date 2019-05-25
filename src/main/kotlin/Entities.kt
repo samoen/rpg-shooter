@@ -11,6 +11,7 @@ import java.awt.Rectangle
 
 
 class Bullet(val shotBy: shoots) : Entity {
+    var bulImage = wallImage
     var damage = shotBy.tshd.wep.buldmg
     var framesAlive = 0
     var bulDir = shotBy.tshd.angy + ((Math.random()-0.5)*shotBy.tshd.wep.recoil/6.0)
@@ -54,8 +55,9 @@ class Bullet(val shotBy: shoots) : Entity {
     }
 
     override fun drawEntity(g: Graphics) {
-        g.color = color
-        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedPos(drawSize)).toInt(), (getWindowAdjustedPos(drawSize)).toInt())
+        drawAsSprite(this,bulImage,g)
+//        g.color = color
+//        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedPos(drawSize)).toInt(), (getWindowAdjustedPos(drawSize)).toInt())
     }
 }
 
@@ -160,7 +162,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
                 }
                 primaryEquipped = !primaryEquipped
             }
-            processShooting(this,pCont.sht.booly,this.tshd.wep)
+            processShooting(this,pCont.sht.booly,this.tshd.wep,pBulImage)
         }
     }
 
@@ -318,7 +320,7 @@ class Enemy : Entity, shoots, hasHealth{
                 val intersectors = allEntities.filter {it is Wall || it is Player}.filter {  path.intersects(Rectangle(it.xpos.toInt(),it.ypos.toInt(),it.drawSize.toInt(),it.drawSize.toInt()))}.sortedBy { Math.abs(it.ypos-ypos)+Math.abs(it.xpos-xpos) }
                 if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
             }
-            processShooting(this,shoot2,this.tshd.wep)
+            processShooting(this,shoot2,this.tshd.wep,eBulImage)
             val fix = absanglediff>Math.PI-tshd.turnSpeed
             var lef = radtarget>=tshd.angy
             if(fix)lef = !lef
@@ -334,6 +336,8 @@ class Enemy : Entity, shoots, hasHealth{
 val ENEMY_DRIFT_FRAMES = 30
 val wallImage = ImageIcon("src/main/resources/brick1.png").image
 val impactImage = ImageIcon("src/main/resources/shrapnel.png").image
+val pBulImage = ImageIcon("src/main/resources/plasma.png").image
+val eBulImage = ImageIcon("src/main/resources/dooropen.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 class Wall : Entity{
