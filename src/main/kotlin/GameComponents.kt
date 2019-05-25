@@ -26,6 +26,7 @@ val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
 val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
 val ouchnoiseFile = File("src/main/resources/ouch.wav").getAbsoluteFile()
 val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
+
 fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
     if (sht && weap.framesSinceShottah > me.tshd.wep.atkSpd) {
         weap.framesSinceShottah = 0

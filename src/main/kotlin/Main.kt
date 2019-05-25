@@ -153,8 +153,8 @@ fun revivePlayers(heal:Boolean){
 const val mapGridColumns = 16
 //const val mapGridRows = 15
 val map1 =  "        w       " +
-            "                " +
-            "      ww        " +
+            "       e        " +
+            " e    ww    e   " +
             "ww wh ww    w   " +
             " whwh          w" +
             "  hwh          w" +
@@ -169,7 +169,7 @@ val map1 =  "        w       " +
             "            s   "
 
 val map2 =  "s       we      " +
-            "   3            " +
+            "   3         e  " +
             "      ww     h  " +
             "    h ww        " +
             "               w" +
@@ -251,15 +251,89 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                 continue
             }
             if(ch == 'b'){
-                entsToAdd.add(BlackSmith('b').also {
+                entsToAdd.add(Shop().also {
+                    it.char = 'b'
                     it.drawSize = mapGridSize
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.menuThings = {other->listOf(
+                        StatView({"Dmg"},other.xpos,0+other.ypos),
+                        StatView({"Vel"},other.xpos,statsYSpace+other.ypos),
+                        StatView({"Rec"},other.xpos,statsYSpace*2+other.ypos),
+                        StatView({"Rel"},other.xpos,statsYSpace*3+other.ypos),
+                        Selector(4,other,{
+                            other.tshd.wep.buldmg+=1
+                            other.tshd.wep.bulSize+=3
+                        },{
+                            val desiredDmg = other.tshd.wep.buldmg-1
+                            val desiredSize = other.tshd.wep.bulSize -3
+                            if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
+                                other.tshd.wep.bulSize = desiredSize
+                                other.tshd.wep.buldmg = desiredDmg
+                            }
+                        },{
+                            if(other.tshd.wep.bulspd+1<50)other.tshd.wep.bulspd++
+                        },{
+                            if(other.tshd.wep.bulspd-1>1)other.tshd.wep.bulspd--
+                        },{
+                            if(other.tshd.wep.recoil+1<30)other.tshd.wep.recoil++
+                        },{
+                            if(other.tshd.wep.recoil-1>=0)other.tshd.wep.recoil--
+                        },{
+                            if(other.tshd.wep.atkSpd+1<200)other.tshd.wep.atkSpd++
+                        },{
+                            if(other.tshd.wep.atkSpd-1>0)other.tshd.wep.atkSpd--
+                        }),
+                        StatView({other.tshd.wep.buldmg.toString() }, statsXSpace+other.xpos, other.ypos),
+                        StatView({other.tshd.wep.bulspd.toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
+                        StatView({other.tshd.wep.recoil.toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
+                        StatView({other.tshd.wep.atkSpd.toString() }, statsXSpace+other.xpos,  3*statsYSpace+other.ypos))}
                 })
                 continue
             }
             if(ch == 'g'){
-                entsToAdd.add(Gym('g').also {
+                entsToAdd.add(Shop().also {
+                    it.menuThings = {other->listOf(
+                        StatView({"Run"},other.xpos,other.ypos),
+                        StatView({"HP"},other.xpos,statsYSpace+other.ypos),
+                        StatView({"Turn"},other.xpos,2*statsYSpace+other.ypos),
+                        StatView({"Mob"},other.xpos,3*statsYSpace+other.ypos),
+                        Selector(4,other,{
+                            other.speed += 1
+                        },{
+                            val desiredspeed = other.speed-1
+                            if(desiredspeed>0)other.speed = desiredspeed
+                        },{
+                            other.drawSize  += 3
+                            other.hasHealth.maxHP +=10
+                            other.hasHealth.currentHp = other.hasHealth.maxHP
+                        },{
+                            val desiredSize = other.drawSize-3
+                            val desiredHp = other.hasHealth.maxHP-10
+                            if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
+                                other.drawSize = desiredSize
+                                other.hasHealth.maxHP = desiredHp
+                            }
+                            other.hasHealth.currentHp = other.hasHealth.maxHP
+                        },{
+                            val desired = "%.4f".format(other.tshd.turnSpeed+0.01f).toFloat()
+                            if(desired<1) other.tshd.turnSpeed = desired
+                        },{
+                            val desired = "%.4f".format(other.tshd.turnSpeed-0.01f).toFloat()
+                            if(desired>0) other.tshd.turnSpeed = desired
+                        },{
+                            val desired = other.strafeRun+0.1f
+                            if(desired<=1.001f) other.strafeRun = desired
+                        },{
+                            val desired = other.strafeRun-0.1f
+                            if(desired>=0)other.strafeRun = desired
+                        }),
+                        StatView({other.speed.toString() }, statsXSpace+other.xpos, other.ypos),
+                        StatView({other.hasHealth.maxHP.toInt().toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
+                        StatView({( other.tshd.turnSpeed*100).toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
+                        StatView({( other.strafeRun*10).toInt().toString() }, statsXSpace+other.xpos, 3*statsYSpace+other.ypos)
+                    )}
+                    it.char = 'g'
                     it.drawSize = mapGridSize
                     it.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.ypos = starty + (mapGridSize+1)*(rownumber+1)

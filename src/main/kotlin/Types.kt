@@ -33,3 +33,12 @@ class EntDimens(val xpos:Double,val ypos:Double,val drawSize:Double){
 }
 
 class playControls(var up:OneShotChannel=OneShotChannel(), var dwm:OneShotChannel=OneShotChannel(), var sht:OneShotChannel=OneShotChannel(), var Swp:OneShotChannel=OneShotChannel(), var riri:OneShotChannel=OneShotChannel(), var leflef:OneShotChannel=OneShotChannel(), var spinri:OneShotChannel=OneShotChannel(), var spenlef:OneShotChannel=OneShotChannel())
+
+class Weapon(
+    var atkSpd:Int = 4,
+    var bulspd:Int = 2,
+    var recoil:Double = 5.0,
+    var bulSize:Double = 9.0,
+    var buldmg:Int = 3,
+    var framesSinceShottah:Int = 999
+)

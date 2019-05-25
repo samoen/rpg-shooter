@@ -81,14 +81,9 @@ class Bullet(val shotBy: shoots) : Entity {
     }
 }
 
-class Weapon(
-    var atkSpd:Int = 4,
-    var bulspd:Int = 2,
-    var recoil:Double = 5.0,
-    var bulSize:Double = 9.0,
-    var buldmg:Int = 3,
-    var framesSinceShottah:Int = 999
-)
+val stillImage = ImageIcon("src/main/resources/main.png").image
+val runImage = ImageIcon("src/main/resources/walk.png").image
+val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 
 class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, hasHealth,demByBuls {
 
@@ -97,9 +92,6 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
     var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
-    val stillImage = ImageIcon("src/main/resources/main.png").image
-    val runImage = ImageIcon("src/main/resources/walk.png").image
-    val pewImage = ImageIcon("src/main/resources/shoot1.png").image
     val pCont:playControls = playControls()
     var swapNoise:Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(swapnoiseFile))
@@ -118,6 +110,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var movedRight = false
     var didMove = false
     var didShoot = false
+    var strafeRun:Float = 0.3f
     override var speed = 10
     override var drawSize = 40.0
     override var hasHealth=healthHolder().also {
@@ -171,6 +164,10 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
         if(toMovex!=0.0&&toMovey!=0.0){
             toMovex=toMovex*0.707
             toMovey=toMovey*0.707
+        }
+        if(tshd.wep.framesSinceShottah<tshd.wep.atkSpd){
+            toMovex *= strafeRun
+            toMovey *= strafeRun
         }
         xpos += toMovex
         ypos += toMovey
@@ -264,11 +261,11 @@ class Enemy : Entity, shoots, hasHealth,demByBuls{
 
     override fun drawEntity(g: Graphics) {
         super.drawEntity(g)
-//        val r = Rectangle((xpos).toInt(),(ypos - (wep.bulSize/(drawSize))).toInt(),wep.bulSize.toInt(),700)
+//        val r = Rectangle((xpos).toInt(),(ypos - (tshd.wep.bulSize/(drawSize))).toInt(),tshd.wep.bulSize.toInt(),700)
 //        val path = Path2D.Double()
 //        path.append(r, false)
 //        val t = AffineTransform()
-//        t.rotate(-angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
+//        t.rotate(-tshd.angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
 //        path.transform(t)
 //        (g as Graphics2D).draw(path)
     }
@@ -510,109 +507,9 @@ class MedPack : Entity {
     }
 }
 
-class BlackSmith(val char:Char):Entity{
-    override var color = Color.CYAN
-    override var drawSize = 35.0
-    override var xpos: Double = 50.0
-    override var ypos: Double = 50.0
-    override var isDead: Boolean = false
-    override var entityTag: String = "default"
-    override var speed: Int = 2
-    override fun updateEntity() {
-        if(player0.specificMenus[char]==true){
-            if(!overlapsOther(player0)){
-                player0.specificMenus[char] = false
-            }
-        }
-        if(player1.specificMenus[char] == true){
-            if(!overlapsOther(player1)){
-                player1.specificMenus[char] = false
-            }
-        }
-    }
-
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if(other is Player){
-            if(other.specificMenus[char]==false){
-                other.menuStuff = listOf(
-                    StatView({"Dmg"},other.xpos,0+other.ypos),
-                    StatView({"Vel"},other.xpos,statsYSpace+other.ypos),
-                    StatView({"Rec"},other.xpos,statsYSpace*2+other.ypos),
-                    StatView({"Rel"},other.xpos,statsYSpace*3+other.ypos),
-                    object:Entity{
-                        override var xpos = other.xpos+selectorXSpace
-                        override var ypos = other.ypos
-                        override var color = Color.BLUE
-                        override var drawSize = 20.0
-                        var indexer = 0
-                        override var isDead: Boolean = false
-                        override var entityTag: String = "default"
-                        override var speed: Int = 2
-                        override fun updateEntity() {
-                            if(other.pCont.sht.tryConsume()){
-                                if(indexer+1<4){
-                                    indexer++
-                                    ypos+=statsYSpace
-                                }
-                            }
-                            if(other.pCont.Swp.tryConsume()){
-                                if(indexer-1>=0){
-                                    indexer--
-                                    ypos -= statsYSpace
-                                }
-                            }
-                            if(other.pCont.spinri.tryConsume()){
-                                when(indexer){
-                                    0->{
-                                        other.tshd.wep.buldmg+=1
-                                        other.tshd.wep.bulSize+=3
-                                    }
-                                    1->{
-                                        if(other.tshd.wep.bulspd+1<50)other.tshd.wep.bulspd++
-                                    }
-                                    2->{
-                                        if(other.tshd.wep.recoil+1<30)other.tshd.wep.recoil++
-                                    }
-                                    3->{
-                                        if(other.tshd.wep.atkSpd+1<200)other.tshd.wep.atkSpd++
-                                    }
-                                }
-                            }else if(other.pCont.spenlef.tryConsume()){
-                                when(indexer){
-                                    0->{
-                                        val desiredDmg = other.tshd.wep.buldmg-1
-                                        val desiredSize = other.tshd.wep.bulSize -3
-                                        if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
-                                            other.tshd.wep.bulSize = desiredSize
-                                            other.tshd.wep.buldmg = desiredDmg
-                                        }
-                                    }
-                                    1->{
-                                        if(other.tshd.wep.bulspd-1>1)other.tshd.wep.bulspd--
-                                    }
-                                    2->{
-                                        if(other.tshd.wep.recoil-1>=0)other.tshd.wep.recoil--
-                                    }
-                                    3->{
-                                        if(other.tshd.wep.atkSpd-1>0)other.tshd.wep.atkSpd--
-                                    }
-                                }
-                            }
-                        }
-                    },
-//                    Selector(other, other.xpos+30,4),
-                    StatView({other.tshd.wep.buldmg.toString() }, statsXSpace+other.xpos, other.ypos),
-                    StatView({other.tshd.wep.bulspd.toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
-                    StatView({other.tshd.wep.recoil.toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
-                    StatView({other.tshd.wep.atkSpd.toString() }, statsXSpace+other.xpos,  3*statsYSpace+other.ypos))
-
-                other.specificMenus[char] = true
-            }
-        }
-    }
-}
-class Gym(val char:Char):Entity{
-
+class Shop:Entity{
+    var char:Char = 'a'
+    var menuThings:(Player)->List<Entity> ={e-> listOf()}
     override var color = Color.WHITE
     override var drawSize = 35.0
     override var xpos: Double = 50.0
@@ -637,76 +534,47 @@ class Gym(val char:Char):Entity{
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(other is Player){
             if(other.specificMenus[char]==false){
-                other.menuStuff = listOf(
-                    StatView({"Run"},other.xpos,other.ypos),
-                    StatView({"HP"},other.xpos,statsYSpace+other.ypos),
-                    StatView({"Turn"},other.xpos,2*statsYSpace+other.ypos),
-                    object:Entity{
-                        override var xpos = other.xpos+selectorXSpace
-                        override var color = Color.BLUE
-                        override var drawSize = 20.0
-                        override var ypos = other.ypos
-                        var indexer = 0
-                        override var isDead: Boolean = false
-                        override var entityTag: String = "default"
-                        override var speed: Int = 2
-                        override fun updateEntity() {
-                            if(other.pCont.sht.tryConsume()){
-                                if(indexer+1<3){
-                                    indexer++
-                                    ypos+=statsYSpace
-                                }
-                            }
-                            if(other.pCont.Swp.tryConsume()){
-                                if(indexer-1>=0){
-                                    indexer--
-                                    ypos -= statsYSpace
-                                }
-                            }
-                            if(other.pCont.spinri.tryConsume()){
-                                when(indexer){
-                                    0->{
-                                        other.speed += 1
-                                    }
-                                    1->{
-                                        other.drawSize  += 3
-                                        other.hasHealth.maxHP +=10
-                                        other.hasHealth.currentHp = other.hasHealth.maxHP
-                                    }
-                                    2->{
-                                        val desired = "%.4f".format(other.tshd.turnSpeed+0.01f).toFloat()
-                                        if(desired<1) other.tshd.turnSpeed = desired
-                                    }
-                                }
-                            }else if(other.pCont.spenlef.tryConsume()){
-                                when(indexer){
-                                    0->{
-                                        val desiredspeed = other.speed-1
-                                        if(desiredspeed>0)other.speed = desiredspeed
-                                    }
-                                    1->{
-                                        val desiredSize = other.drawSize-3
-                                        val desiredHp = other.hasHealth.maxHP-10
-                                        if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
-                                            other.drawSize = desiredSize
-                                            other.hasHealth.maxHP = desiredHp
-                                        }
-                                        other.hasHealth.currentHp = other.hasHealth.maxHP
-                                    }
-                                    2->{
-                                        val desired = "%.4f".format(other.tshd.turnSpeed-0.01f).toFloat()
-                                        if(desired>0) other.tshd.turnSpeed = desired
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    StatView({other.speed.toString() }, statsXSpace+other.xpos, other.ypos),
-                    StatView({other.hasHealth.maxHP.toInt().toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
-                    StatView({( other.tshd.turnSpeed*100).toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos)
-                )
-
+                other.menuStuff = menuThings(other)
                 other.specificMenus[char] = true
+            }
+        }
+    }
+}
+class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()->Unit,val onUp1:()->Unit,val onDown1:()->Unit,val onUp2:()->Unit,val onDown2:()->Unit,val onUp3:()->Unit={},val onDown3:()->Unit={}):Entity{
+    override var xpos = other.xpos+selectorXSpace
+    override var color = Color.BLUE
+    override var drawSize = 20.0
+    override var ypos = other.ypos
+    var indexer = 0
+    override var isDead: Boolean = false
+    override var entityTag: String = "default"
+    override var speed: Int = 2
+    override fun updateEntity() {
+        if(other.pCont.sht.tryConsume()){
+            if(indexer+1<numStats){
+                indexer++
+                ypos+=statsYSpace
+            }
+        }
+        if(other.pCont.Swp.tryConsume()){
+            if(indexer-1>=0){
+                indexer--
+                ypos -= statsYSpace
+            }
+        }
+        if(other.pCont.spinri.tryConsume()){
+            when(indexer){
+                0->{ onUp() }
+                1->{ onUp1() }
+                2->{ onUp2() }
+                3->{ onUp3() }
+            }
+        }else if(other.pCont.spenlef.tryConsume()){
+            when(indexer){
+                0->{ onDown() }
+                1->{ onDown1() }
+                2->{ onDown2() }
+                3->{ onDown3() }
             }
         }
     }
