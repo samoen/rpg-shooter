@@ -34,16 +34,19 @@ val BULLET_ALIVE = 14
 
 val soundFiles:MutableMap<String,File> = mutableMapOf()
 
-val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
+//val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
 val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
 val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
 val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
 val ouchnoiseFile = File("src/main/resources/ouch.wav").getAbsoluteFile()
 val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
+
 val stillImage = ImageIcon("src/main/resources/main.png").image
 val runImage = ImageIcon("src/main/resources/walk.png").image
+val goblinImage = ImageIcon("src/main/resources/walk.png").image
 val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 val backgroundImage = ImageIcon("src/main/resources/floor1.png").image
+
 var myrepaint = false
 val soundBank:MutableMap<String, Clip> = mutableMapOf()
 var myFrame=object:JFrame(){
@@ -348,18 +351,18 @@ fun main() {
                                 jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
                                 collided = true
                             }
-                            if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient)) {
+                            if(collided && !ient.toBeRemoved && !jent.toBeRemoved && jent.overlapsOther(ient)) {
                                 if ((ient is Player || ient is Enemy) && (jent is Player ||jent is Enemy)) {
                                     if(timesTried > 10){
                                         println("Cannot resolve collision!")
                                         if(jent is Wall){
-//                                jent.isDead = true
+//                                jent.toBeRemoved = true
                                         }else if(ient is Wall){
-//                                ient.isDead = true
+//                                ient.toBeRemoved = true
                                         }else{
 
-//                                ient.isDead = true
-//                                jent.isDead = true
+//                                ient.toBeRemoved = true
+//                                jent.toBeRemoved = true
                                         }
                                     }else{
                                         triggeredReaction = true
@@ -369,7 +372,7 @@ fun main() {
                         }
                     }
                 }while (triggeredReaction)
-                allEntities.removeIf { it.isDead }
+                allEntities.removeIf { it.toBeRemoved }
 
                 g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
                 val players = mutableListOf<Entity>()

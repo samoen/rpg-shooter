@@ -1,7 +1,4 @@
 import java.awt.*
-import java.io.File
-import javax.sound.sampled.AudioSystem
-import javax.sound.sampled.Clip
 import javax.swing.ImageIcon
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -22,11 +19,11 @@ class Bullet(val shotBy: shoots) : Entity {
     var bulDir = shotBy.tshd.angy + ((Math.random()-0.5)*shotBy.tshd.wep.recoil/6.0)
     override var speed = shotBy.tshd.wep.bulspd
     override var color = shotBy.tshd.bulColor
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if (((other is Player) ||  other is Enemy || other is Wall )&&shotBy != other) {
-            isDead = true
+            toBeRemoved = true
             if(other is Wall){
                 val imp = Impact()
                 imp.dimensions.drawSize = dimensions.drawSize
@@ -39,10 +36,10 @@ class Bullet(val shotBy: shoots) : Entity {
     override fun updateEntity() {
         dimensions.ypos -= ((((Math.sin(bulDir))) * speed.toDouble()))
         dimensions.xpos += ((((Math.cos(bulDir))) * speed))
-        if(dimensions.xpos<0)isDead = true
-        if(dimensions.xpos > INTENDED_FRAME_SIZE - (dimensions.drawSize) - (XMAXMAGIC/myFrame.width))isDead = true
-        if(dimensions.ypos > INTENDED_FRAME_SIZE - dimensions.drawSize) isDead = true
-        if(dimensions.ypos<0)isDead = true
+        if(dimensions.xpos<0)toBeRemoved = true
+        if(dimensions.xpos > INTENDED_FRAME_SIZE - (dimensions.drawSize) - (XMAXMAGIC/myFrame.width))toBeRemoved = true
+        if(dimensions.ypos > INTENDED_FRAME_SIZE - dimensions.drawSize) toBeRemoved = true
+        if(dimensions.ypos<0)toBeRemoved = true
         framesAlive++
         if(framesAlive>BULLET_ALIVE){
             val shrinky = shotBy.tshd.wep.bulSize/4
@@ -53,13 +50,11 @@ class Bullet(val shotBy: shoots) : Entity {
             dimensions.ypos+=shrinky/2
 
         }
-        if(dimensions.drawSize<=0)isDead=true
+        if(dimensions.drawSize<=0)toBeRemoved=true
     }
 
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,bulImage,g)
-//        g.color = color
-//        g.fillOval(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), (getWindowAdjustedPos(drawSize)).toInt(), (getWindowAdjustedPos(drawSize)).toInt())
     }
 }
 
@@ -76,10 +71,8 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var primWep = Weapon()
     override var tshd= let {
         val s =shd()
+        s.turnSpeed = 0.1f
         s.shootySound = "shoot"
-//        s.shootNoise = AudioSystem.getClip().also{
-//            it.open(AudioSystem.getAudioInputStream(longpewFil))
-//        }
         s.bulColor = Color.LIGHT_GRAY
         s.wep = primWep
         s
@@ -105,11 +98,11 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     )
 
 //    override var wep = primWep
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var color: Color = Color.BLUE
     override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
-        if(!isDead){
+        if(!toBeRemoved){
             blockMovement(this,other,oldme,oldOther)
             val died = takeDamage(other,this)
             if(died){
@@ -225,7 +218,7 @@ class Enemy : Entity, shoots, hasHealth{
     var randnumx = 0.0
     var randnumy = 0.0
     var iTried = Pair(-1.0,-1.0)
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var color: Color = Color.BLUE
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
@@ -234,7 +227,7 @@ class Enemy : Entity, shoots, hasHealth{
     }
 
     override fun drawEntity(g: Graphics) {
-        super.drawEntity(g)
+        drawAsSprite(this,goblinImage,g)
 //        val r = Rectangle((xpos).toInt(),(ypos - (tshd.wep.bulSize/(drawSize))).toInt(),tshd.wep.bulSize.toInt(),700)
 //        val path = Path2D.Double()
 //        path.append(r, false)
@@ -340,7 +333,7 @@ val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 class Wall : Entity{
     override var dimensions = EntDimens(0.0,0.0,20.0)
     override var color = Color.DARK_GRAY
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
     override fun drawEntity(g: Graphics) {
@@ -355,17 +348,13 @@ class Gateway : Entity{
     var mapnum = 1
     var locked = true
     override var color = Color.PINK
-    //    override fun drawEntity(g: Graphics) {
-//        super.drawEntity(g)
-//    }
     var someoneSpawned:Entity = this
     var sumspn = false
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
     override fun drawEntity(g: Graphics) {
-        if(locked)
-            drawAsSprite(this,gateClosedImage,g)
+        if(locked) drawAsSprite(this,gateClosedImage,g)
         else drawAsSprite(this,gateOpenImage,g)
     }
 
@@ -394,13 +383,12 @@ class Gateway : Entity{
                     sumspn = true
                     someoneSpawned = player
                     player.canEnterGateway = false
-                    player.isDead = false
+                    player.toBeRemoved = false
                     entsToAdd.add(player)
                     break
                 }
             }
         }
-//        if(toremove in 0 until playersInside.size)
         if(toremove!=-1)
             playersInside.removeAt(toremove)
         if(playersInside.size>=NumPlayers){
@@ -412,11 +400,9 @@ class Gateway : Entity{
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(!locked){
-            if(other is Player
-//                && !playersInside.map { it.playerNumber }.contains(other.playerNumber)
-            ){
-                if(other.canEnterGateway&&!other.isDead){
-                    other.isDead = true
+            if(other is Player){
+                if(other.canEnterGateway&&!other.toBeRemoved){
+                    other.toBeRemoved = true
                     other.dimensions.xpos = dimensions.xpos
                     other.dimensions.ypos = dimensions.ypos
                     playersInside.add(other)
@@ -428,7 +414,7 @@ class Gateway : Entity{
 class GateSwitch:Entity{
     override var dimensions = EntDimens(0.0,0.0,20.0)
     override var color = Color.YELLOW
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
@@ -449,7 +435,7 @@ var NumPlayers = 2
 
 class Impact : Entity{
     override var dimensions = EntDimens(0.0,0.0,20.0)
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
     override var color: Color = Color.BLUE
@@ -460,18 +446,18 @@ class Impact : Entity{
     var liveFrames = 4
     override fun updateEntity() {
        liveFrames--
-        if(liveFrames<0)isDead=true
+        if(liveFrames<0)toBeRemoved=true
     }
 }
 
 class MedPack : Entity {
     override var dimensions = EntDimens(0.0,0.0,20.0)
     override var color = Color.GREEN
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if (other is hasHealth && (other.hasHealth.currentHp<other.hasHealth.maxHP || other.hasHealth.didHeal)) isDead = true
+        if (other is hasHealth && (other.hasHealth.currentHp<other.hasHealth.maxHP || other.hasHealth.didHeal)) toBeRemoved = true
     }
 }
 
@@ -480,7 +466,7 @@ class Shop:Entity{
     var char:Char = 'a'
     var menuThings:(Player)->List<Entity> ={e-> listOf()}
     override var color = Color.WHITE
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
     var image = backgroundImage
@@ -515,7 +501,7 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
     override var dimensions = EntDimens(other.dimensions.xpos+selectorXSpace,other.dimensions.ypos,20.0)
     override var color = Color.BLUE
     var indexer = 0
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
     override fun updateEntity() {
@@ -550,7 +536,7 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
 }
 class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity{
     override var dimensions = EntDimens(0.0,0.0,20.0)
-    override var isDead: Boolean = false
+    override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
     override var color: Color = Color.BLUE

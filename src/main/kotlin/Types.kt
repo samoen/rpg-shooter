@@ -1,20 +1,14 @@
 import java.awt.Color
 import java.awt.Graphics
-import javax.swing.ImageIcon
 
 interface Entity {
-//    var xpos: Double
-//    var ypos: Double
-    var isDead: Boolean
+    var toBeRemoved: Boolean
     var entityTag: String
     var speed: Int
-//    var drawSize: Double
     var color: Color
     var dimensions:EntDimens
 
-    fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
-
-    }
+    fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){}
     fun updateEntity() {}
     fun drawComponents(g: Graphics) {}
     fun overlapsOther(other: Entity):Boolean{
@@ -31,14 +25,8 @@ interface Entity {
     }
     fun drawEntity(g: Graphics) {
         drawAsSprite(this,gateClosedImage,g)
-//        g.color = color
-//        g.fillRect(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedPos(drawSize).toInt(), getWindowAdjustedPos(drawSize).toInt())
     }
 }
-fun getWindowAdjustedPos(pos:Double):Double{
-    return pos * myFrame.width/INTENDED_FRAME_SIZE
-}
-
 
 class ButtonSet(val up:Int,val down:Int,val left:Int,val right:Int,val swapgun:Int,val shoot:Int,val spinleft:Int,val spinright:Int)
 
@@ -63,9 +51,6 @@ class OneShotChannel(var locked:Boolean=false, var booly:Boolean=false){
 }
 
 class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
-    fun getMidpoint():Pair<Double,Double>{
-        return Pair((xpos+(drawSize/2)),ypos+(drawSize/2))
-    }
     fun getMidY():Double{
         return ypos+(drawSize/2)
     }

@@ -1,18 +1,16 @@
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.awt.*
 import java.awt.event.KeyEvent
-import java.io.File
-import java.util.*
-import java.util.logging.Handler
 import javax.sound.sampled.*
 import kotlin.math.abs
-import kotlin.reflect.KMutableProperty0
+
+fun getWindowAdjustedPos(pos:Double):Double{
+    return pos * myFrame.width/INTENDED_FRAME_SIZE
+}
 
 fun drawAsSprite(entity: Entity,image:Image,g:Graphics){
     g.drawImage(image,getWindowAdjustedPos(entity.dimensions.xpos).toInt(),getWindowAdjustedPos(entity.dimensions.ypos).toInt(),getWindowAdjustedPos(entity.dimensions.drawSize).toInt(),getWindowAdjustedPos(entity.dimensions.drawSize).toInt(),null)
 }
+
 fun playStrSound(str:String){
             if(soundBank[str]!!.isRunning){
             val newclip = AudioSystem.getClip().also{
@@ -24,20 +22,11 @@ fun playStrSound(str:String){
                 soundBank[str]!!.start()
         }
 }
-//fun playSound(clip: Clip){
-//
-//    if(clip.isRunning){
-//        clip.stop()
-//        AudioSystem.getAudioInputStream(enBulFile)
-//    }
-//    clip.framePosition = 0
-//    clip.start()
-//}
 fun revivePlayers(heal:Boolean){
     if(!allEntities.contains(player0) && !entsToAdd.contains(player0))entsToAdd.add(player0)
     if(!allEntities.contains(player1) && !entsToAdd.contains(player1)) entsToAdd.add(player1)
-    player0.isDead = false
-    player1.isDead = false
+    player0.toBeRemoved = false
+    player1.toBeRemoved = false
 //    player0.dimensions.ypos = (INTENDED_FRAME_SIZE - player0.dimensions.drawSize)
 //    player0.dimensions.xpos = 0.0
 //    player1.dimensions.ypos = (INTENDED_FRAME_SIZE - player1.dimensions.drawSize)
@@ -148,10 +137,12 @@ fun processTurning(me:shoots,lef:Boolean,righ:Boolean){
 }
 fun drawCrosshair(me:shoots,g: Graphics){
     me as Entity
+    g as Graphics2D
     g.color = Color.CYAN
-    val strkw = if(me is Player)1.2f
-    else 5f
-    (g as Graphics2D).stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
+    val strkw = 1.5f
+//        if(me is Player)1.2f
+//    else 5f
+    g.stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
     val arcdiameter = (me as Entity).dimensions.drawSize
     fun doarc(diver:Double,timeser:Double){
         val spread = (7)*(me.tshd.wep.recoil+1)
@@ -165,24 +156,22 @@ fun drawCrosshair(me:shoots,g: Graphics){
             spread.toInt()
         )
     }
-    if(me is Player){
+//    if(me is Player){
         doarc(me.dimensions.drawSize/4,0.5)
         doarc(-me.dimensions.drawSize/3.5,1.55)
         doarc(0.0,1.0)
         doarc(-me.dimensions.drawSize/1.7,2.15)
-    }else{
-        g.drawArc(
-            getWindowAdjustedPos((me.dimensions.xpos)).toInt(),
-            getWindowAdjustedPos((me.dimensions.ypos)).toInt(),
-            (getWindowAdjustedPos((arcdiameter))).toInt(),
-            (getWindowAdjustedPos((arcdiameter))).toInt(),
-            ((me.tshd.angy*180/Math.PI)-5/2).toInt(),
-            5.toInt()
-        )
-    }
-//        doarc(-drawSize,3.0)
-//        g.color = Color.ORANGE
-    (g as Graphics2D).stroke = BasicStroke(1f)
+//    }else{
+//        g.drawArc(
+//            getWindowAdjustedPos((me.dimensions.xpos)).toInt(),
+//            getWindowAdjustedPos((me.dimensions.ypos)).toInt(),
+//            (getWindowAdjustedPos((arcdiameter))).toInt(),
+//            (getWindowAdjustedPos((arcdiameter))).toInt(),
+//            ((me.tshd.angy*180/Math.PI)-5/2).toInt(),
+//            5
+//        )
+//    }
+    g.stroke = BasicStroke(1f)
 }
 fun drawReload(me:shoots,g: Graphics,weap: Weapon){
     me as Entity
@@ -206,9 +195,6 @@ fun drawReload(me:shoots,g: Graphics,weap: Weapon){
     }
 }
 class shd{
-//    var shootNoise:Clip = AudioSystem.getClip().also{
-//        it.open(AudioSystem.getAudioInputStream(enemyPewFile))
-//    }
     var shootySound:String = "die"
     var angy :Double = 0.0
     var wep:Weapon=Weapon()
@@ -224,10 +210,10 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
         me.hasHealth.currentHp -= other.damage
         if((me as hasHealth).hasHealth.currentHp<1){
             playStrSound(me.damagedByBul.dieNoise)
-            me.isDead = true
+            me.toBeRemoved = true
             val deathEnt = object: Entity{
                 override var dimensions = EntDimens(me.dimensions.xpos,me.dimensions.ypos,me.dimensions.drawSize)
-                override var isDead: Boolean = false
+                override var toBeRemoved: Boolean = false
                 override var entityTag: String = "default"
                 override var speed: Int = 2
                 override var color: Color = Color.BLUE
@@ -238,7 +224,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
                 var liveFrames = 8
                 override fun updateEntity() {
                     liveFrames--
-                    if(liveFrames<0)isDead=true
+                    if(liveFrames<0)toBeRemoved=true
                 }
             }
             entsToAdd.add(deathEnt)
@@ -265,12 +251,6 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
 class damagedByBullets{
     var ouchNoise = "ouch"
     var dieNoise = "die"
-//    val ouchNoise:Clip = AudioSystem.getClip().also{
-//        it.open(AudioSystem.getAudioInputStream(ouchnoiseFile))
-//    }
-//    val deathNoise:Clip = AudioSystem.getClip().also{
-//        it.open(AudioSystem.getAudioInputStream(dienoiseFile))
-//    }
     val DAMAGED_ANIMATION_FRAMES = 3
     var didGetShot:Boolean = false
     var gotShotFrames = DAMAGED_ANIMATION_FRAMES
