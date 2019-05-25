@@ -35,22 +35,22 @@ fun revivePlayers(){
 //    player1.dimensions.ypos = (INTENDED_FRAME_SIZE - player1.dimensions.drawSize)
 //    player1.dimensions.xpos = (player0.dimensions.drawSize)
 //    if(heal){
-//        player0.hasHealth.currentHp = player0.hasHealth.maxHP
-//        player1.hasHealth.currentHp = player1.hasHealth.maxHP
+//        player0.healthStats.currentHp = player0.healthStats.maxHP
+//        player1.healthStats.currentHp = player1.healthStats.maxHP
 //    }
 }
 
 fun randEnemy():Enemy{
     val se = Enemy()
-    se.tshd.turnSpeed = (0.01+(Math.random()/14)).toFloat()
+    se.shootStats.turnSpeed = (0.01+(Math.random()/14)).toFloat()
     se.dimensions.drawSize = 20+(Math.random()*30)
-    se.hasHealth.maxHP = (se.dimensions.drawSize/2)
-    se.hasHealth.currentHp = se.hasHealth.maxHP
+    se.healthStats.maxHP = (se.dimensions.drawSize/2)
+    se.healthStats.currentHp = se.healthStats.maxHP
     se.speed = (Math.random()*4).toInt()+1
-    se.tshd.wep.bulSize = 8.0+(Math.random()*40)
-    se.tshd.wep.buldmg = se.tshd.wep.bulSize.toInt()
-    se.tshd.wep.atkSpd = (Math.random()*20).toInt()+10
-    se.tshd.wep.bulspd = (Math.random()*10).toInt()+3
+    se.shootStats.wep.bulSize = 8.0+(Math.random()*40)
+    se.shootStats.wep.buldmg = se.shootStats.wep.bulSize.toInt()
+    se.shootStats.wep.atkSpd = (Math.random()*20).toInt()+10
+    se.shootStats.wep.bulspd = (Math.random()*10).toInt()+3
     return  se
 }
 
@@ -100,11 +100,11 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
 }
 
 fun processShooting(me:shoots,sht:Boolean,weap:Weapon,bulImage:Image){
-    if (sht && weap.framesSinceShottah > me.tshd.wep.atkSpd) {
+    if (sht && weap.framesSinceShottah > me.shootStats.wep.atkSpd) {
         weap.framesSinceShottah = 0
         if(me is Player)me.didShoot=true
         var numproj = 1
-        numproj = ((me.tshd.wep.recoil/(me.tshd.wep.bulspd+me.tshd.wep.buldmg))).toInt()
+        numproj = ((me.shootStats.wep.recoil/(me.shootStats.wep.bulspd+me.shootStats.wep.buldmg))).toInt()
         for( i in 0..numproj){
             val b = Bullet(me)
             b.bulImage = bulImage
@@ -120,22 +120,22 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon,bulImage:Image){
                 entsToAdd.add(imp)
             }
         }
-        playStrSound(me.tshd.shootySound)
+        playStrSound(me.shootStats.shootySound)
     }
     weap.framesSinceShottah++
 }
 fun processTurning(me:shoots,lef:Boolean,righ:Boolean){
     if (lef) {
-        val desired = me.tshd.angy+me.tshd.turnSpeed
+        val desired = me.shootStats.angy+me.shootStats.turnSpeed
         if(desired>Math.PI){
-            me.tshd.angy = -Math.PI + (desired-Math.PI)
+            me.shootStats.angy = -Math.PI + (desired-Math.PI)
         }else
-            me.tshd.angy += me.tshd.turnSpeed
+            me.shootStats.angy += me.shootStats.turnSpeed
     }
     if (righ){
-        val desired = me.tshd.angy-me.tshd.turnSpeed
-        if(desired<-Math.PI)me.tshd.angy = Math.PI - (-Math.PI-desired)
-        else me.tshd.angy -= me.tshd.turnSpeed
+        val desired = me.shootStats.angy-me.shootStats.turnSpeed
+        if(desired<-Math.PI)me.shootStats.angy = Math.PI - (-Math.PI-desired)
+        else me.shootStats.angy -= me.shootStats.turnSpeed
     }
 }
 fun drawCrosshair(me:shoots,g: Graphics){
@@ -148,14 +148,14 @@ fun drawCrosshair(me:shoots,g: Graphics){
     g.stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
     val arcdiameter = (me as Entity).dimensions.drawSize
     fun doarc(diver:Double,timeser:Double){
-        val spread = (7)*(me.tshd.wep.recoil+1)
-        val bspd = me.tshd.wep.bulspd*2
+        val spread = (7)*(me.shootStats.wep.recoil+1)
+        val bspd = me.shootStats.wep.bulspd*2
         g.drawArc(
             getWindowAdjustedPos((me.dimensions.xpos)+(diver)).toInt()-bspd,
             getWindowAdjustedPos((me.dimensions.ypos)+(diver)).toInt()-bspd,
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
-            ((me.tshd.angy*180/Math.PI)-spread/2).toInt(),
+            ((me.shootStats.angy*180/Math.PI)-spread/2).toInt(),
             spread.toInt()
         )
     }
@@ -170,7 +170,7 @@ fun drawCrosshair(me:shoots,g: Graphics){
 //            getWindowAdjustedPos((me.dimensions.ypos)).toInt(),
 //            (getWindowAdjustedPos((arcdiameter))).toInt(),
 //            (getWindowAdjustedPos((arcdiameter))).toInt(),
-//            ((me.tshd.angy*180/Math.PI)-5/2).toInt(),
+//            ((me.shootStats.angy*180/Math.PI)-5/2).toInt(),
 //            5
 //        )
 //    }
@@ -178,41 +178,36 @@ fun drawCrosshair(me:shoots,g: Graphics){
 }
 fun drawReload(me:shoots,g: Graphics,weap: Weapon){
     me as Entity
-    if(weap.framesSinceShottah<me.tshd.wep.atkSpd){
+    if(weap.framesSinceShottah<me.shootStats.wep.atkSpd){
         g.color = Color.CYAN
         (g as Graphics2D).stroke = BasicStroke(2f)
 
         g.drawLine(
             getWindowAdjustedPos (me.dimensions.xpos).toInt(),
             getWindowAdjustedPos(me.dimensions.ypos).toInt()-2,
-            getWindowAdjustedPos  ( (me.dimensions.xpos + (me.dimensions.drawSize * (me.tshd.wep.atkSpd - weap.framesSinceShottah) / me.tshd.wep.atkSpd)) ).toInt(),
+            getWindowAdjustedPos  ( (me.dimensions.xpos + (me.dimensions.drawSize * (me.shootStats.wep.atkSpd - weap.framesSinceShottah) / me.shootStats.wep.atkSpd)) ).toInt(),
             getWindowAdjustedPos(me.dimensions.ypos).toInt()-2
         )
         g.drawLine(
             getWindowAdjustedPos (me.dimensions.xpos).toInt(),
             getWindowAdjustedPos(me.dimensions.ypos).toInt()-4,
-            getWindowAdjustedPos  ((me.dimensions.xpos + (me.dimensions.drawSize * (me.tshd.wep.atkSpd - weap.framesSinceShottah) / me.tshd.wep.atkSpd)) ).toInt(),
+            getWindowAdjustedPos  ((me.dimensions.xpos + (me.dimensions.drawSize * (me.shootStats.wep.atkSpd - weap.framesSinceShottah) / me.shootStats.wep.atkSpd)) ).toInt(),
             getWindowAdjustedPos(me.dimensions.ypos).toInt()-4
         )
         g.stroke = BasicStroke(1f)
     }
 }
-class shd{
-    var shootySound:String = "die"
-    var angy :Double = 0.0
-    var wep:Weapon=Weapon()
-    var turnSpeed:Float = 0.05f
-    var bulColor:Color=Color.RED
-}
-interface shoots{
-    var tshd :shd
+
+fun checkFriendlyFire(entity1: Entity,entity2: Entity):Boolean{
+    return entity1::class!=entity2::class
 }
 fun takeDamage(other:Entity,me:Entity):Boolean{
     me as hasHealth
-    if(other is Bullet && other.shotBy::class!=me::class) {
-        me.hasHealth.currentHp -= other.damage
-        if((me as hasHealth).hasHealth.currentHp<1){
-            playStrSound(me.damagedByBul.dieNoise)
+    if(other is Bullet && checkFriendlyFire(me,other.shottah as Entity) ) {
+        other.toBeRemoved = true
+        me.healthStats.currentHp -= other.damage
+        if((me as hasHealth).healthStats.currentHp<1){
+            playStrSound(me.healthStats.dieNoise)
             me.toBeRemoved = true
             val deathEnt = object: Entity{
                 override var dimensions = EntDimens(me.dimensions.xpos,me.dimensions.ypos,me.dimensions.drawSize)
@@ -233,31 +228,22 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
             entsToAdd.add(deathEnt)
             return true
         }else{
-            playStrSound(me.damagedByBul.ouchNoise)
-            me.damagedByBul.didGetShot = true
-            me.damagedByBul.gotShotFrames = me.damagedByBul.DAMAGED_ANIMATION_FRAMES
+            playStrSound(me.healthStats.ouchNoise)
+            me.healthStats.didGetShot = true
+            me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
         }
-    }else if (other is MedPack && (me as hasHealth).hasHealth.currentHp<me.hasHealth.maxHP){
-        me.hasHealth.didHeal = true
-        val desiredhp = (me as hasHealth).hasHealth.currentHp+20
-        if (desiredhp>me.hasHealth.maxHP){
-            me.hasHealth.currentHp = me.hasHealth.maxHP
+    }else if (other is MedPack && (me as hasHealth).healthStats.currentHp<me.healthStats.maxHP){
+        me.healthStats.didHeal = true
+        val desiredhp = (me as hasHealth).healthStats.currentHp+20
+        if (desiredhp>me.healthStats.maxHP){
+            me.healthStats.currentHp = me.healthStats.maxHP
         }else{
-            me.hasHealth.currentHp = desiredhp
+            me.healthStats.currentHp = desiredhp
         }
     }
     return false
 }
 
-
-
-class damagedByBullets{
-    var ouchNoise = "ouch"
-    var dieNoise = "die"
-    val DAMAGED_ANIMATION_FRAMES = 3
-    var didGetShot:Boolean = false
-    var gotShotFrames = DAMAGED_ANIMATION_FRAMES
-}
 fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,otherpos:Double,oldotherpos:Double,oldmecoord:Double,oldothercoord:Double):Double{
     if(diff!=0.0){
         val otherxdiff = otherpos - oldotherpos
@@ -325,23 +311,15 @@ fun drawHealth(me:hasHealth, g:Graphics){
     g.drawLine(
         getWindowAdjustedPos(me.dimensions.xpos).toInt(),
         getWindowAdjustedPos(me.dimensions.ypos).toInt() - 8,
-        getWindowAdjustedPos((me.dimensions.xpos + (me.dimensions.drawSize * me.hasHealth.currentHp / me.hasHealth.maxHP))).toInt(),
+        getWindowAdjustedPos((me.dimensions.xpos + (me.dimensions.drawSize * me.healthStats.currentHp / me.healthStats.maxHP))).toInt(),
         getWindowAdjustedPos(me.dimensions.ypos).toInt() - 8
     )
     g.drawLine(
         getWindowAdjustedPos(me.dimensions.xpos).toInt(),
         getWindowAdjustedPos(me.dimensions.ypos).toInt() - 10,
-        getWindowAdjustedPos(me.dimensions.xpos + (me.dimensions.drawSize * me.hasHealth.currentHp / me.hasHealth.maxHP)).toInt(),
+        getWindowAdjustedPos(me.dimensions.xpos + (me.dimensions.drawSize * me.healthStats.currentHp / me.healthStats.maxHP)).toInt(),
         getWindowAdjustedPos(me.dimensions.ypos).toInt() - 10
     )
     g.stroke = BasicStroke(1f)
 }
-class healthHolder{
-    var didHeal :Boolean = false
-    var currentHp :Double = 10.0
-    var maxHP :Double = 10.0
-}
-interface hasHealth{
-    var hasHealth:healthHolder
-    val damagedByBul:damagedByBullets
-}
+

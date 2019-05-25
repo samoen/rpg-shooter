@@ -147,32 +147,32 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Rec"},other.dimensions.xpos,statsYSpace*2+other.dimensions.ypos),
                         StatView({"Rel"},other.dimensions.xpos,statsYSpace*3+other.dimensions.ypos),
                         Selector(4,other,{
-                            other.tshd.wep.buldmg+=1
-                            other.tshd.wep.bulSize+=3
+                            other.shootStats.wep.buldmg+=1
+                            other.shootStats.wep.bulSize+=3
                         },{
-                            val desiredDmg = other.tshd.wep.buldmg-1
-                            val desiredSize = other.tshd.wep.bulSize -3
+                            val desiredDmg = other.shootStats.wep.buldmg-1
+                            val desiredSize = other.shootStats.wep.bulSize -3
                             if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
-                                other.tshd.wep.bulSize = desiredSize
-                                other.tshd.wep.buldmg = desiredDmg
+                                other.shootStats.wep.bulSize = desiredSize
+                                other.shootStats.wep.buldmg = desiredDmg
                             }
                         },{
-                            if(other.tshd.wep.bulspd+1<50)other.tshd.wep.bulspd++
+                            if(other.shootStats.wep.bulspd+1<50)other.shootStats.wep.bulspd++
                         },{
-                            if(other.tshd.wep.bulspd-1>1)other.tshd.wep.bulspd--
+                            if(other.shootStats.wep.bulspd-1>1)other.shootStats.wep.bulspd--
                         },{
-                            if(other.tshd.wep.recoil+1<23)other.tshd.wep.recoil++
+                            if(other.shootStats.wep.recoil+1<23)other.shootStats.wep.recoil++
                         },{
-                            if(other.tshd.wep.recoil-1>=0)other.tshd.wep.recoil--
+                            if(other.shootStats.wep.recoil-1>=0)other.shootStats.wep.recoil--
                         },{
-                            if(other.tshd.wep.atkSpd+1<200)other.tshd.wep.atkSpd++
+                            if(other.shootStats.wep.atkSpd+1<200)other.shootStats.wep.atkSpd++
                         },{
-                            if(other.tshd.wep.atkSpd-1>0)other.tshd.wep.atkSpd--
+                            if(other.shootStats.wep.atkSpd-1>0)other.shootStats.wep.atkSpd--
                         }),
-                        StatView({other.tshd.wep.buldmg.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
-                        StatView({other.tshd.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
-                        StatView({other.tshd.wep.recoil.toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
-                        StatView({other.tshd.wep.atkSpd.toString() }, statsXSpace+other.dimensions.xpos,  3*statsYSpace+other.dimensions.ypos))}
+                        StatView({other.shootStats.wep.buldmg.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
+                        StatView({other.shootStats.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
+                        StatView({other.shootStats.wep.recoil.toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
+                        StatView({other.shootStats.wep.atkSpd.toString() }, statsXSpace+other.dimensions.xpos,  3*statsYSpace+other.dimensions.ypos))}
                 })
                 continue
             }
@@ -190,33 +190,33 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                             if(desiredspeed>0)other.speed = desiredspeed
                         },{
                             other.dimensions.drawSize  += 3
-                            other.hasHealth.maxHP +=10
-                            other.hasHealth.currentHp = other.hasHealth.maxHP
+                            other.healthStats.maxHP +=10
+                            other.healthStats.currentHp = other.healthStats.maxHP
                         },{
                             val desiredSize = other.dimensions.drawSize-3
-                            val desiredHp = other.hasHealth.maxHP-10
+                            val desiredHp = other.healthStats.maxHP-10
                             if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
                                 other.dimensions.drawSize = desiredSize
-                                other.hasHealth.maxHP = desiredHp
+                                other.healthStats.maxHP = desiredHp
                             }
-                            other.hasHealth.currentHp = other.hasHealth.maxHP
+                            other.healthStats.currentHp = other.healthStats.maxHP
                         },{
-                            val desired = "%.4f".format(other.tshd.turnSpeed+0.01f).toFloat()
-                            if(desired<1) other.tshd.turnSpeed = desired
+                            val desired = "%.4f".format(other.shootStats.turnSpeed+0.01f).toFloat()
+                            if(desired<1) other.shootStats.turnSpeed = desired
                         },{
-                            val desired = "%.4f".format(other.tshd.turnSpeed-0.01f).toFloat()
-                            if(desired>0) other.tshd.turnSpeed = desired
+                            val desired = "%.4f".format(other.shootStats.turnSpeed-0.01f).toFloat()
+                            if(desired>0) other.shootStats.turnSpeed = desired
                         },{
-                            val desired = other.strafeRun+0.1f
-                            if(desired<=1.001f) other.strafeRun = desired
+                            val desired = other.shootStats.strafeRun+0.1f
+                            if(desired<=1.001f) other.shootStats.strafeRun = desired
                         },{
-                            val desired = other.strafeRun-0.1f
-                            if(desired>=0)other.strafeRun = desired
+                            val desired = other.shootStats.strafeRun-0.1f
+                            if(desired>=0)other.shootStats.strafeRun = desired
                         }),
                         StatView({other.speed.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
-                        StatView({other.hasHealth.maxHP.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
-                        StatView({( other.tshd.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
-                        StatView({( other.strafeRun*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
+                        StatView({other.healthStats.maxHP.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
+                        StatView({( other.shootStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
+                        StatView({( other.shootStats.strafeRun*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
                     )}
                     it.char = 'g'
                     it.dimensions.drawSize = mapGridSize
@@ -298,15 +298,7 @@ fun main() {
         it.speed = 8
         it.dimensions.drawSize = 40.0
     })
-//    players.add(player0)
-//    players.add(player1)
     entsToAdd.addAll(players)
-//    entsToAdd.addAll(listOf(
-//        player0,
-//        player1
-////        , Wall()
-//    ))
-//    playSound(player0.tshd.shootNoise)
 
     myFrame.addKeyListener(
         object :KeyListener{
@@ -415,6 +407,7 @@ fun main() {
     myFrame.title = "Gunplay"
     myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE+YFRAMEMAGIC)
     myFrame.isVisible = true
+//    playSound(player0.shootStats.shootNoise)
 
     while (true){
         val pretime = System.currentTimeMillis()

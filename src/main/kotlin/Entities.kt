@@ -7,30 +7,29 @@ import java.awt.geom.Path2D
 import java.awt.Rectangle
 
 
-class Bullet(val shotBy: shoots) : Entity {
+class Bullet(val shottah: shoots) : Entity {
+    var shotBy:ShootStats = shottah.shootStats.copy()
     override var dimensions = EntDimens(
-        ((shotBy as Entity).getMidX()-(shotBy.tshd.wep.bulSize/2))+(Math.cos(shotBy.tshd.angy)*shotBy.dimensions.drawSize/2)+(Math.cos(shotBy.tshd.angy)*shotBy.tshd.wep.bulSize/2),
-        ((shotBy as Entity).getMidY()-(shotBy.tshd.wep.bulSize/2))-(Math.sin(shotBy.tshd.angy)*shotBy.dimensions.drawSize/2)-(Math.sin(shotBy.tshd.angy)*shotBy.tshd.wep.bulSize/2),
-        shotBy.tshd.wep.bulSize
+        ((shottah as Entity).getMidX()-(shotBy.wep.bulSize/2))+(Math.cos(shotBy.angy)*shottah.dimensions.drawSize/2)+(Math.cos(shotBy.angy)*shotBy.wep.bulSize/2),
+        ((shottah as Entity).getMidY()-(shotBy.wep.bulSize/2))-(Math.sin(shotBy.angy)*shottah.dimensions.drawSize/2)-(Math.sin(shotBy.angy)*shotBy.wep.bulSize/2),
+        shotBy.wep.bulSize
     )
     var bulImage = wallImage
-    var damage = shotBy.tshd.wep.buldmg
+    var damage = shotBy.wep.buldmg
     var framesAlive = 0
-    var bulDir = shotBy.tshd.angy + ((Math.random()-0.5)*shotBy.tshd.wep.recoil/6.0)
-    override var speed = shotBy.tshd.wep.bulspd
-    override var color = shotBy.tshd.bulColor
+    var bulDir = shotBy.angy + ((Math.random()-0.5)*shotBy.wep.recoil/6.0)
+    override var speed = shotBy.wep.bulspd
+    override var color = shotBy.bulColor
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if (((other is Player) ||  other is Enemy || other is Wall )&&shotBy != other) {
+        if (other is Wall ) {
             toBeRemoved = true
-            if(other is Wall){
-                val imp = Impact()
-                imp.dimensions.drawSize = dimensions.drawSize
-                imp.dimensions.xpos = dimensions.xpos
-                imp.dimensions.ypos = dimensions.ypos
-                entsToAdd.add(imp)
-            }
+            val imp = Impact()
+            imp.dimensions.drawSize = dimensions.drawSize
+            imp.dimensions.xpos = dimensions.xpos
+            imp.dimensions.ypos = dimensions.ypos
+            entsToAdd.add(imp)
         }
     }
     override fun updateEntity() {
@@ -42,7 +41,8 @@ class Bullet(val shotBy: shoots) : Entity {
         if(dimensions.ypos<0)toBeRemoved = true
         framesAlive++
         if(framesAlive>BULLET_ALIVE){
-            val shrinky = shotBy.tshd.wep.bulSize/4
+//            val shrinky = shotBy.wep.bulSize/4
+            val shrinky = (shotBy.wep.buldmg+shotBy.wep.bulspd)/(shotBy.wep.atkSpd)
             damage-=shrinky.toInt()
             if(damage<0)damage=0
             dimensions.drawSize-=shrinky
@@ -62,15 +62,14 @@ class Bullet(val shotBy: shoots) : Entity {
 
 class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, hasHealth {
     override var dimensions = EntDimens(0.0,0.0,40.0)
-    override val damagedByBul = damagedByBullets()
     var canEnterGateway:Boolean = true
     var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
     var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
     val pCont:playControls = playControls()
     var primWep = Weapon()
-    override var tshd= let {
-        val s =shd()
+    override var shootStats= let {
+        val s =ShootStats()
         s.turnSpeed = 0.1f
         s.shootySound = "shoot"
         s.bulColor = Color.LIGHT_GRAY
@@ -81,9 +80,8 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var movedRight = false
     var didMove = false
     var didShoot = false
-    var strafeRun:Float = 0.3f
     override var speed = 10
-    override var hasHealth=healthHolder().also {
+    override var healthStats=HealthStats().also {
         it.maxHP=dimensions.drawSize
         it.currentHp = it.maxHP
     }
@@ -97,7 +95,6 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
         buldmg = 4
     )
 
-//    override var wep = primWep
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var color: Color = Color.BLUE
@@ -106,7 +103,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
             blockMovement(this,other,oldme,oldOther)
             val died = takeDamage(other,this)
             if(died){
-                hasHealth.currentHp = hasHealth.maxHP
+                healthStats.currentHp = healthStats.maxHP
                 for (specificMenu in specificMenus) {
                     specificMenu.setValue(false)
                 }
@@ -117,8 +114,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
 
     override fun updateEntity() {
         didMove = false
-        hasHealth.didHeal = false
-//        var preControl = Pair(xpos, ypos)
+        healthStats.didHeal = false
         var toMovex = 0.0
         var toMovey = 0.0
         if (pCont.riri.booly) toMovex += speed.toDouble()
@@ -133,9 +129,9 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
             toMovex=toMovex*0.707
             toMovey=toMovey*0.707
         }
-        if(tshd.wep.framesSinceShottah<tshd.wep.atkSpd){
-            toMovex *= strafeRun
-            toMovey *= strafeRun
+        if(shootStats.wep.framesSinceShottah<shootStats.wep.atkSpd){
+            toMovex *= shootStats.strafeRun
+            toMovey *= shootStats.strafeRun
         }
         dimensions.xpos += toMovex
         dimensions.ypos += toMovey
@@ -148,19 +144,19 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
             if(pCont.Swp.tryConsume()){
                 playStrSound("swap")
                 if (primaryEquipped){
-                    tshd.wep = spareWep
+                    shootStats.wep = spareWep
                 }else{
-                    tshd.wep = primWep
+                    shootStats.wep = primWep
                 }
                 primaryEquipped = !primaryEquipped
             }
-            processShooting(this,pCont.sht.booly,this.tshd.wep,pBulImage)
+            processShooting(this,pCont.sht.booly,this.shootStats.wep,pBulImage)
         }
     }
 
     override fun drawComponents(g: Graphics) {
         drawCrosshair(this,g)
-        drawReload(this,g,this.tshd.wep)
+        drawReload(this,g,this.shootStats.wep)
         drawHealth(this,g)
     }
 
@@ -185,15 +181,15 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
         }else{
             gaitcount = 0
         }
-        if (damagedByBul.didGetShot) {
-            if(damagedByBul.gotShotFrames>0) {
+        if (healthStats.didGetShot) {
+            if(healthStats.gotShotFrames>0) {
                 todraw = backgroundImage
-                damagedByBul.gotShotFrames--
+                healthStats.gotShotFrames--
             } else {
-                damagedByBul.didGetShot = false
+                healthStats.didGetShot = false
             }
         }
-        if(tshd.angy>Math.PI/2 || tshd.angy<-Math.PI/2){
+        if(shootStats.angy>Math.PI/2 || shootStats.angy<-Math.PI/2){
             drawAsSprite(this,todraw,g)
         }else{
             g.drawImage(todraw,getWindowAdjustedPos(dimensions.xpos+dimensions.drawSize).toInt(),getWindowAdjustedPos(dimensions.ypos).toInt(),-getWindowAdjustedPos(dimensions.drawSize).toInt(),getWindowAdjustedPos(dimensions.drawSize).toInt(),null)
@@ -204,13 +200,12 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
 }
 class Enemy : Entity, shoots, hasHealth{
     override var dimensions = EntDimens(0.0,0.0,25.0)
-    override var tshd=shd().also {
+    override var shootStats=ShootStats().also {
         it.bulColor = Color.RED
         it.shootySound = "laser"
     }
-    override val damagedByBul = damagedByBullets()
     override var speed = 1
-    override var hasHealth=healthHolder().also {
+    override var healthStats=HealthStats().also {
         it.maxHP=dimensions.drawSize
         it.currentHp = it.maxHP
     }
@@ -228,26 +223,26 @@ class Enemy : Entity, shoots, hasHealth{
 
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,goblinImage,g)
-//        val r = Rectangle((xpos).toInt(),(ypos - (tshd.wep.bulSize/(drawSize))).toInt(),tshd.wep.bulSize.toInt(),700)
+//        val r = Rectangle((xpos).toInt(),(ypos - (shootStats.wep.bulSize/(drawSize))).toInt(),shootStats.wep.bulSize.toInt(),700)
 //        val path = Path2D.Double()
 //        path.append(r, false)
 //        val t = AffineTransform()
-//        t.rotate(-tshd.angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
+//        t.rotate(-shootStats.angy+(-Math.PI/2),(xpos+(drawSize/2)),(ypos+(drawSize/2)))
 //        path.transform(t)
 //        (g as Graphics2D).draw(path)
     }
 
     override fun updateEntity() {
-        if (damagedByBul.didGetShot) {
-            if(damagedByBul.gotShotFrames>0) {
+        if (healthStats.didGetShot) {
+            if(healthStats.gotShotFrames>0) {
                 color = Color.ORANGE
-                damagedByBul.gotShotFrames--
+                healthStats.gotShotFrames--
             } else {
                 color = Color.BLUE
-                damagedByBul.didGetShot = false
+                healthStats.didGetShot = false
             }
         }
-        hasHealth.didHeal = false
+        healthStats.didHeal = false
         val filteredEnts = allEntities
             .filter { it is Player }
             .sortedBy { abs(it.dimensions.xpos - dimensions.xpos) + abs(it.dimensions.ypos - dimensions.ypos) }
@@ -263,10 +258,11 @@ class Enemy : Entity, shoots, hasHealth{
                 randnumy = (Math.random()-0.5)*2
                 framesSinceDrift = 0
             } else{
+                var adjSpd = speed.toFloat()
                 if(framesSinceDrift>=ENEMY_DRIFT_FRAMES){
                     var xdiff = 0.0
                     var ydiff = 0.0
-                    if(hasHealth.currentHp<hasHealth.maxHP/3 && packEnts.isNotEmpty()){
+                    if(healthStats.currentHp<healthStats.maxHP/3 && packEnts.isNotEmpty()){
                         val firstpack = packEnts.first()
                         val packxd = firstpack.getMidX() - getMidX()
                         val packyd = firstpack.getMidY() - getMidY()
@@ -278,16 +274,21 @@ class Enemy : Entity, shoots, hasHealth{
                         xdiff = firstplayer.getMidX() - getMidX()
                         ydiff = firstplayer.getMidY() - getMidY()
                     }
-                    if (xdiff>speed){
-                        dimensions.xpos += speed
-                    } else if(xdiff<-speed) {
-                        dimensions.xpos -= speed
+
+                    if(shootStats.wep.framesSinceShottah<shootStats.wep.atkSpd){
+                        adjSpd *= shootStats.strafeRun
+                        adjSpd *= shootStats.strafeRun
                     }
-                    if (ydiff>speed) dimensions.ypos += speed
-                    else if(ydiff<-speed) dimensions.ypos -= speed
+                    if (xdiff>adjSpd){
+                        dimensions.xpos += adjSpd
+                    } else if(xdiff<-adjSpd) {
+                        dimensions.xpos -= adjSpd
+                    }
+                    if (ydiff>adjSpd) dimensions.ypos += adjSpd
+                    else if(ydiff<-adjSpd) dimensions.ypos -= adjSpd
                 }else{
-                    dimensions.ypos += speed*randnumy
-                    dimensions.xpos += speed*randnumx
+                    dimensions.ypos += adjSpd*randnumy
+                    dimensions.xpos += adjSpd*randnumx
                 }
             }
             iTried = Pair(dimensions.xpos,dimensions.ypos)
@@ -297,22 +298,22 @@ class Enemy : Entity, shoots, hasHealth{
             val dy = getMidY() - firstplayer.getMidY()
 
             val radtarget = ((atan2( dy , -dx)))
-            val absanglediff = abs(radtarget-this.tshd.angy)
+            val absanglediff = abs(radtarget-this.shootStats.angy)
             val shootem =absanglediff<0.2
             var shoot2 = false
             if(shootem){
-                val r = Rectangle((dimensions.xpos).toInt(),(dimensions.ypos - (tshd.wep.bulSize/(dimensions.drawSize))).toInt(),tshd.wep.bulSize.toInt(),700)
+                val r = Rectangle((dimensions.xpos).toInt(),(dimensions.ypos - (shootStats.wep.bulSize/(dimensions.drawSize))).toInt(),shootStats.wep.bulSize.toInt(),shootStats.wep.bulspd*80)
                 val path = Path2D.Double()
                 path.append(r, false)
                 val t = AffineTransform()
-                t.rotate(-tshd.angy+(-Math.PI/2),(dimensions.xpos+(dimensions.drawSize/2)),(dimensions.ypos+(dimensions.drawSize/2)))
+                t.rotate(-shootStats.angy+(-Math.PI/2),(dimensions.xpos+(dimensions.drawSize/2)),(dimensions.ypos+(dimensions.drawSize/2)))
                 path.transform(t)
                 val intersectors = allEntities.filter {it is Wall || it is Player}.filter {  path.intersects(Rectangle(it.dimensions.xpos.toInt(),it.dimensions.ypos.toInt(),it.dimensions.drawSize.toInt(),it.dimensions.drawSize.toInt()))}.sortedBy { Math.abs(it.dimensions.ypos-dimensions.ypos)+Math.abs(it.dimensions.xpos-dimensions.xpos) }
                 if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
             }
-            processShooting(this,shoot2,this.tshd.wep,eBulImage)
-            val fix = absanglediff>Math.PI-tshd.turnSpeed
-            var lef = radtarget>=tshd.angy
+            processShooting(this,shoot2,this.shootStats.wep,eBulImage)
+            val fix = absanglediff>Math.PI-shootStats.turnSpeed
+            var lef = radtarget>=shootStats.angy
             if(fix)lef = !lef
             processTurning(this,lef && !shootem,!lef && !shootem)
         }
@@ -457,7 +458,7 @@ class MedPack : Entity {
     override var entityTag: String = "default"
     override var speed: Int = 2
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if (other is hasHealth && (other.hasHealth.currentHp<other.hasHealth.maxHP || other.hasHealth.didHeal)) toBeRemoved = true
+        if (other is hasHealth && (other.healthStats.currentHp<other.healthStats.maxHP || other.healthStats.didHeal)) toBeRemoved = true
     }
 }
 

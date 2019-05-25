@@ -27,7 +27,28 @@ interface Entity {
         drawAsSprite(this,gateClosedImage,g)
     }
 }
-
+data class ShootStats(var shootySound:String = "die",
+                      var angy :Double = 0.0,
+                      var wep:Weapon=Weapon(),
+                      var turnSpeed:Float = 0.05f,
+                      var bulColor:Color=Color.RED,
+                      var strafeRun:Float = 0.3f)
+interface shoots{
+    var shootStats :ShootStats
+}
+class HealthStats{
+    var didHeal :Boolean = false
+    var currentHp :Double = 10.0
+    var maxHP :Double = 10.0
+    var ouchNoise = "ouch"
+    var dieNoise = "die"
+    val DAMAGED_ANIMATION_FRAMES = 3
+    var didGetShot:Boolean = false
+    var gotShotFrames = DAMAGED_ANIMATION_FRAMES
+}
+interface hasHealth{
+    var healthStats:HealthStats
+}
 class ButtonSet(val up:Int,val down:Int,val left:Int,val right:Int,val swapgun:Int,val shoot:Int,val spinleft:Int,val spinright:Int)
 
 class OneShotChannel(var locked:Boolean=false, var booly:Boolean=false){
