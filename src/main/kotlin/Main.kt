@@ -10,21 +10,15 @@ import javax.swing.JPanel
 
 val allEntities = mutableListOf<Entity>()
 val entsToAdd = mutableListOf<Entity>()
-val statsYSpace = 20.0
-val statsXSpace = 30.0
-val selectorXSpace = 45.0
-val player0 = Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6),0).also { it.speed = 8 }
-val player1 = Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B),1).also{
-    it.dimensions.xpos=150.0
-    it.speed = 8
-    it.dimensions.drawSize = 40.0
-}
-
+val players:MutableList<Player> = mutableListOf()
 var pressed1 = OneShotChannel()
 var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
-
 var gamePaused = false
+
+val statsYSpace = 20.0
+val statsXSpace = 30.0
+val selectorXSpace = 45.0
 const val INTENDED_FRAME_SIZE = 900
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 val YFRAMEMAGIC = 40
@@ -249,14 +243,22 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                     it.dimensions.drawSize = mapGridSize
                 }
                 if(charint==fromMapNum){
-                    player0.dimensions.xpos = gatex
-                    player0.dimensions.ypos = gatey
-                    player0.spawnGate = gate
-                    player1.dimensions.xpos = gatex + (player0.dimensions.drawSize)
-                    player1.dimensions.ypos = gatey
-                    player1.spawnGate = gate
-                    entsToAdd.add(player0)
-                    entsToAdd.add(player1)
+                    var lastsize = 0.0
+                    for(player in players){
+                        player.dimensions.xpos = gatex + lastsize
+                        player.dimensions.ypos = gatey
+                        player.spawnGate = gate
+                        lastsize = (player.dimensions.drawSize)
+                    }
+                    revivePlayers()
+//                    player0.dimensions.xpos = gatex
+//                    player0.dimensions.ypos = gatey
+//                    player0.spawnGate = gate
+//                    player1.dimensions.xpos = gatex + (player0.dimensions.drawSize)
+//                    player1.dimensions.ypos = gatey
+//                    player1.spawnGate = gate
+//                    entsToAdd.add(player0)
+//                    entsToAdd.add(player1)
                 }
 
                 entsToAdd.add(gate)
@@ -290,12 +292,20 @@ fun main() {
     soundBank["laser"] = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(enemyPewFile))
     }
-
-    entsToAdd.addAll(listOf(
-        player0,
-        player1
-//        , Wall()
-    ))
+    players.add(Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6),0).also { it.speed = 8 })
+    players.add( Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B),1).also{
+        it.dimensions.xpos=150.0
+        it.speed = 8
+        it.dimensions.drawSize = 40.0
+    })
+//    players.add(player0)
+//    players.add(player1)
+    entsToAdd.addAll(players)
+//    entsToAdd.addAll(listOf(
+//        player0,
+//        player1
+////        , Wall()
+//    ))
 //    playSound(player0.tshd.shootNoise)
 
     myFrame.addKeyListener(
@@ -306,8 +316,9 @@ fun main() {
                     if (e.keyCode == KeyEvent.VK_1) pressed1.tryProduce()
                     if (e.keyCode == KeyEvent.VK_2) pressed2.tryProduce()
                     if (e.keyCode == KeyEvent.VK_3) pressed3.tryProduce()
-                    playerKeyPressed(player0,e)
-                    playerKeyPressed(player1,e)
+                    for(player in players){
+                        playerKeyPressed(player,e)
+                    }
                 }
             }
             override fun keyReleased(e: KeyEvent?) {
@@ -315,8 +326,9 @@ fun main() {
                     if (e.keyCode == KeyEvent.VK_1) pressed1.release()
                     if (e.keyCode == KeyEvent.VK_2) pressed2.release()
                     if (e.keyCode == KeyEvent.VK_3) pressed3.release()
-                    playerKeyReleased(player0,e)
-                    playerKeyReleased(player1,e)
+                    for (player in players){
+                        playerKeyReleased(player,e)
+                    }
                 }
             }
         }
@@ -375,29 +387,25 @@ fun main() {
                 allEntities.removeIf { it.toBeRemoved }
 
                 g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
-                val players = mutableListOf<Entity>()
+                val combatants = mutableListOf<Entity>()
                 allEntities.forEach { entity ->
                     if(entity is Player || entity is Enemy){
-                        players.add(entity)
+                        combatants.add(entity)
                     }else entity.drawEntity(g)
                 }
-                players.forEach {
+                combatants.forEach {
                     it.drawEntity(g)
                 }
 
                 allEntities.forEach { entity ->
                     entity.drawComponents(g)
                 }
-                if(player0.specificMenus.values.any { it }){
-                    player0.menuStuff.forEach {
-                        it.updateEntity()
-                        it.drawEntity(g)
-                    }
-                }
-                if(player1.specificMenus.values.any { it }){
-                    player1.menuStuff.forEach {
-                        it.updateEntity()
-                        it.drawEntity(g)
+                for(player in players){
+                    if(player.specificMenus.values.any { it }){
+                        player.menuStuff.forEach {
+                            it.updateEntity()
+                            it.drawEntity(g)
+                        }
                     }
                 }
             }
@@ -420,7 +428,7 @@ fun main() {
         } else if(changeMap){
             changeMap=false
             placeMap(nextMap,nextMapNum,currentMapNum)
-            revivePlayers(false)
+            revivePlayers()
         } else{
                 if(!gamePaused){
                     myrepaint = true

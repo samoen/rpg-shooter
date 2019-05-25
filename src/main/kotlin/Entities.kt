@@ -475,17 +475,13 @@ class Shop:Entity{
     }
 
     override fun updateEntity() {
-        if(player0.specificMenus[char]!!){
-            if(!overlapsOther(player0)){
-                player0.specificMenus[char] = false
+        for(player in players){
+            if(player.specificMenus[char]!!){
+                if(!overlapsOther(player)){
+                    player.specificMenus[char] = false
+                }
             }
         }
-        if(player1.specificMenus[char]!!){
-            if(!overlapsOther(player1)){
-                player1.specificMenus[char]=false
-            }
-        }
-
     }
 
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){

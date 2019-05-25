@@ -22,19 +22,22 @@ fun playStrSound(str:String){
                 soundBank[str]!!.start()
         }
 }
-fun revivePlayers(heal:Boolean){
-    if(!allEntities.contains(player0) && !entsToAdd.contains(player0))entsToAdd.add(player0)
-    if(!allEntities.contains(player1) && !entsToAdd.contains(player1)) entsToAdd.add(player1)
-    player0.toBeRemoved = false
-    player1.toBeRemoved = false
+fun revivePlayers(){
+    for (player in players) {
+        if(!allEntities.contains(player) && !entsToAdd.contains(player))entsToAdd.add(player)
+        player.toBeRemoved = false
+    }
+
+//    player0.toBeRemoved = false
+//    player1.toBeRemoved = false
 //    player0.dimensions.ypos = (INTENDED_FRAME_SIZE - player0.dimensions.drawSize)
 //    player0.dimensions.xpos = 0.0
 //    player1.dimensions.ypos = (INTENDED_FRAME_SIZE - player1.dimensions.drawSize)
 //    player1.dimensions.xpos = (player0.dimensions.drawSize)
-    if(heal){
-        player0.hasHealth.currentHp = player0.hasHealth.maxHP
-        player1.hasHealth.currentHp = player1.hasHealth.maxHP
-    }
+//    if(heal){
+//        player0.hasHealth.currentHp = player0.hasHealth.maxHP
+//        player1.hasHealth.currentHp = player1.hasHealth.maxHP
+//    }
 }
 
 fun randEnemy():Enemy{
