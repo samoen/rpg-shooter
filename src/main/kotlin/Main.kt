@@ -15,9 +15,9 @@ val statsXSpace = 30.0
 val selectorXSpace = 45.0
 val player0 = Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6),0).also { it.speed = 8 }
 val player1 = Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B),1).also{
-    it.xpos=150.0
+    it.dimensions.xpos=150.0
     it.speed = 8
-    it.drawSize = 40.0
+    it.dimensions.drawSize = 40.0
 }
 
 var pressed1 = OneShotChannel()
@@ -111,44 +111,44 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
         for((ind:Int,ch:Char) in map.substring(rownumber*mapGridColumns,(rownumber*mapGridColumns)+mapGridColumns).withIndex()){
             if(ch=='w'){
                 entsToAdd.add(Wall().also {
-                    it.drawSize = mapGridSize
-                    it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.dimensions.drawSize = mapGridSize
+                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if (ch == 'h'){
                 entsToAdd.add(MedPack().also {
-                    it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if (ch == 'e'){
                 entsToAdd.add(randEnemy().also {
-                    it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if(ch == 's'){
                 entsToAdd.add(GateSwitch().also {
-                    it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if(ch == 'b'){
                 entsToAdd.add(Shop().also {
                     it.char = 'b'
-                    it.drawSize = mapGridSize
-                    it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.dimensions.drawSize = mapGridSize
+                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                     it.menuThings = {other->listOf(
-                        StatView({"Dmg"},other.xpos,0+other.ypos),
-                        StatView({"Vel"},other.xpos,statsYSpace+other.ypos),
-                        StatView({"Rec"},other.xpos,statsYSpace*2+other.ypos),
-                        StatView({"Rel"},other.xpos,statsYSpace*3+other.ypos),
+                        StatView({"Dmg"},other.dimensions.xpos,0+other.dimensions.ypos),
+                        StatView({"Vel"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
+                        StatView({"Rec"},other.dimensions.xpos,statsYSpace*2+other.dimensions.ypos),
+                        StatView({"Rel"},other.dimensions.xpos,statsYSpace*3+other.dimensions.ypos),
                         Selector(4,other,{
                             other.tshd.wep.buldmg+=1
                             other.tshd.wep.bulSize+=3
@@ -172,34 +172,34 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         },{
                             if(other.tshd.wep.atkSpd-1>0)other.tshd.wep.atkSpd--
                         }),
-                        StatView({other.tshd.wep.buldmg.toString() }, statsXSpace+other.xpos, other.ypos),
-                        StatView({other.tshd.wep.bulspd.toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
-                        StatView({other.tshd.wep.recoil.toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
-                        StatView({other.tshd.wep.atkSpd.toString() }, statsXSpace+other.xpos,  3*statsYSpace+other.ypos))}
+                        StatView({other.tshd.wep.buldmg.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
+                        StatView({other.tshd.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
+                        StatView({other.tshd.wep.recoil.toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
+                        StatView({other.tshd.wep.atkSpd.toString() }, statsXSpace+other.dimensions.xpos,  3*statsYSpace+other.dimensions.ypos))}
                 })
                 continue
             }
             if(ch == 'g'){
                 entsToAdd.add(Shop().also {
                     it.menuThings = {other->listOf(
-                        StatView({"Run"},other.xpos,other.ypos),
-                        StatView({"HP"},other.xpos,statsYSpace+other.ypos),
-                        StatView({"Turn"},other.xpos,2*statsYSpace+other.ypos),
-                        StatView({"Mob"},other.xpos,3*statsYSpace+other.ypos),
+                        StatView({"Run"},other.dimensions.xpos,other.dimensions.ypos),
+                        StatView({"HP"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
+                        StatView({"Turn"},other.dimensions.xpos,2*statsYSpace+other.dimensions.ypos),
+                        StatView({"Mob"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
                         Selector(4,other,{
                             other.speed += 1
                         },{
                             val desiredspeed = other.speed-1
                             if(desiredspeed>0)other.speed = desiredspeed
                         },{
-                            other.drawSize  += 3
+                            other.dimensions.drawSize  += 3
                             other.hasHealth.maxHP +=10
                             other.hasHealth.currentHp = other.hasHealth.maxHP
                         },{
-                            val desiredSize = other.drawSize-3
+                            val desiredSize = other.dimensions.drawSize-3
                             val desiredHp = other.hasHealth.maxHP-10
                             if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
-                                other.drawSize = desiredSize
+                                other.dimensions.drawSize = desiredSize
                                 other.hasHealth.maxHP = desiredHp
                             }
                             other.hasHealth.currentHp = other.hasHealth.maxHP
@@ -216,15 +216,15 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                             val desired = other.strafeRun-0.1f
                             if(desired>=0)other.strafeRun = desired
                         }),
-                        StatView({other.speed.toString() }, statsXSpace+other.xpos, other.ypos),
-                        StatView({other.hasHealth.maxHP.toInt().toString() }, statsXSpace+other.xpos, statsYSpace+other.ypos),
-                        StatView({( other.tshd.turnSpeed*100).toInt().toString() }, statsXSpace+other.xpos, 2*statsYSpace+other.ypos),
-                        StatView({( other.strafeRun*10).toInt().toString() }, statsXSpace+other.xpos, 3*statsYSpace+other.ypos)
+                        StatView({other.speed.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
+                        StatView({other.hasHealth.maxHP.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
+                        StatView({( other.tshd.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
+                        StatView({( other.strafeRun*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
                     )}
                     it.char = 'g'
-                    it.drawSize = mapGridSize
-                    it.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.dimensions.drawSize = mapGridSize
+                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
@@ -241,16 +241,16 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                 val gate = Gateway().also {
                     it.map = mappy
                     it.mapnum = charint
-                    it.xpos = gatex
-                    it.ypos = gatey
-                    it.drawSize = mapGridSize
+                    it.dimensions.xpos = gatex
+                    it.dimensions.ypos = gatey
+                    it.dimensions.drawSize = mapGridSize
                 }
                 if(charint==fromMapNum){
-                    player0.xpos = gatex
-                    player0.ypos = gatey
+                    player0.dimensions.xpos = gatex
+                    player0.dimensions.ypos = gatey
                     player0.spawnGate = gate
-                    player1.xpos = gatex + (player0.drawSize)
-                    player1.ypos = gatey
+                    player1.dimensions.xpos = gatex + (player0.dimensions.drawSize)
+                    player1.dimensions.ypos = gatey
                     player1.spawnGate = gate
                     entsToAdd.add(player0)
                     entsToAdd.add(player1)
@@ -328,7 +328,7 @@ fun main() {
                 myrepaint = false
                 val preupdateEnts = mutableListOf<EntDimens>()
                 allEntities.forEach { entity: Entity ->
-                    preupdateEnts.add(EntDimens(entity.xpos,entity.ypos,entity.drawSize))
+                    preupdateEnts.add(EntDimens(entity.dimensions.xpos,entity.dimensions.ypos,entity.dimensions.drawSize))
                     entity.updateEntity()
                 }
                 var timesTried = 0

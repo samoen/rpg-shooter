@@ -3,13 +3,14 @@ import java.awt.Graphics
 import javax.swing.ImageIcon
 
 interface Entity {
-    var xpos: Double
-    var ypos: Double
+//    var xpos: Double
+//    var ypos: Double
     var isDead: Boolean
     var entityTag: String
     var speed: Int
-    var drawSize: Double
+//    var drawSize: Double
     var color: Color
+    var dimensions:EntDimens
 
     fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
 
@@ -17,20 +18,21 @@ interface Entity {
     fun updateEntity() {}
     fun drawComponents(g: Graphics) {}
     fun overlapsOther(other: Entity):Boolean{
-        return this.ypos+this.drawSize > other.ypos &&
-                this.ypos<other.ypos+other.drawSize &&
-                this.xpos+this.drawSize > other.xpos &&
-                this.xpos<other.xpos+other.drawSize
+        return this.dimensions.ypos+this.dimensions.drawSize > other.dimensions.ypos &&
+                this.dimensions.ypos<other.dimensions.ypos+other.dimensions.drawSize &&
+                this.dimensions.xpos+this.dimensions.drawSize > other.dimensions.xpos &&
+                this.dimensions.xpos<other.dimensions.xpos+other.dimensions.drawSize
     }
     fun getMidY():Double{
-        return ypos+(drawSize/2)
+        return dimensions.ypos+(dimensions.drawSize/2)
     }
     fun getMidX():Double{
-        return xpos+(drawSize/2)
+        return dimensions.xpos+(dimensions.drawSize/2)
     }
     fun drawEntity(g: Graphics) {
-        g.color = color
-        g.fillRect(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedPos(drawSize).toInt(), getWindowAdjustedPos(drawSize).toInt())
+        drawAsSprite(this,gateClosedImage,g)
+//        g.color = color
+//        g.fillRect(getWindowAdjustedPos(xpos).toInt(), getWindowAdjustedPos(ypos).toInt(), getWindowAdjustedPos(drawSize).toInt(), getWindowAdjustedPos(drawSize).toInt())
     }
 }
 fun getWindowAdjustedPos(pos:Double):Double{
@@ -60,7 +62,7 @@ class OneShotChannel(var locked:Boolean=false, var booly:Boolean=false){
     }
 }
 
-class EntDimens(val xpos:Double,val ypos:Double,val drawSize:Double){
+class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
     fun getMidpoint():Pair<Double,Double>{
         return Pair((xpos+(drawSize/2)),ypos+(drawSize/2))
     }
