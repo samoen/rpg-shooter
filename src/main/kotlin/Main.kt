@@ -31,6 +31,9 @@ val YFRAMEMAGIC = 40
 const val TICK_INTERVAL = 40
 const val MIN_ENT_SIZE = 9.0
 val BULLET_ALIVE = 14
+
+val soundFiles:MutableMap<String,File> = mutableMapOf()
+
 val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
 val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
 val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
@@ -262,6 +265,13 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
 }
 
 fun main() {
+
+    soundFiles["shoot"] = longpewFil
+    soundFiles["ouch"] = ouchnoiseFile
+    soundFiles["die"] = dienoiseFile
+    soundFiles["laser"] = enemyPewFile
+    soundFiles["swap"] = swapnoiseFile
+
     soundBank["ouch"]= AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(ouchnoiseFile))
     }
@@ -274,6 +284,10 @@ fun main() {
     soundBank["shoot"] = AudioSystem.getClip().also{
                     it.open(AudioSystem.getAudioInputStream(longpewFil))
     }
+    soundBank["laser"] = AudioSystem.getClip().also{
+        it.open(AudioSystem.getAudioInputStream(enemyPewFile))
+    }
+
     entsToAdd.addAll(listOf(
         player0,
         player1
@@ -360,7 +374,7 @@ fun main() {
                 g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
                 val players = mutableListOf<Entity>()
                 allEntities.forEach { entity ->
-                    if(entity is Player){
+                    if(entity is Player || entity is Enemy){
                         players.add(entity)
                     }else entity.drawEntity(g)
                 }

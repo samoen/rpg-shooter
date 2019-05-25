@@ -72,6 +72,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var primWep = Weapon()
     override var tshd= let {
         val s =shd()
+        s.shootySound = "shoot"
 //        s.shootNoise = AudioSystem.getClip().also{
 //            it.open(AudioSystem.getAudioInputStream(longpewFil))
 //        }
@@ -151,7 +152,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
         if(specificMenus.values.all { !it }){
             processTurning(this,pCont.spenlef.booly,pCont.spinri.booly)
             if(pCont.Swp.tryConsume()){
-                playSound(soundBank["swap"]!!)
+                playStrSound("swap")
                 if (primaryEquipped){
                     tshd.wep = spareWep
                 }else{
@@ -211,6 +212,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
 class Enemy : Entity, shoots, hasHealth{
     override var tshd=shd().also {
         it.bulColor = Color.RED
+        it.shootySound = "laser"
     }
     override val damagedByBul = damagedByBullets()
     override var speed = 1

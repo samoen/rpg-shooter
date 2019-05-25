@@ -13,15 +13,26 @@ import kotlin.reflect.KMutableProperty0
 fun drawAsSprite(entity: Entity,image:Image,g:Graphics){
     g.drawImage(image,getWindowAdjustedPos(entity.xpos).toInt(),getWindowAdjustedPos(entity.ypos).toInt(),getWindowAdjustedPos(entity.drawSize).toInt(),getWindowAdjustedPos(entity.drawSize).toInt(),null)
 }
-
-fun playSound(clip: Clip){
-    if(clip.isRunning){
-        clip.stop()
-        AudioSystem.getAudioInputStream(enBulFile)
-    }
-    clip.framePosition = 0
-    clip.start()
+fun playStrSound(str:String){
+            if(soundBank[str]!!.isRunning){
+            val newclip = AudioSystem.getClip().also{
+                it.open(AudioSystem.getAudioInputStream(soundFiles[str]))
+            }
+            newclip.start()
+        }else{
+                soundBank[str]!!.framePosition=0
+                soundBank[str]!!.start()
+        }
 }
+//fun playSound(clip: Clip){
+//
+//    if(clip.isRunning){
+//        clip.stop()
+//        AudioSystem.getAudioInputStream(enBulFile)
+//    }
+//    clip.framePosition = 0
+//    clip.start()
+//}
 fun revivePlayers(heal:Boolean){
     if(!allEntities.contains(player0) && !entsToAdd.contains(player0))entsToAdd.add(player0)
     if(!allEntities.contains(player1) && !entsToAdd.contains(player1)) entsToAdd.add(player1)
@@ -101,8 +112,7 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
         weap.framesSinceShottah = 0
         if(me is Player)me.didShoot=true
         var numproj = 1
-//        if(me.tshd.wep.recoil>5)
-        numproj = ((me.tshd.wep.recoil/me.tshd.wep.bulspd)).toInt()
+        numproj = ((me.tshd.wep.recoil/(me.tshd.wep.bulspd+me.tshd.wep.buldmg))).toInt()
         for( i in 0..numproj){
             val b = Bullet(me)
             var canspawn = true
@@ -117,16 +127,7 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon){
                 entsToAdd.add(imp)
             }
         }
-        playSound(soundBank["shoot"]!!)
-//        if(soundBank["shoot"]!!.isRunning){
-//            val newclip = AudioSystem.getClip().also{
-//                it.open(AudioSystem.getAudioInputStream(longpewFil))
-//            }
-//            newclip.start()
-//        }else{
-//            me.tshd.shootNoise.framePosition=0
-//            me.tshd.shootNoise.start()
-//        }
+        playStrSound(me.tshd.shootySound)
     }
     weap.framesSinceShottah++
 }
@@ -207,6 +208,7 @@ class shd{
 //    var shootNoise:Clip = AudioSystem.getClip().also{
 //        it.open(AudioSystem.getAudioInputStream(enemyPewFile))
 //    }
+    var shootySound:String = "die"
     var angy :Double = 0.0
     var wep:Weapon=Weapon()
     var turnSpeed:Float = 0.05f
@@ -216,10 +218,11 @@ interface shoots{
     var tshd :shd
 }
 fun takeDamage(other:Entity,me:Entity):Boolean{
+    me as hasHealth
     if(other is Bullet && other.shotBy::class!=me::class) {
-        (me as hasHealth).hasHealth.currentHp -= other.damage
+        me.hasHealth.currentHp -= other.damage
         if((me as hasHealth).hasHealth.currentHp<1){
-            playSound(soundBank["die"]!!)
+            playStrSound(me.damagedByBul.dieNoise)
             me.isDead = true
             val deathEnt = object: Entity{
                 override var xpos: Double = me.xpos
@@ -243,7 +246,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
             entsToAdd.add(deathEnt)
             return true
         }else{
-            playSound(soundBank["ouch"]!!)
+            playStrSound(me.damagedByBul.ouchNoise)
             me.damagedByBul.didGetShot = true
             me.damagedByBul.gotShotFrames = me.damagedByBul.DAMAGED_ANIMATION_FRAMES
         }
@@ -262,6 +265,8 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
 
 
 class damagedByBullets{
+    var ouchNoise = "ouch"
+    var dieNoise = "die"
 //    val ouchNoise:Clip = AudioSystem.getClip().also{
 //        it.open(AudioSystem.getAudioInputStream(ouchnoiseFile))
 //    }
