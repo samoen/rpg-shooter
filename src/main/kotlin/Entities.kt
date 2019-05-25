@@ -54,7 +54,6 @@ class Bullet(val shotBy: shoots) : Entity {
     override var ypos = ((shotBy as Entity).getMidY()-(shotBy.tshd.wep.bulSize/2))-(Math.sin(shotBy.tshd.angy)*shotBy.drawSize/2)-(Math.sin(shotBy.tshd.angy)*shotBy.tshd.wep.bulSize/2)
     override var speed = shotBy.tshd.wep.bulspd
     override var color = shotBy.tshd.bulColor
-
     override var isDead: Boolean = false
     override var entityTag: String = "default"
     override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
@@ -99,7 +98,7 @@ val stillImage = ImageIcon("src/main/resources/main.png").image
 val runImage = ImageIcon("src/main/resources/walk.png").image
 val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 
-class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, hasHealth,demByBuls {
+class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, hasHealth {
 
     override val damagedByBul = damagedByBullets()
     var canEnterGateway:Boolean = true
@@ -248,7 +247,7 @@ class Player(val buttonSet: ButtonSet,val playerNumber:Int): Entity, shoots, has
     var gaitcount = 0
     var pewframecount = 0
 }
-class Enemy : Entity, shoots, hasHealth,demByBuls{
+class Enemy : Entity, shoots, hasHealth{
     override var tshd=shd().also {
         it.bulColor = Color.RED
     }
@@ -311,16 +310,19 @@ class Enemy : Entity, shoots, hasHealth,demByBuls{
                 framesSinceDrift = 0
             } else{
                 if(framesSinceDrift>=ENEMY_DRIFT_FRAMES){
-                    var xdiff = firstplayer.getMidX() - getMidX()
-                    var ydiff = firstplayer.getMidY() - getMidY()
-                    if(hasHealth.currentHp<hasHealth.maxHP && packEnts.isNotEmpty()){
+                    var xdiff = 0.0
+                    var ydiff = 0.0
+                    if(hasHealth.currentHp<hasHealth.maxHP/3 && packEnts.isNotEmpty()){
                         val firstpack = packEnts.first()
                         val packxd = firstpack.getMidX() - getMidX()
                         val packyd = firstpack.getMidY() - getMidY()
-                        if((Math.abs(packxd)+Math.abs(packyd))<(Math.abs(xdiff)+Math.abs(ydiff))){
+//                        if((Math.abs(packxd)+Math.abs(packyd))<(Math.abs(xdiff)+Math.abs(ydiff))){
                             xdiff = packxd
                             ydiff = packyd
-                        }
+//                        }
+                    }else{
+                        xdiff = firstplayer.getMidX() - getMidX()
+                        ydiff = firstplayer.getMidY() - getMidY()
                     }
                     if (xdiff>speed){
                         xpos += speed

@@ -161,11 +161,11 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
     if(other is Bullet && other.shotBy::class!=me::class) {
         (me as hasHealth).hasHealth.currentHp -= other.damage
         if((me as hasHealth).hasHealth.currentHp<1){
-            playSound((me as demByBuls).damagedByBul.deathNoise)
+            playSound((me as hasHealth).damagedByBul.deathNoise)
             me.isDead = true
             return true
         }else{
-            playSound((me as demByBuls).damagedByBul.ouchNoise)
+            playSound((me as hasHealth).damagedByBul.ouchNoise)
             me.damagedByBul.didGetShot = true
             me.damagedByBul.gotShotFrames = me.damagedByBul.DAMAGED_ANIMATION_FRAMES
         }
@@ -180,9 +180,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
     }
     return false
 }
-interface demByBuls{
-    val damagedByBul:damagedByBullets
-}
+
 class damagedByBullets{
     val ouchNoise:Clip = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(ouchnoiseFile))
@@ -282,4 +280,5 @@ class healthHolder{
 }
 interface hasHealth{
     var hasHealth:healthHolder
+    val damagedByBul:damagedByBullets
 }
