@@ -44,7 +44,10 @@ interface Entity {
 fun getWindowAdjustedPos(pos:Double):Double{
     return pos * myFrame.width/INTENDED_FRAME_SIZE
 }
+val BULLET_ALIVE = 14
 class Bullet(val shotBy: shoots) : Entity {
+    var damage = shotBy.tshd.wep.buldmg
+    var framesAlive = 0
     var bulDir = shotBy.tshd.angy + ((Math.random()-0.5)*shotBy.tshd.wep.recoil/6.0)
     override var drawSize = shotBy.tshd.wep.bulSize
     override var xpos =  ((shotBy as Entity).getMidX()-(shotBy.tshd.wep.bulSize/2))+(Math.cos(shotBy.tshd.angy)*shotBy.drawSize/2)+(Math.cos(shotBy.tshd.angy)*shotBy.tshd.wep.bulSize/2)
@@ -73,6 +76,17 @@ class Bullet(val shotBy: shoots) : Entity {
         if(xpos > INTENDED_FRAME_SIZE - (drawSize) - (XMAXMAGIC/myFrame.width))isDead = true
         if(ypos > INTENDED_FRAME_SIZE - drawSize) isDead = true
         if(ypos<0)isDead = true
+        framesAlive++
+        if(framesAlive>BULLET_ALIVE){
+            val shrinky = shotBy.tshd.wep.bulSize/4
+            damage-=shrinky.toInt()
+            if(damage<0)damage=0
+            drawSize-=shrinky
+            xpos+=shrinky/2
+            ypos+=shrinky/2
+
+        }
+        if(drawSize<=0)isDead=true
     }
 
     override fun drawEntity(g: Graphics) {
@@ -328,7 +342,7 @@ class Enemy : Entity, shoots, hasHealth,demByBuls{
 
             val radtarget = ((atan2( dy , -dx)))
             val absanglediff = abs(radtarget-this.tshd.angy)
-            val shootem =absanglediff<0.1
+            val shootem =absanglediff<0.2
             var shoot2 = false
             if(shootem){
                 val r = Rectangle((xpos).toInt(),(ypos - (tshd.wep.bulSize/(drawSize))).toInt(),tshd.wep.bulSize.toInt(),700)
@@ -517,6 +531,11 @@ class Shop:Entity{
     override var isDead: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
+    var image = backgroundImage
+    override fun drawEntity(g: Graphics) {
+        g.drawImage(image,getWindowAdjustedPos(xpos).toInt(),getWindowAdjustedPos(ypos).toInt(),getWindowAdjustedPos(drawSize).toInt(),getWindowAdjustedPos(drawSize).toInt(),null)
+    }
+
     override fun updateEntity() {
         if(player0.specificMenus[char]!!){
             if(!overlapsOther(player0)){

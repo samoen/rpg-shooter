@@ -159,7 +159,7 @@ interface shoots{
 }
 fun takeDamage(other:Entity,me:Entity):Boolean{
     if(other is Bullet && other.shotBy::class!=me::class) {
-        (me as hasHealth).hasHealth.currentHp -= (other.shotBy as shoots).tshd.wep.buldmg
+        (me as hasHealth).hasHealth.currentHp -= other.damage
         if((me as hasHealth).hasHealth.currentHp<1){
             playSound((me as demByBuls).damagedByBul.deathNoise)
             me.isDead = true

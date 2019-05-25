@@ -54,8 +54,6 @@ var myPanel:JPanel =object : JPanel() {
                             collided = true
                         }
                         if(collided && !ient.isDead && !jent.isDead && jent.overlapsOther(ient)) {
-//                    val iBlockedTrigger = ((jent is movementGetsBlocked) && doIGetBlockedBy(ient))
-//                    val jBlockedTrigger = (ient is movementGetsBlocked && doIGetBlockedBy(jent))
                             if ((ient is Player || ient is Enemy) && (jent is Player ||jent is Enemy)) {
                                 if(timesTried > 10){
                                     println("Cannot resolve collision!")
