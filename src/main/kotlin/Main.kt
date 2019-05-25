@@ -53,7 +53,7 @@ var myFrame=object:JFrame(){
 const val mapGridColumns = 16
 val map1 =  "        w       " +
             "       e        " +
-            " e    ww    e   " +
+            "      ww        " +
             "ww wh ww    w   " +
             " whwh          w" +
             "  hwh          w" +
@@ -165,9 +165,12 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         },{
                             if(other.shootStats.wep.recoil-1>=0)other.shootStats.wep.recoil--
                         },{
-                            if(other.shootStats.wep.atkSpd+1<200)other.shootStats.wep.atkSpd++
+                            if(other.shootStats.wep.atkSpd+1<200){
+                                other.shootStats.wep.atkSpd++
+//                                other.shootStats.wep.framesSinceShottah = 999
+                            }
                         },{
-                            if(other.shootStats.wep.atkSpd-1>0)other.shootStats.wep.atkSpd--
+                            if(other.shootStats.wep.atkSpd-1>1)other.shootStats.wep.atkSpd--
                         }),
                         StatView({other.shootStats.wep.buldmg.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
                         StatView({other.shootStats.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
@@ -182,7 +185,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Run"},other.dimensions.xpos,other.dimensions.ypos),
                         StatView({"HP"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
                         StatView({"Turn"},other.dimensions.xpos,2*statsYSpace+other.dimensions.ypos),
-                        StatView({"Mob"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
+                        StatView({"Skill"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
                         Selector(4,other,{
                             other.speed += 1
                         },{
@@ -207,16 +210,16 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                             val desired = "%.4f".format(other.shootStats.turnSpeed-0.01f).toFloat()
                             if(desired>0) other.shootStats.turnSpeed = desired
                         },{
-                            val desired = other.shootStats.strafeRun+0.1f
-                            if(desired<=1.001f) other.shootStats.strafeRun = desired
+                            val desired = other.shootStats.wepSkill+0.1f
+                            if(desired<=1.001f) other.shootStats.wepSkill = desired
                         },{
-                            val desired = other.shootStats.strafeRun-0.1f
-                            if(desired>=0)other.shootStats.strafeRun = desired
+                            val desired = other.shootStats.wepSkill-0.1f
+                            if(desired>=0)other.shootStats.wepSkill = desired
                         }),
                         StatView({other.speed.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
                         StatView({other.healthStats.maxHP.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
                         StatView({( other.shootStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
-                        StatView({( other.shootStats.strafeRun*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
+                        StatView({( other.shootStats.wepSkill*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
                     )}
                     it.char = 'g'
                     it.dimensions.drawSize = mapGridSize
@@ -292,8 +295,8 @@ fun main() {
     soundBank["laser"] = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(enemyPewFile))
     }
-    players.add(Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6),0).also { it.speed = 8 })
-    players.add( Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B),1).also{
+    players.add(Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6)).also { it.speed = 8 })
+    players.add( Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B)).also{
         it.dimensions.xpos=150.0
         it.speed = 8
         it.dimensions.drawSize = 40.0

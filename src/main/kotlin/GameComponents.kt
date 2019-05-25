@@ -99,12 +99,13 @@ fun playerKeyReleased(player: Player,e: KeyEvent){
     if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
 }
 
-fun processShooting(me:shoots,sht:Boolean,weap:Weapon,bulImage:Image){
-    if (sht && weap.framesSinceShottah > me.shootStats.wep.atkSpd) {
+fun processShooting(me:Shoots, sht:Boolean, weap:Weapon, bulImage:Image,notOnShop:Boolean){
+    if (sht && weap.framesSinceShottah > me.shootStats.wep.atkSpd && notOnShop) {
         weap.framesSinceShottah = 0
         if(me is Player)me.didShoot=true
         var numproj = 1
-        numproj = ((me.shootStats.wep.recoil/(me.shootStats.wep.bulspd+me.shootStats.wep.buldmg))).toInt()
+//        numproj = ((me.shootStats.wep.recoil/(me.shootStats.wep.bulspd+me.shootStats.wep.buldmg))).toInt()
+        numproj = ((me.shootStats.wep.atkSpd+me.shootStats.wep.recoil)/(me.shootStats.wepSkill+me.shootStats.wep.bulspd+me.shootStats.wep.buldmg)).toInt()
         for( i in 0..numproj){
             val b = Bullet(me)
             b.bulImage = bulImage
@@ -124,7 +125,7 @@ fun processShooting(me:shoots,sht:Boolean,weap:Weapon,bulImage:Image){
     }
     weap.framesSinceShottah++
 }
-fun processTurning(me:shoots,lef:Boolean,righ:Boolean){
+fun processTurning(me:Shoots, lef:Boolean, righ:Boolean){
     if (lef) {
         val desired = me.shootStats.angy+me.shootStats.turnSpeed
         if(desired>Math.PI){
@@ -138,7 +139,7 @@ fun processTurning(me:shoots,lef:Boolean,righ:Boolean){
         else me.shootStats.angy -= me.shootStats.turnSpeed
     }
 }
-fun drawCrosshair(me:shoots,g: Graphics){
+fun drawCrosshair(me:Shoots, g: Graphics){
     me as Entity
     g as Graphics2D
     g.color = Color.CYAN
@@ -176,7 +177,7 @@ fun drawCrosshair(me:shoots,g: Graphics){
 //    }
     g.stroke = BasicStroke(1f)
 }
-fun drawReload(me:shoots,g: Graphics,weap: Weapon){
+fun drawReload(me:Shoots, g: Graphics, weap: Weapon){
     me as Entity
     if(weap.framesSinceShottah<me.shootStats.wep.atkSpd){
         g.color = Color.CYAN
@@ -202,11 +203,14 @@ fun checkFriendlyFire(entity1: Entity,entity2: Entity):Boolean{
     return entity1::class!=entity2::class
 }
 fun takeDamage(other:Entity,me:Entity):Boolean{
-    me as hasHealth
-    if(other is Bullet && checkFriendlyFire(me,other.shottah as Entity) ) {
+    me as HasHealth
+    if(other is Bullet) {
+        if(me is Shoots){
+            if(me.shootStats.teamNumber==other.shottah.shootStats.teamNumber)return false
+        }
         other.toBeRemoved = true
         me.healthStats.currentHp -= other.damage
-        if((me as hasHealth).healthStats.currentHp<1){
+        if((me as HasHealth).healthStats.currentHp<1){
             playStrSound(me.healthStats.dieNoise)
             me.toBeRemoved = true
             val deathEnt = object: Entity{
@@ -232,9 +236,9 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
             me.healthStats.didGetShot = true
             me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
         }
-    }else if (other is MedPack && (me as hasHealth).healthStats.currentHp<me.healthStats.maxHP){
+    }else if (other is MedPack && (me as HasHealth).healthStats.currentHp<me.healthStats.maxHP){
         me.healthStats.didHeal = true
-        val desiredhp = (me as hasHealth).healthStats.currentHp+20
+        val desiredhp = (me as HasHealth).healthStats.currentHp+20
         if (desiredhp>me.healthStats.maxHP){
             me.healthStats.currentHp = me.healthStats.maxHP
         }else{
@@ -304,7 +308,7 @@ fun stayInMap(me:Entity){
     }
 }
 
-fun drawHealth(me:hasHealth, g:Graphics){
+fun drawHealth(me:HasHealth, g:Graphics){
     me as Entity
     g.color = Color.GREEN
     (g as Graphics2D).stroke = BasicStroke(2f)
