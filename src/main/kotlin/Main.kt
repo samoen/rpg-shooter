@@ -336,11 +336,13 @@ fun main() {
             super.paint(g)
             if(myrepaint){
                 myrepaint = false
-                val preupdateEnts = mutableListOf<EntDimens>()
+                val preupdateEnts : List<EntDimens> = allEntities.map { it.dimensions.copy() }
+//                val preupdateEnts = mutableListOf<EntDimens>()
                 allEntities.forEach { entity: Entity ->
-                    preupdateEnts.add(EntDimens(entity.dimensions.xpos,entity.dimensions.ypos,entity.dimensions.drawSize))
+//                    preupdateEnts.add(EntDimens(entity.dimensions.xpos,entity.dimensions.ypos,entity.dimensions.drawSize))
                     entity.updateEntity()
                 }
+
                 var timesTried = 0
                 do{
                     timesTried++

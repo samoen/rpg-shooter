@@ -156,6 +156,7 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
             }
         }
         processShooting(this,pCont.sht.booly,this.shootStats.wep,pBulImage,notOnShop)
+        healthStats.stopped = !pCont.sht.booly && !pCont.spenlef.booly && !pCont.spinri.booly && !didMove
     }
 
     override fun drawComponents(g: Graphics) {
@@ -184,6 +185,7 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
             }
         }else{
             gaitcount = 0
+            if(healthStats.stopped)todraw = backgroundImage
         }
         if (healthStats.didGetShot) {
             if(healthStats.gotShotFrames>0) {

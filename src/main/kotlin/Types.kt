@@ -47,6 +47,7 @@ class HealthStats{
     val DAMAGED_ANIMATION_FRAMES = 3
     var didGetShot:Boolean = false
     var gotShotFrames = DAMAGED_ANIMATION_FRAMES
+    var stopped = true
 }
 interface HasHealth{
     var healthStats:HealthStats
@@ -73,7 +74,7 @@ class OneShotChannel(var locked:Boolean=false, var booly:Boolean=false){
     }
 }
 
-class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
+data class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
     fun getMidY():Double{
         return ypos+(drawSize/2)
     }

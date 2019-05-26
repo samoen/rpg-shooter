@@ -199,9 +199,9 @@ fun drawReload(me:Shoots, g: Graphics, weap: Weapon){
     }
 }
 
-fun checkFriendlyFire(entity1: Entity,entity2: Entity):Boolean{
-    return entity1::class!=entity2::class
-}
+//fun checkFriendlyFire(entity1: Entity,entity2: Entity):Boolean{
+//    return entity1::class!=entity2::class
+//}
 fun takeDamage(other:Entity,me:Entity):Boolean{
     me as HasHealth
     if(other is Bullet) {
@@ -209,8 +209,15 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
             if(me.shootStats.teamNumber==other.shottah.shootStats.teamNumber)return false
         }
         other.toBeRemoved = true
-        me.healthStats.currentHp -= other.damage
-        if((me as HasHealth).healthStats.currentHp<1){
+        var desirDam = other.damage
+        if(me.healthStats.stopped){
+            if(me.speed<other.damage){
+                desirDam = me.speed
+            }
+        }
+        val desirHealth = me.healthStats.currentHp - desirDam
+        if(desirHealth<=0){
+            me.healthStats.currentHp = 0.0
             playStrSound(me.healthStats.dieNoise)
             me.toBeRemoved = true
             val deathEnt = object: Entity{
@@ -231,11 +238,15 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
             }
             entsToAdd.add(deathEnt)
             return true
-        }else{
-            playStrSound(me.healthStats.ouchNoise)
-            me.healthStats.didGetShot = true
-            me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
         }
+        me.healthStats.currentHp = desirHealth
+        if(me.healthStats.stopped){
+            playStrSound("swap")
+        }else playStrSound(me.healthStats.ouchNoise)
+
+        me.healthStats.didGetShot = true
+        me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
+
     }else if (other is MedPack && (me as HasHealth).healthStats.currentHp<me.healthStats.maxHP){
         me.healthStats.didHeal = true
         val desiredhp = (me as HasHealth).healthStats.currentHp+20
