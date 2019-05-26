@@ -40,7 +40,7 @@ class Bullet(val shottah: Shoots) : Entity {
         if(dimensions.ypos > INTENDED_FRAME_SIZE - dimensions.drawSize) toBeRemoved = true
         if(dimensions.ypos<0)toBeRemoved = true
         framesAlive++
-        var lifetime = shotBy.wep.atkSpd/((shotBy.wepSkill+1))
+        var lifetime = (shotBy.wep.atkSpd*10)/((shotBy.wepSkill+1))
         lifetime+=50/shotBy.wep.buldmg
         if(framesAlive>lifetime){
 //            val shrinky = shotBy.wep.bulSize/4
@@ -199,18 +199,18 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
             gaitcount = 0
             if(healthStats.getArmored())todraw = pstoppedImage
         }
-        if (healthStats.didGetShot) {
-            if(healthStats.gotShotFrames>0) {
-                if(healthStats.armorIsBroken) {
-                    todraw = stopOuchImage
+        if( healthStats.armorIsBroken){
+            todraw = stopOuchImage
+            healthStats.didGetShot = false
+        }else{
+            if (healthStats.didGetShot) {
+                if(healthStats.gotShotFrames>0) {
+                    todraw = pouchImage
+                    healthStats.gotShotFrames--
+                } else {
+                    healthStats.didGetShot = false
                 }
-                else todraw = pouchImage
-
-                healthStats.gotShotFrames--
-            } else {
-                healthStats.didGetShot = false
             }
-
         }
         if(shootStats.angy>Math.PI/2 || shootStats.angy<-Math.PI/2){
             drawAsSprite(this,todraw,g)
@@ -486,7 +486,7 @@ class MedPack : Entity {
 class Shop:Entity{
     override var dimensions = EntDimens(0.0,0.0,20.0)
     var char:Char = 'a'
-    var menuThings:(Player)->List<Entity> ={e-> listOf()}
+    var menuThings:(Player)->List<Entity> ={ listOf()}
     override var color = Color.WHITE
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
