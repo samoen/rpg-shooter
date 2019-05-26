@@ -14,6 +14,7 @@ class Bullet(val shottah: Shoots) : Entity {
         shotBy.wep.bulSize
     )
     var bulImage = wallImage
+    var startDamage = shotBy.wep.buldmg
     var damage = shotBy.wep.buldmg
     var framesAlive = 0
     var bulDir = shotBy.angy + ((Math.random()-0.5)*shotBy.wep.recoil/6.0)
@@ -40,16 +41,16 @@ class Bullet(val shottah: Shoots) : Entity {
         if(dimensions.ypos<0)toBeRemoved = true
         framesAlive++
         if(framesAlive>shotBy.wep.bulLifetime){
-//            val shrinky = shotBy.wep.bulSize/4
-            val shrinky = (shotBy.wep.buldmg+shotBy.wep.bulspd)/((shotBy.wep.atkSpd/2)+1)
-            damage-=shrinky.toInt()
-            if(damage<0)damage=0
+            val shrinky = shotBy.wep.bulSize/13
+//            val shrinky = (shotBy.wep.buldmg+shotBy.wep.bulspd)/((shotBy.wep.atkSpd/2)+1)
+            damage-=( shrinky*(startDamage/ dimensions.drawSize)).toInt()
             dimensions.drawSize-=shrinky
             dimensions.xpos+=shrinky/2
             dimensions.ypos+=shrinky/2
+//            if(damage<0)damage=0
 
         }
-        if(dimensions.drawSize<=0)toBeRemoved=true
+        if(dimensions.drawSize<=4 || damage<0.5)toBeRemoved=true
     }
 
     override fun drawEntity(g: Graphics) {
@@ -131,8 +132,15 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
             toMovey=toMovey*0.707
         }
         if(shootStats.wep.framesSinceShottah<shootStats.wep.atkSpd){
-            toMovex *= shootStats.wep.wepSkill
-            toMovey *= shootStats.wep.wepSkill
+            toMovex *= shootStats.wep.mobility
+            toMovey *= shootStats.wep.mobility
+        }
+        val notOnShop = specificMenus.values.all { !it }
+        if(notOnShop){
+            if(pCont.spenlef.booly||pCont.spinri.booly){
+                toMovex *= shootStats.wep.mobility
+                toMovey *= shootStats.wep.mobility
+            }
         }
         dimensions.xpos += toMovex
         dimensions.ypos += toMovey
@@ -140,7 +148,6 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
         if(toMovex<0)movedRight = false
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(this)
-        val notOnShop = specificMenus.values.all { !it }
         if(notOnShop){
             processTurning(this,pCont.spenlef.booly,pCont.spinri.booly)
             if(pCont.Swp.tryConsume()){
@@ -160,7 +167,7 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
 
         if(healthStats.armorIsBroken){
             healthStats.armorBrokenFrames++
-            if (healthStats.armorBrokenFrames>healthStats.shieldSkill){
+            if (healthStats.armorBrokenFrames>healthStats.shieldSkill*3){
                 healthStats.armorIsBroken = false
                 healthStats.armorBrokenFrames = 0
             }
@@ -300,8 +307,8 @@ class Enemy : Entity, Shoots, HasHealth{
                     }
 
                     if(shootStats.wep.framesSinceShottah<shootStats.wep.atkSpd){
-                        adjSpd *= shootStats.wep.wepSkill
-                        adjSpd *= shootStats.wep.wepSkill
+                        adjSpd *= shootStats.wep.mobility
+                        adjSpd *= shootStats.wep.mobility
                     }
                     if (xdiff>adjSpd){
                         dimensions.xpos += adjSpd

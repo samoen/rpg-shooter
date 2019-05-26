@@ -106,7 +106,7 @@ fun processShooting(me:Shoots, sht:Boolean, weap:Weapon, bulImage:Image,notOnSho
 //        var numproj = 1
 //        numproj = 1/(me.shootStats.wep.bulLifetime/10)
 //        numproj = ((me.shootStats.wep.recoil/(me.shootStats.wep.bulspd+me.shootStats.wep.buldmg))).toInt()
-//        numproj = (((me.shootStats.wep.atkSpd*5)+me.shootStats.wep.recoil)/(me.shootStats.wepSkill+(me.shootStats.wep.bulspd*5)+(me.shootStats.wep.buldmg*5))).toInt()
+//        numproj = (((me.shootStats.wep.atkSpd*5)+me.shootStats.wep.recoil)/(me.shootStats.mobility+(me.shootStats.wep.bulspd*5)+(me.shootStats.wep.buldmg*5))).toInt()
         for( i in 1..weap.projectiles){
             val b = Bullet(me)
             b.bulImage = bulImage

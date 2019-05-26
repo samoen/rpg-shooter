@@ -155,7 +155,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Vel"},other.dimensions.xpos,other.dimensions.ypos),
                         StatView({"Rcl"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
                         StatView({"Rld"},other.dimensions.xpos,statsYSpace*2+other.dimensions.ypos),
-                        StatView({"Skill"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
+                        StatView({"Mob"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
                         Selector(4,other,
                         {
                             if(other.shootStats.wep.bulspd+1<50)other.shootStats.wep.bulspd++
@@ -173,16 +173,16 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         },{
                             if(other.shootStats.wep.atkSpd-1>1)other.shootStats.wep.atkSpd--
                         },{
-                                val desired = other.shootStats.wep.wepSkill+0.1f
-                                if(desired<=1.001f) other.shootStats.wep.wepSkill = desired
+                                val desired = other.shootStats.wep.mobility+0.1f
+                                if(desired<=1.001f) other.shootStats.wep.mobility = desired
                             },{
-                                val desired = other.shootStats.wep.wepSkill-0.1f
-                                if(desired>=0)other.shootStats.wep.wepSkill = desired
+                                val desired = other.shootStats.wep.mobility-0.1f
+                                if(desired>=0)other.shootStats.wep.mobility = desired
                             }),
                         StatView({other.shootStats.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
                         StatView({other.shootStats.wep.recoil.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
                         StatView({other.shootStats.wep.atkSpd.toString() }, statsXSpace+other.dimensions.xpos,  2*statsYSpace+other.dimensions.ypos),
-                        StatView({( other.shootStats.wep.wepSkill*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
+                        StatView({( other.shootStats.wep.mobility*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
                     )
                     }
                 })
@@ -231,8 +231,8 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Run"},other.dimensions.xpos,other.dimensions.ypos),
                         StatView({"HP"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
                         StatView({"Turn"},other.dimensions.xpos,2*statsYSpace+other.dimensions.ypos),
-
-                        Selector(3,other,{
+                        StatView({"Block"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
+                        Selector(4,other,{
                             other.speed += 1
                         },{
                             val desiredspeed = other.speed-1
@@ -255,10 +255,16 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         },{
                             val desired = "%.4f".format(other.shootStats.turnSpeed-0.01f).toFloat()
                             if(desired>0) other.shootStats.turnSpeed = desired
+                        },{
+                            other.healthStats.shieldSkill += 1
+                        },{
+                            val desired = other.healthStats.shieldSkill-1
+                            if(desired>=1)other.healthStats.shieldSkill = desired
                         }),
                         StatView({other.speed.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
                         StatView({other.healthStats.maxHP.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
-                        StatView({( other.shootStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos)
+                        StatView({( other.shootStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
+                        StatView({( other.healthStats.shieldSkill).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
                     )}
                     it.char = 'g'
                     it.dimensions.drawSize = mapGridSize

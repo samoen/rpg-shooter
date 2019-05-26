@@ -93,7 +93,7 @@ data class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
 class playControls(var up:OneShotChannel=OneShotChannel(), var dwm:OneShotChannel=OneShotChannel(), var sht:OneShotChannel=OneShotChannel(), var Swp:OneShotChannel=OneShotChannel(), var riri:OneShotChannel=OneShotChannel(), var leflef:OneShotChannel=OneShotChannel(), var spinri:OneShotChannel=OneShotChannel(), var spenlef:OneShotChannel=OneShotChannel())
 
 class Weapon(
-    var wepSkill:Float = 0.3f,
+    var mobility:Float = 0.3f,
     var atkSpd:Int = 4,
     var bulLifetime:Int = 15,
     var bulspd:Int = 2,
