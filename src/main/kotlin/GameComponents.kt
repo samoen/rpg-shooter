@@ -210,7 +210,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
         }
         other.toBeRemoved = true
         var desirDam = other.damage
-        if(me.healthStats.stopped){
+        if(me.healthStats.getArmored()){
             if(me.speed<other.damage){
                 desirDam = me.speed
             }
@@ -227,7 +227,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
                 override var speed: Int = 2
                 override var color: Color = Color.BLUE
                 override fun drawEntity(g: Graphics) {
-                    drawAsSprite(this,wallImage,g)
+                    drawAsSprite(this,dieImage,g)
                 }
 
                 var liveFrames = 8
@@ -240,9 +240,11 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
             return true
         }
         me.healthStats.currentHp = desirHealth
-        if(me.healthStats.stopped){
+        if(me.healthStats.getArmored()){
+            me.healthStats.armorIsBroken = true
             playStrSound("swap")
         }else playStrSound(me.healthStats.ouchNoise)
+        me.healthStats.armorWillBreak = true
 
         me.healthStats.didGetShot = true
         me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES

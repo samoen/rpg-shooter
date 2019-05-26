@@ -118,6 +118,7 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
     override fun updateEntity() {
         didMove = false
         healthStats.didHeal = false
+
         var toMovex = 0.0
         var toMovey = 0.0
         if (pCont.riri.booly) toMovex += speed.toDouble()
@@ -157,6 +158,14 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
         }
         processShooting(this,pCont.sht.booly,this.shootStats.wep,pBulImage,notOnShop)
         healthStats.stopped = !pCont.sht.booly && !pCont.spenlef.booly && !pCont.spinri.booly && !didMove
+        if(healthStats.armorIsBroken){
+            healthStats.armorBrokenFrames++
+            if (healthStats.armorBrokenFrames>speed){
+                healthStats.armorIsBroken = false
+                healthStats.armorBrokenFrames = 0
+            }
+        }
+
     }
 
     override fun drawComponents(g: Graphics) {
@@ -185,15 +194,20 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
             }
         }else{
             gaitcount = 0
-            if(healthStats.stopped)todraw = backgroundImage
+            if(healthStats.getArmored())todraw = pstoppedImage
         }
         if (healthStats.didGetShot) {
             if(healthStats.gotShotFrames>0) {
-                todraw = backgroundImage
+                if(healthStats.armorIsBroken) {
+                    todraw = stopOuchImage
+                }
+                else todraw = pouchImage
+
                 healthStats.gotShotFrames--
             } else {
                 healthStats.didGetShot = false
             }
+
         }
         if(shootStats.angy>Math.PI/2 || shootStats.angy<-Math.PI/2){
             drawAsSprite(this,todraw,g)
@@ -205,6 +219,7 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
     var pewframecount = 0
 }
 class Enemy : Entity, Shoots, HasHealth{
+
     override var dimensions = EntDimens(0.0,0.0,25.0)
     override var shootStats= let{
         val ss = ShootStats()
@@ -333,13 +348,7 @@ class Enemy : Entity, Shoots, HasHealth{
         drawCrosshair(this,g)
     }
 }
-val ENEMY_DRIFT_FRAMES = 30
-val wallImage = ImageIcon("src/main/resources/brick1.png").image
-val impactImage = ImageIcon("src/main/resources/shrapnel.png").image
-val pBulImage = ImageIcon("src/main/resources/plasma.png").image
-val eBulImage = ImageIcon("src/main/resources/badbullet.png").image
-val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
-val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
+
 class Wall : Entity{
     override var dimensions = EntDimens(0.0,0.0,20.0)
     override var color = Color.DARK_GRAY

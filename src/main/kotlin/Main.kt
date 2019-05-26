@@ -26,21 +26,31 @@ const val TICK_INTERVAL = 40
 const val MIN_ENT_SIZE = 9.0
 val BULLET_ALIVE = 14
 
-val soundFiles:MutableMap<String,File> = mutableMapOf()
+val ENEMY_DRIFT_FRAMES = 30
 
+val soundFiles:MutableMap<String,File> = mutableMapOf()
 //val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
 val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
 val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
 val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
 val ouchnoiseFile = File("src/main/resources/ouch.wav").getAbsoluteFile()
-val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
 
+val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
 val stillImage = ImageIcon("src/main/resources/main.png").image
 val runImage = ImageIcon("src/main/resources/walk.png").image
 val goblinImage = ImageIcon("src/main/resources/walk.png").image
 val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 val backgroundImage = ImageIcon("src/main/resources/floor1.png").image
-
+val pstoppedImage = ImageIcon("src/main/resources/floor1.png").image
+val pouchImage = ImageIcon("src/main/resources/dooropen.png").image
+val stopOuchImage = ImageIcon("src/main/resources/doorshut.png").image
+val wallImage = ImageIcon("src/main/resources/brick1.png").image
+val dieImage = ImageIcon("src/main/resources/shrapnel.png").image
+val impactImage = ImageIcon("src/main/resources/shrapnel.png").image
+val pBulImage = ImageIcon("src/main/resources/plasma.png").image
+val eBulImage = ImageIcon("src/main/resources/badbullet.png").image
+val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
+val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 var myrepaint = false
 val soundBank:MutableMap<String, Clip> = mutableMapOf()
 var myFrame=object:JFrame(){

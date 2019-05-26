@@ -46,8 +46,14 @@ class HealthStats{
     var dieNoise = "die"
     val DAMAGED_ANIMATION_FRAMES = 3
     var didGetShot:Boolean = false
+    var armorIsBroken:Boolean = false
+    var armorWillBreak:Boolean = false
+    var armorBrokenFrames = 0
     var gotShotFrames = DAMAGED_ANIMATION_FRAMES
-    var stopped = true
+    var stopped = false
+    fun getArmored():Boolean{
+        return stopped && !armorIsBroken
+    }
 }
 interface HasHealth{
     var healthStats:HealthStats
