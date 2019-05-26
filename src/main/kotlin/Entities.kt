@@ -1,5 +1,4 @@
 import java.awt.*
-import javax.swing.ImageIcon
 import kotlin.math.abs
 import kotlin.math.atan2
 import java.awt.geom.AffineTransform
@@ -40,11 +39,9 @@ class Bullet(val shottah: Shoots) : Entity {
         if(dimensions.ypos > INTENDED_FRAME_SIZE - dimensions.drawSize) toBeRemoved = true
         if(dimensions.ypos<0)toBeRemoved = true
         framesAlive++
-        var lifetime = (shotBy.wep.atkSpd*10)/((shotBy.wepSkill+1))
-        lifetime+=50/shotBy.wep.buldmg
-        if(framesAlive>lifetime){
+        if(framesAlive>shotBy.wep.bulLifetime){
 //            val shrinky = shotBy.wep.bulSize/4
-            val shrinky = (shotBy.wep.buldmg+((shotBy.wepSkill+1)))/(shotBy.wep.atkSpd)
+            val shrinky = (shotBy.wep.buldmg+shotBy.wep.bulspd)/((shotBy.wep.atkSpd/2)+1)
             damage-=shrinky.toInt()
             if(damage<0)damage=0
             dimensions.drawSize-=shrinky
@@ -65,7 +62,7 @@ class Bullet(val shottah: Shoots) : Entity {
 class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
     override var dimensions = EntDimens(0.0,0.0,40.0)
     var canEnterGateway:Boolean = true
-    var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false)
+    var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false, 'm' to false)
     var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
     val pCont:playControls = playControls()
@@ -134,8 +131,8 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
             toMovey=toMovey*0.707
         }
         if(shootStats.wep.framesSinceShottah<shootStats.wep.atkSpd){
-            toMovex *= shootStats.wepSkill
-            toMovey *= shootStats.wepSkill
+            toMovex *= shootStats.wep.wepSkill
+            toMovey *= shootStats.wep.wepSkill
         }
         dimensions.xpos += toMovex
         dimensions.ypos += toMovey
@@ -163,7 +160,7 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
 
         if(healthStats.armorIsBroken){
             healthStats.armorBrokenFrames++
-            if (healthStats.armorBrokenFrames>speed){
+            if (healthStats.armorBrokenFrames>healthStats.shieldSkill){
                 healthStats.armorIsBroken = false
                 healthStats.armorBrokenFrames = 0
             }
@@ -303,8 +300,8 @@ class Enemy : Entity, Shoots, HasHealth{
                     }
 
                     if(shootStats.wep.framesSinceShottah<shootStats.wep.atkSpd){
-                        adjSpd *= shootStats.wepSkill
-                        adjSpd *= shootStats.wepSkill
+                        adjSpd *= shootStats.wep.wepSkill
+                        adjSpd *= shootStats.wep.wepSkill
                     }
                     if (xdiff>adjSpd){
                         dimensions.xpos += adjSpd
@@ -485,7 +482,7 @@ class MedPack : Entity {
 
 class Shop:Entity{
     override var dimensions = EntDimens(0.0,0.0,20.0)
-    var char:Char = 'a'
+    var char:Char = 'z'
     var menuThings:(Player)->List<Entity> ={ listOf()}
     override var color = Color.WHITE
     override var toBeRemoved: Boolean = false
@@ -515,7 +512,7 @@ class Shop:Entity{
         }
     }
 }
-class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()->Unit,val onUp1:()->Unit,val onDown1:()->Unit,val onUp2:()->Unit,val onDown2:()->Unit,val onUp3:()->Unit={},val onDown3:()->Unit={}):Entity{
+class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()->Unit,val onUp1:()->Unit,val onDown1:()->Unit,val onUp2:()->Unit={},val onDown2:()->Unit={},val onUp3:()->Unit={},val onDown3:()->Unit={}):Entity{
     override var dimensions = EntDimens(other.dimensions.xpos+selectorXSpace,other.dimensions.ypos,20.0)
     override var color = Color.BLUE
     var indexer = 0

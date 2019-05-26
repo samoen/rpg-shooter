@@ -32,7 +32,7 @@ data class ShootStats(var shootySound:String = "die",
                       var wep:Weapon=Weapon(),
                       var turnSpeed:Float = 0.05f,
                       var bulColor:Color=Color.RED,
-                      var wepSkill:Float = 0.3f,
+
                       var teamNumber:Int=0
 )
 interface Shoots{
@@ -51,6 +51,7 @@ class HealthStats{
     var armorBrokenFrames = 0
     var gotShotFrames = DAMAGED_ANIMATION_FRAMES
     var stopped = false
+    var shieldSkill:Int = 1
     fun getArmored():Boolean{
         return stopped && !armorIsBroken
     }
@@ -92,10 +93,13 @@ data class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
 class playControls(var up:OneShotChannel=OneShotChannel(), var dwm:OneShotChannel=OneShotChannel(), var sht:OneShotChannel=OneShotChannel(), var Swp:OneShotChannel=OneShotChannel(), var riri:OneShotChannel=OneShotChannel(), var leflef:OneShotChannel=OneShotChannel(), var spinri:OneShotChannel=OneShotChannel(), var spenlef:OneShotChannel=OneShotChannel())
 
 class Weapon(
+    var wepSkill:Float = 0.3f,
     var atkSpd:Int = 4,
+    var bulLifetime:Int = 15,
     var bulspd:Int = 2,
     var recoil:Double = 5.0,
     var bulSize:Double = 9.0,
     var buldmg:Int = 3,
+    var projectiles:Int = 1,
     var framesSinceShottah:Int = 999
 )

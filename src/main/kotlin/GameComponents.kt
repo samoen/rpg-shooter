@@ -103,10 +103,11 @@ fun processShooting(me:Shoots, sht:Boolean, weap:Weapon, bulImage:Image,notOnSho
     if (sht && weap.framesSinceShottah > me.shootStats.wep.atkSpd && notOnShop) {
         weap.framesSinceShottah = 0
         if(me is Player)me.didShoot=true
-        var numproj = 1
+//        var numproj = 1
+//        numproj = 1/(me.shootStats.wep.bulLifetime/10)
 //        numproj = ((me.shootStats.wep.recoil/(me.shootStats.wep.bulspd+me.shootStats.wep.buldmg))).toInt()
-        numproj = ((me.shootStats.wep.atkSpd+me.shootStats.wep.recoil)/(me.shootStats.wepSkill+me.shootStats.wep.bulspd+me.shootStats.wep.buldmg)).toInt()
-        for( i in 0..numproj){
+//        numproj = (((me.shootStats.wep.atkSpd*5)+me.shootStats.wep.recoil)/(me.shootStats.wepSkill+(me.shootStats.wep.bulspd*5)+(me.shootStats.wep.buldmg*5))).toInt()
+        for( i in 1..weap.projectiles){
             val b = Bullet(me)
             b.bulImage = bulImage
             var canspawn = true
@@ -211,8 +212,8 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
         other.toBeRemoved = true
         var desirDam = other.damage
         if(me.healthStats.getArmored()){
-            if(me.speed<other.damage){
-                desirDam = me.speed
+            if(me.healthStats.shieldSkill<other.damage){
+                desirDam = me.healthStats.shieldSkill
             }
         }
         val desirHealth = me.healthStats.currentHp - desirDam

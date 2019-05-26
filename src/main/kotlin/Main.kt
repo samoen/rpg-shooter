@@ -40,7 +40,7 @@ val stillImage = ImageIcon("src/main/resources/main.png").image
 val runImage = ImageIcon("src/main/resources/walk.png").image
 val goblinImage = ImageIcon("src/main/resources/walk.png").image
 val pewImage = ImageIcon("src/main/resources/shoot1.png").image
-val backgroundImage = ImageIcon("src/main/resources/floor1.png").image
+val backgroundImage = ImageIcon("src/main/resources/tilemap.png").image
 val pstoppedImage = ImageIcon("src/main/resources/floor1.png").image
 val pouchImage = ImageIcon("src/main/resources/dooropen.png").image
 val stopOuchImage = ImageIcon("src/main/resources/doorshut.png").image
@@ -66,7 +66,7 @@ val map1 =  "        w       " +
             "      ww        " +
             "ww wh ww    w   " +
             " whwh          w" +
-            "  hwh          w" +
+            "  hwh    m     w" +
             " whwh          h" +
             "            w ww" +
             "  wh  www     ww" +
@@ -152,21 +152,12 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                     it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                     it.menuThings = {other->listOf(
-                        StatView({"Dmg"},other.dimensions.xpos,0+other.dimensions.ypos),
-                        StatView({"Vel"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
-                        StatView({"Rec"},other.dimensions.xpos,statsYSpace*2+other.dimensions.ypos),
-                        StatView({"Rel"},other.dimensions.xpos,statsYSpace*3+other.dimensions.ypos),
-                        Selector(4,other,{
-                            other.shootStats.wep.buldmg+=1
-                            other.shootStats.wep.bulSize+=3
-                        },{
-                            val desiredDmg = other.shootStats.wep.buldmg-1
-                            val desiredSize = other.shootStats.wep.bulSize -3
-                            if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
-                                other.shootStats.wep.bulSize = desiredSize
-                                other.shootStats.wep.buldmg = desiredDmg
-                            }
-                        },{
+                        StatView({"Vel"},other.dimensions.xpos,other.dimensions.ypos),
+                        StatView({"Rcl"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
+                        StatView({"Rld"},other.dimensions.xpos,statsYSpace*2+other.dimensions.ypos),
+                        StatView({"Skill"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
+                        Selector(4,other,
+                        {
                             if(other.shootStats.wep.bulspd+1<50)other.shootStats.wep.bulspd++
                         },{
                             if(other.shootStats.wep.bulspd-1>1)other.shootStats.wep.bulspd--
@@ -181,11 +172,56 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                             }
                         },{
                             if(other.shootStats.wep.atkSpd-1>1)other.shootStats.wep.atkSpd--
-                        }),
+                        },{
+                                val desired = other.shootStats.wep.wepSkill+0.1f
+                                if(desired<=1.001f) other.shootStats.wep.wepSkill = desired
+                            },{
+                                val desired = other.shootStats.wep.wepSkill-0.1f
+                                if(desired>=0)other.shootStats.wep.wepSkill = desired
+                            }),
+                        StatView({other.shootStats.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
+                        StatView({other.shootStats.wep.recoil.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
+                        StatView({other.shootStats.wep.atkSpd.toString() }, statsXSpace+other.dimensions.xpos,  2*statsYSpace+other.dimensions.ypos),
+                        StatView({( other.shootStats.wep.wepSkill*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
+                    )
+                    }
+                })
+                continue
+            }
+            if(ch == 'm'){
+                entsToAdd.add(Shop().also {
+                    it.char = 'm'
+                    it.dimensions.drawSize = mapGridSize
+                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.menuThings = {other->listOf(
+                        StatView({"Dmg"},other.dimensions.xpos,other.dimensions.ypos),
+                        StatView({"Lftm"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
+                        StatView({"Buck"},other.dimensions.xpos,2*statsYSpace+other.dimensions.ypos),
+                        Selector(3,other,
+                            {
+                                other.shootStats.wep.buldmg+=1
+                                other.shootStats.wep.bulSize+=3
+                            },{
+                                val desiredDmg = other.shootStats.wep.buldmg-1
+                                val desiredSize = other.shootStats.wep.bulSize -3
+                                if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
+                                    other.shootStats.wep.bulSize = desiredSize
+                                    other.shootStats.wep.buldmg = desiredDmg
+                                }
+                            },{
+                                if(other.shootStats.wep.bulLifetime+1<100)other.shootStats.wep.bulLifetime++
+                            },{
+                                if(other.shootStats.wep.bulLifetime-1>=1)other.shootStats.wep.bulLifetime--
+                            },{
+                                if(other.shootStats.wep.projectiles+1<15)other.shootStats.wep.projectiles++
+                            },{
+                                if(other.shootStats.wep.projectiles-1>=1)other.shootStats.wep.projectiles--
+                            }),
                         StatView({other.shootStats.wep.buldmg.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
-                        StatView({other.shootStats.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
-                        StatView({other.shootStats.wep.recoil.toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
-                        StatView({other.shootStats.wep.atkSpd.toString() }, statsXSpace+other.dimensions.xpos,  3*statsYSpace+other.dimensions.ypos))}
+                        StatView({other.shootStats.wep.bulLifetime.toString() }, statsXSpace+other.dimensions.xpos,  statsYSpace+other.dimensions.ypos),
+                        StatView({other.shootStats.wep.projectiles.toString() }, statsXSpace+other.dimensions.xpos,  2*statsYSpace+other.dimensions.ypos)
+                    )}
                 })
                 continue
             }
@@ -195,8 +231,8 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Run"},other.dimensions.xpos,other.dimensions.ypos),
                         StatView({"HP"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
                         StatView({"Turn"},other.dimensions.xpos,2*statsYSpace+other.dimensions.ypos),
-                        StatView({"Skill"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
-                        Selector(4,other,{
+
+                        Selector(3,other,{
                             other.speed += 1
                         },{
                             val desiredspeed = other.speed-1
@@ -219,17 +255,10 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         },{
                             val desired = "%.4f".format(other.shootStats.turnSpeed-0.01f).toFloat()
                             if(desired>0) other.shootStats.turnSpeed = desired
-                        },{
-                            val desired = other.shootStats.wepSkill+0.1f
-                            if(desired<=1.001f) other.shootStats.wepSkill = desired
-                        },{
-                            val desired = other.shootStats.wepSkill-0.1f
-                            if(desired>=0)other.shootStats.wepSkill = desired
                         }),
                         StatView({other.speed.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
                         StatView({other.healthStats.maxHP.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
-                        StatView({( other.shootStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
-                        StatView({( other.shootStats.wepSkill*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
+                        StatView({( other.shootStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos)
                     )}
                     it.char = 'g'
                     it.dimensions.drawSize = mapGridSize
