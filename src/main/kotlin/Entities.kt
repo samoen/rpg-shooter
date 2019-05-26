@@ -157,7 +157,10 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
             }
         }
         processShooting(this,pCont.sht.booly,this.shootStats.wep,pBulImage,notOnShop)
-        healthStats.stopped = !pCont.sht.booly && !pCont.spenlef.booly && !pCont.spinri.booly && !didMove
+
+        if(notOnShop)healthStats.stopped =!pCont.sht.booly && !pCont.spenlef.booly && !pCont.spinri.booly && !didMove
+        else healthStats.stopped = !didMove
+
         if(healthStats.armorIsBroken){
             healthStats.armorBrokenFrames++
             if (healthStats.armorBrokenFrames>speed){
