@@ -300,16 +300,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         if(!allEntities.contains(player) && !entsToAdd.contains(player))entsToAdd.add(player)
                         player.toBeRemoved = false
                     }
-//                    player0.dimensions.xpos = gatex
-//                    player0.dimensions.ypos = gatey
-//                    player0.spawnGate = gate
-//                    player1.dimensions.xpos = gatex + (player0.dimensions.drawSize)
-//                    player1.dimensions.ypos = gatey
-//                    player1.spawnGate = gate
-//                    entsToAdd.add(player0)
-//                    entsToAdd.add(player1)
                 }
-
                 entsToAdd.add(gate)
                 continue
             }
@@ -409,53 +400,46 @@ fun main() {
         }else if(pressed2.tryConsume()) {
             gamePaused = !gamePaused
         } else if (pressed1.tryConsume()) {
-//                revivePlayers(true)
             startWave(4)
         } else if(changeMap){
             changeMap=false
             placeMap(nextMap,nextMapNum,currentMapNum)
         } else{
                 if(!gamePaused){
-
-                    val preupdateEnts : List<EntDimens> = allEntities.map { it.dimensions.copy() }
-//                val preupdateEnts = mutableListOf<EntDimens>()
+                    val preupdateEnts = allEntities.map { it.dimensions.copy() }
                     allEntities.forEach { entity: Entity ->
-                        //                    preupdateEnts.add(EntDimens(entity.dimensions.xpos,entity.dimensions.ypos,entity.dimensions.drawSize))
                         entity.updateEntity()
                     }
-
                     var timesTried = 0
                     do{
                         timesTried++
                         var triggeredReaction = false
-                        for (i in 0 until allEntities.size) {
-                            for (j in (i + 1) until allEntities.size) {
-                                val ient = allEntities[i]
-                                val jent = allEntities[j]
-                                var collided = false
-                                if(ient.overlapsOther(jent)){
-                                    ient.collide(jent, preupdateEnts[i],preupdateEnts[j])
-                                    collided = true
-                                }
-                                if(jent.overlapsOther(ient)){
-                                    jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
-                                    collided = true
-                                }
-                                if(collided && !ient.toBeRemoved && !jent.toBeRemoved && jent.overlapsOther(ient)) {
-                                    if ((ient is Player || ient is Enemy) && (jent is Player ||jent is Enemy)) {
-                                        if(timesTried > 10){
-                                            println("Cannot resolve collision!")
-                                            if(jent is Wall){
-//                                jent.toBeRemoved = true
-                                            }else if(ient is Wall){
-//                                ient.toBeRemoved = true
-                                            }else{
-
-//                                ient.toBeRemoved = true
-//                                jent.toBeRemoved = true
+                        for(dex in 0 until allEntities.size) {
+                            val ient = allEntities[dex]
+                            if(ient is Player || ient is Enemy){
+                                for(j in (0)until allEntities.size){
+                                if(dex!=j){
+                                        val jent = allEntities[j]
+                                        var collided = false
+                                        if(!ient.toBeRemoved && !jent.toBeRemoved){
+                                            if(ient.overlapsOther(jent)){
+                                                    collided = true
+                                                    blockMovement(ient,jent,preupdateEnts[dex],preupdateEnts[j])
+                                                    val died = takeDamage(jent,ient)
+                                                    if(died && ient is Player){
+                                                        ient.healthStats.currentHp = ient.healthStats.maxHP
+                                                        ient.spawnGate.playersInside.add(ient)
+                                                    }
                                             }
-                                        }else{
-                                            triggeredReaction = true
+                                        }
+                                        if(collided && jent.overlapsOther(ient)) {
+                                            if (ient.isSolid && jent.isSolid) {
+                                                if(timesTried > 10){
+                                                    println("Cannot resolve collision!")
+                                                }else{
+                                                    triggeredReaction = true
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -476,7 +460,7 @@ fun main() {
                     entsToDraw.addAll(combatants)
                     entsToDraw.addAll(bullets)
                     for(player in players){
-                        if(player.specificMenus.values.any { it }){
+                        if(!player.notOnShop){
                             player.menuStuff.forEach {
                                 it.updateEntity()
                                 entsToDraw.add(it)

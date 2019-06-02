@@ -8,6 +8,7 @@ import java.awt.Rectangle
 
 class Bullet(val shottah: Shoots) : Entity {
     var shotBy:ShootStats = shottah.shootStats.copy()
+    override var isSolid=false
     override var dimensions = let {
         (shottah as Entity)
         val bsize = shotBy.wep.bulSize/shotBy.wep.projectiles
@@ -31,8 +32,8 @@ class Bullet(val shottah: Shoots) : Entity {
     override var color = shotBy.bulColor
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if (other is Wall ) {
+    override fun updateEntity() {
+        allEntities.filter { it is Wall && overlapsOther(it)}.forEach {
             toBeRemoved = true
             val imp = Impact()
             imp.dimensions.drawSize = dimensions.drawSize
@@ -40,8 +41,6 @@ class Bullet(val shottah: Shoots) : Entity {
             imp.dimensions.ypos = dimensions.ypos
             entsToAdd.add(imp)
         }
-    }
-    override fun updateEntity() {
         dimensions.ypos -= ((((Math.sin(bulDir))) * speed.toDouble()))
         dimensions.xpos += ((((Math.cos(bulDir))) * speed))
         if(dimensions.xpos<0)toBeRemoved = true
@@ -67,9 +66,9 @@ class Bullet(val shottah: Shoots) : Entity {
     }
 }
 
-val TURN_SMOOTH = 0.01f
 
 class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
+    override var isSolid=true
     override var dimensions = EntDimens(0.0,0.0,40.0)
     var canEnterGateway:Boolean = true
     var specificMenus = mutableMapOf<Char,Boolean>('b' to false, 'g' to false, 'm' to false)
@@ -109,24 +108,31 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var color: Color = Color.BLUE
-    override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
-        if(!toBeRemoved){
-            blockMovement(this,other,oldme,oldOther)
-            val died = takeDamage(other,this)
-            if(died){
-                healthStats.currentHp = healthStats.maxHP
-                for (specificMenu in specificMenus) {
-                    specificMenu.setValue(false)
-                }
-                spawnGate.playersInside.add(this)
-            }
-        }
-    }
+//    override fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){
+//        if(!toBeRemoved){
+//            blockMovement(this,other,oldme,oldOther)
+//            val died = takeDamage(other,this)
+//            if(died){
+//                healthStats.currentHp = healthStats.maxHP
+//                spawnGate.playersInside.add(this)
+//            }
+//        }
+//    }
     var didSpinright = false
     var didSpinleft = false
+    var notOnShop = true
     override fun updateEntity() {
         didMove = false
         healthStats.didHeal = false
+        val shops = allEntities.filter { it is Shop }
+        val onshops = shops.filter { overlapsOther(it) }
+        var isonshop = onshops.isNotEmpty()
+        if(isonshop && notOnShop){
+            val theShop = onshops.first() as Shop
+            menuStuff = theShop.menuThings(this)
+        }
+        notOnShop = !isonshop
+
 
         var toMovex = 0.0
         var toMovey = 0.0
@@ -146,7 +152,7 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
             toMovex *= shootStats.wep.mobility
             toMovey *= shootStats.wep.mobility
         }
-        val notOnShop = specificMenus.values.all { !it }
+//        val notOnShop = specificMenus.values.all { !it }
         if(notOnShop){
             if(pCont.spenlef.booly||pCont.spinri.booly){
                 toMovex *= shootStats.wep.mobility
@@ -269,13 +275,14 @@ class Enemy : Entity, Shoots, HasHealth{
     var randnumx = 0.0
     var randnumy = 0.0
     var iTried = Pair(-1.0,-1.0)
+    override var isSolid=true
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var color: Color = Color.BLUE
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        blockMovement(this,other,oldme,oldOther)
-        takeDamage(other,this)
-    }
+//    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
+//        blockMovement(this,other,oldme,oldOther)
+//        takeDamage(other,this)
+//    }
 
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,goblinImage,g)
@@ -379,6 +386,7 @@ class Enemy : Entity, Shoots, HasHealth{
 }
 
 class Wall : Entity{
+    override var isSolid=true
     override var dimensions = EntDimens(0.0,0.0,20.0)
     override var color = Color.DARK_GRAY
     override var toBeRemoved: Boolean = false
@@ -390,6 +398,7 @@ class Wall : Entity{
 }
 
 class Gateway : Entity{
+    override var isSolid=false
     override var dimensions = EntDimens(0.0,0.0,20.0)
     var playersInside = mutableListOf<Player>()
     var map = map1
@@ -444,34 +453,40 @@ class Gateway : Entity{
             nextMapNum = mapnum
             changeMap = true
         }
-    }
-
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
         if(!locked){
-            if(other is Player){
-                if(other.canEnterGateway&&!other.toBeRemoved){
-                    other.toBeRemoved = true
-                    other.dimensions.xpos = dimensions.xpos
-                    other.dimensions.ypos = dimensions.ypos
-                    playersInside.add(other)
+            for (pp in players){
+                if(pp.overlapsOther(this)){
+                    if(pp.canEnterGateway&&!pp.toBeRemoved){
+                        pp.toBeRemoved = true
+                        pp.dimensions.xpos = dimensions.xpos
+                        pp.dimensions.ypos = dimensions.ypos
+                        playersInside.add(pp)
+                    }
                 }
             }
         }
     }
 }
 class GateSwitch:Entity{
+    override var isSolid=false
     override var dimensions = EntDimens(0.0,0.0,20.0)
     override var color = Color.YELLOW
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if(other is Player){
-         allEntities.filter { it is Gateway }.forEach {
-             (it as Gateway).locked = false
-             it.color = Color.BLACK
-             color = Color.ORANGE
-         }
+    var beenSwitched = false
+    override fun updateEntity() {
+        if(!beenSwitched){
+            players.forEach {
+                if(it.overlapsOther(this)){
+                    beenSwitched = true
+                    allEntities.filter { it is Gateway }.forEach {
+                        (it as Gateway).locked = false
+                        it.color = Color.BLACK
+                        color = Color.ORANGE
+                    }
+                }
+            }
         }
     }
 }
@@ -482,6 +497,7 @@ var changeMap = false
 var NumPlayers = 2
 
 class Impact : Entity{
+    override var isSolid=false
     override var dimensions = EntDimens(0.0,0.0,20.0)
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
@@ -499,17 +515,16 @@ class Impact : Entity{
 }
 
 class MedPack : Entity {
+    override var isSolid=false
     override var dimensions = EntDimens(0.0,0.0,20.0)
     override var color = Color.GREEN
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"
     override var speed: Int = 2
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if (other is HasHealth && (other.healthStats.currentHp<other.healthStats.maxHP || other.healthStats.didHeal)) toBeRemoved = true
-    }
 }
 
 class Shop:Entity{
+    override var isSolid=false
     override var dimensions = EntDimens(0.0,0.0,20.0)
     var char:Char = 'z'
     var menuThings:(Player)->List<Entity> ={ listOf()}
@@ -521,27 +536,10 @@ class Shop:Entity{
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,image,g)
     }
-
-    override fun updateEntity() {
-        for(player in players){
-            if(player.specificMenus[char]!!){
-                if(!overlapsOther(player)){
-                    player.specificMenus[char] = false
-                }
-            }
-        }
-    }
-
-    override fun collide(other: Entity, oldme: EntDimens, oldOther: EntDimens){
-        if(other is Player){
-            if(other.specificMenus[char]==false){
-                other.menuStuff = menuThings(other)
-                other.specificMenus[char] = true
-            }
-        }
-    }
 }
+
 class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()->Unit,val onUp1:()->Unit,val onDown1:()->Unit,val onUp2:()->Unit={},val onDown2:()->Unit={},val onUp3:()->Unit={},val onDown3:()->Unit={}):Entity{
+    override var isSolid=false
     override var dimensions = EntDimens(other.dimensions.xpos+selectorXSpace,other.dimensions.ypos,20.0)
     override var color = Color.BLUE
     var indexer = 0
@@ -579,6 +577,7 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
     }
 }
 class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity{
+    override var isSolid=false
     override var dimensions = EntDimens(0.0,0.0,20.0)
     override var toBeRemoved: Boolean = false
     override var entityTag: String = "default"

@@ -1,5 +1,10 @@
 import java.awt.Color
 import java.awt.Graphics
+import java.awt.Image
+
+//class EntCommon{
+//
+//}
 
 interface Entity {
     var toBeRemoved: Boolean
@@ -7,10 +12,10 @@ interface Entity {
     var speed: Int
     var color: Color
     var dimensions:EntDimens
+    var isSolid:Boolean
+//    var spriteu: Image
 
-    fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){}
     fun updateEntity() {}
-//    fun drawComponents(g: Graphics) {}
     fun overlapsOther(other: Entity):Boolean{
         return this.dimensions.ypos+this.dimensions.drawSize > other.dimensions.ypos &&
                 this.dimensions.ypos<other.dimensions.ypos+other.dimensions.drawSize &&

@@ -22,23 +22,6 @@ fun playStrSound(str:String){
                 soundBank[str]!!.start()
         }
 }
-//fun revivePlayers(){
-//    for (player in players) {
-//        if(!allEntities.contains(player) && !entsToAdd.contains(player))entsToAdd.add(player)
-//        player.toBeRemoved = false
-//    }
-
-//    player0.toBeRemoved = false
-//    player1.toBeRemoved = false
-//    player0.dimensions.ypos = (INTENDED_FRAME_SIZE - player0.dimensions.drawSize)
-//    player0.dimensions.xpos = 0.0
-//    player1.dimensions.ypos = (INTENDED_FRAME_SIZE - player1.dimensions.drawSize)
-//    player1.dimensions.xpos = (player0.dimensions.drawSize)
-//    if(heal){
-//        player0.healthStats.currentHp = player0.healthStats.maxHP
-//        player1.healthStats.currentHp = player1.healthStats.maxHP
-//    }
-//}
 
 fun randEnemy():Enemy{
     val se = Enemy()
@@ -103,10 +86,6 @@ fun processShooting(me:Shoots, sht:Boolean, weap:Weapon, bulImage:Image,notOnSho
     if (sht && weap.framesSinceShottah > me.shootStats.wep.atkSpd && notOnShop) {
         weap.framesSinceShottah = 0
         if(me is Player)me.didShoot=true
-//        var numproj = 1
-//        numproj = 1/(me.shootStats.wep.bulLifetime/10)
-//        numproj = ((me.shootStats.wep.recoil/(me.shootStats.wep.bulspd+me.shootStats.wep.buldmg))).toInt()
-//        numproj = (((me.shootStats.wep.atkSpd*5)+me.shootStats.wep.recoil)/(me.shootStats.mobility+(me.shootStats.wep.bulspd*5)+(me.shootStats.wep.buldmg*5))).toInt()
         for( i in 1..weap.projectiles){
             val b = Bullet(me)
             b.bulImage = bulImage
@@ -145,8 +124,6 @@ fun drawCrosshair(me:Shoots, g: Graphics){
     g as Graphics2D
     g.color = Color.CYAN
     val strkw = 1.5f
-//        if(me is Player)1.2f
-//    else 5f
     g.stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
     val arcdiameter = (me as Entity).dimensions.drawSize
     fun doarc(diver:Double,timeser:Double){
@@ -161,21 +138,10 @@ fun drawCrosshair(me:Shoots, g: Graphics){
             spread.toInt()
         )
     }
-//    if(me is Player){
-        doarc(me.dimensions.drawSize/4,0.5)
-        doarc(-me.dimensions.drawSize/3.5,1.55)
-        doarc(0.0,1.0)
-        doarc(-me.dimensions.drawSize/1.7,2.15)
-//    }else{
-//        g.drawArc(
-//            getWindowAdjustedPos((me.dimensions.xpos)).toInt(),
-//            getWindowAdjustedPos((me.dimensions.ypos)).toInt(),
-//            (getWindowAdjustedPos((arcdiameter))).toInt(),
-//            (getWindowAdjustedPos((arcdiameter))).toInt(),
-//            ((me.shootStats.angy*180/Math.PI)-5/2).toInt(),
-//            5
-//        )
-//    }
+    doarc(me.dimensions.drawSize/4,0.5)
+    doarc(-me.dimensions.drawSize/3.5,1.55)
+    doarc(0.0,1.0)
+    doarc(-me.dimensions.drawSize/1.7,2.15)
     g.stroke = BasicStroke(1f)
 }
 fun drawReload(me:Shoots, g: Graphics, weap: Weapon){
@@ -183,7 +149,6 @@ fun drawReload(me:Shoots, g: Graphics, weap: Weapon){
     if(weap.framesSinceShottah<me.shootStats.wep.atkSpd){
         g.color = Color.CYAN
         (g as Graphics2D).stroke = BasicStroke(2f)
-
         g.drawLine(
             getWindowAdjustedPos (me.dimensions.xpos).toInt(),
             getWindowAdjustedPos(me.dimensions.ypos).toInt()-2,
@@ -200,9 +165,6 @@ fun drawReload(me:Shoots, g: Graphics, weap: Weapon){
     }
 }
 
-//fun checkFriendlyFire(entity1: Entity,entity2: Entity):Boolean{
-//    return entity1::class!=entity2::class
-//}
 fun takeDamage(other:Entity,me:Entity):Boolean{
     me as HasHealth
     if(other is Bullet) {
@@ -222,6 +184,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
             playStrSound(me.healthStats.dieNoise)
             me.toBeRemoved = true
             val deathEnt = object: Entity{
+                override var isSolid=false
                 override var dimensions = EntDimens(me.dimensions.xpos,me.dimensions.ypos,me.dimensions.drawSize)
                 override var toBeRemoved: Boolean = false
                 override var entityTag: String = "default"
@@ -251,6 +214,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
         me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
 
     }else if (other is MedPack && (me as HasHealth).healthStats.currentHp<me.healthStats.maxHP){
+        other.toBeRemoved = true
         me.healthStats.didHeal = true
         val desiredhp = (me as HasHealth).healthStats.currentHp+20
         if (desiredhp>me.healthStats.maxHP){
@@ -293,7 +257,7 @@ fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,o
 }
 
 fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
-    if((other is Wall) || (other is Enemy) || other is Player){
+    if(other.isSolid){
         val xdiff = me.dimensions.xpos - oldme.xpos
         val ydiff = me.dimensions.ypos - oldme.ypos
         val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
