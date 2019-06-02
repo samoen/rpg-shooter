@@ -158,31 +158,31 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Mob"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
                         Selector(4,other,
                         {
-                            if(other.shootStats.wep.bulspd+1<50)other.shootStats.wep.bulspd++
+                            if(other.healthStats.wep.bulspd+1<50)other.healthStats.wep.bulspd++
                         },{
-                            if(other.shootStats.wep.bulspd-1>1)other.shootStats.wep.bulspd--
+                            if(other.healthStats.wep.bulspd-1>1)other.healthStats.wep.bulspd--
                         },{
-                            if(other.shootStats.wep.recoil+1<23)other.shootStats.wep.recoil++
+                            if(other.healthStats.wep.recoil+1<23)other.healthStats.wep.recoil++
                         },{
-                            if(other.shootStats.wep.recoil-1>=0)other.shootStats.wep.recoil--
+                            if(other.healthStats.wep.recoil-1>=0)other.healthStats.wep.recoil--
                         },{
-                            if(other.shootStats.wep.atkSpd+1<200){
-                                other.shootStats.wep.atkSpd++
-//                                other.shootStats.wep.framesSinceShottah = 999
+                            if(other.healthStats.wep.atkSpd+1<200){
+                                other.healthStats.wep.atkSpd++
+//                                other.healthStats.wep.framesSinceShottah = 999
                             }
                         },{
-                            if(other.shootStats.wep.atkSpd-1>1)other.shootStats.wep.atkSpd--
+                            if(other.healthStats.wep.atkSpd-1>1)other.healthStats.wep.atkSpd--
                         },{
-                                val desired = other.shootStats.wep.mobility+0.1f
-                                if(desired<=1.001f) other.shootStats.wep.mobility = desired
+                                val desired = other.healthStats.wep.mobility+0.1f
+                                if(desired<=1.001f) other.healthStats.wep.mobility = desired
                             },{
-                                val desired = other.shootStats.wep.mobility-0.1f
-                                if(desired>=0)other.shootStats.wep.mobility = desired
+                                val desired = other.healthStats.wep.mobility-0.1f
+                                if(desired>=0)other.healthStats.wep.mobility = desired
                             }),
-                        StatView({other.shootStats.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
-                        StatView({other.shootStats.wep.recoil.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
-                        StatView({other.shootStats.wep.atkSpd.toString() }, statsXSpace+other.dimensions.xpos,  2*statsYSpace+other.dimensions.ypos),
-                        StatView({( other.shootStats.wep.mobility*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
+                        StatView({other.healthStats.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
+                        StatView({other.healthStats.wep.recoil.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
+                        StatView({other.healthStats.wep.atkSpd.toString() }, statsXSpace+other.dimensions.xpos,  2*statsYSpace+other.dimensions.ypos),
+                        StatView({( other.healthStats.wep.mobility*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
                     )
                     }
                 })
@@ -200,27 +200,27 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Buck"},other.dimensions.xpos,2*statsYSpace+other.dimensions.ypos),
                         Selector(3,other,
                             {
-                                other.shootStats.wep.buldmg+=1
-                                other.shootStats.wep.bulSize+=3
+                                other.healthStats.wep.buldmg+=1
+                                other.healthStats.wep.bulSize+=3
                             },{
-                                val desiredDmg = other.shootStats.wep.buldmg-1
-                                val desiredSize = other.shootStats.wep.bulSize -3
+                                val desiredDmg = other.healthStats.wep.buldmg-1
+                                val desiredSize = other.healthStats.wep.bulSize -3
                                 if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
-                                    other.shootStats.wep.bulSize = desiredSize
-                                    other.shootStats.wep.buldmg = desiredDmg
+                                    other.healthStats.wep.bulSize = desiredSize
+                                    other.healthStats.wep.buldmg = desiredDmg
                                 }
                             },{
-                                if(other.shootStats.wep.bulLifetime+1<100)other.shootStats.wep.bulLifetime++
+                                if(other.healthStats.wep.bulLifetime+1<100)other.healthStats.wep.bulLifetime++
                             },{
-                                if(other.shootStats.wep.bulLifetime-1>=1)other.shootStats.wep.bulLifetime--
+                                if(other.healthStats.wep.bulLifetime-1>=1)other.healthStats.wep.bulLifetime--
                             },{
-                                if(other.shootStats.wep.projectiles+1<15)other.shootStats.wep.projectiles++
+                                if(other.healthStats.wep.projectiles+1<15)other.healthStats.wep.projectiles++
                             },{
-                                if(other.shootStats.wep.projectiles-1>=1)other.shootStats.wep.projectiles--
+                                if(other.healthStats.wep.projectiles-1>=1)other.healthStats.wep.projectiles--
                             }),
-                        StatView({other.shootStats.wep.buldmg.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
-                        StatView({other.shootStats.wep.bulLifetime.toString() }, statsXSpace+other.dimensions.xpos,  statsYSpace+other.dimensions.ypos),
-                        StatView({other.shootStats.wep.projectiles.toString() }, statsXSpace+other.dimensions.xpos,  2*statsYSpace+other.dimensions.ypos)
+                        StatView({other.healthStats.wep.buldmg.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
+                        StatView({other.healthStats.wep.bulLifetime.toString() }, statsXSpace+other.dimensions.xpos,  statsYSpace+other.dimensions.ypos),
+                        StatView({other.healthStats.wep.projectiles.toString() }, statsXSpace+other.dimensions.xpos,  2*statsYSpace+other.dimensions.ypos)
                     )}
                 })
                 continue
@@ -250,11 +250,11 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                             }
                             other.healthStats.currentHp = other.healthStats.maxHP
                         },{
-                            val desired = "%.4f".format(other.shootStats.turnSpeed+0.01f).toFloat()
-                            if(desired<1) other.shootStats.turnSpeed = desired
+                            val desired = "%.4f".format(other.healthStats.turnSpeed+0.01f).toFloat()
+                            if(desired<1) other.healthStats.turnSpeed = desired
                         },{
-                            val desired = "%.4f".format(other.shootStats.turnSpeed-0.01f).toFloat()
-                            if(desired>0) other.shootStats.turnSpeed = desired
+                            val desired = "%.4f".format(other.healthStats.turnSpeed-0.01f).toFloat()
+                            if(desired>0) other.healthStats.turnSpeed = desired
                         },{
                             other.healthStats.shieldSkill += 1
                         },{
@@ -263,7 +263,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         }),
                         StatView({other.speed.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
                         StatView({other.healthStats.maxHP.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
-                        StatView({( other.shootStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
+                        StatView({( other.healthStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
                         StatView({( other.healthStats.shieldSkill).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
                     )}
                     it.char = 'g'
@@ -391,7 +391,7 @@ fun main() {
     myFrame.title = "Gunplay"
     myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE+YFRAMEMAGIC)
     myFrame.isVisible = true
-//    playSound(player0.shootStats.shootNoise)
+//    playSound(player0.healthStats.shootNoise)
 
     while (true){
         val pretime = System.currentTimeMillis()

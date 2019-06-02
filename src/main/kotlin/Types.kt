@@ -2,15 +2,13 @@ import java.awt.Color
 import java.awt.Graphics
 import java.awt.Image
 
-//class EntCommon{
-//
-//}
+class EntCommon{
+
+}
 
 interface Entity {
     var toBeRemoved: Boolean
-    var entityTag: String
     var speed: Int
-    var color: Color
     var dimensions:EntDimens
     var isSolid:Boolean
 //    var spriteu: Image
@@ -37,11 +35,10 @@ data class ShootStats(var shootySound:String = "die",
                       var wep:Weapon=Weapon(),
                       var turnSpeed:Float = 0.05f,
                       var bulColor:Color=Color.RED,
-
                       var teamNumber:Int=0
 )
 interface Shoots{
-    var shootStats :ShootStats
+    var healthStats :ShootStats
 }
 class HealthStats{
     var didHeal :Boolean = false
@@ -60,6 +57,12 @@ class HealthStats{
     fun getArmored():Boolean{
         return stopped && !armorIsBroken
     }
+    var shootySound:String = "die"
+    var angy :Double = 0.0
+    var wep:Weapon=Weapon()
+    var turnSpeed:Float = 0.05f
+    var bulColor:Color=Color.RED
+    var teamNumber:Int=0
 }
 interface HasHealth{
     var healthStats:HealthStats
@@ -97,7 +100,7 @@ data class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
 
 class playControls(var up:OneShotChannel=OneShotChannel(), var dwm:OneShotChannel=OneShotChannel(), var sht:OneShotChannel=OneShotChannel(), var Swp:OneShotChannel=OneShotChannel(), var riri:OneShotChannel=OneShotChannel(), var leflef:OneShotChannel=OneShotChannel(), var spinri:OneShotChannel=OneShotChannel(), var spenlef:OneShotChannel=OneShotChannel())
 
-class Weapon(
+data class Weapon(
     var mobility:Float = 0.3f,
     var atkSpd:Int = 4,
     var bulLifetime:Int = 15,
