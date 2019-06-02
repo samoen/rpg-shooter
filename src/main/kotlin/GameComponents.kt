@@ -22,11 +22,11 @@ fun playStrSound(str:String){
                 soundBank[str]!!.start()
         }
 }
-fun revivePlayers(){
-    for (player in players) {
-        if(!allEntities.contains(player) && !entsToAdd.contains(player))entsToAdd.add(player)
-        player.toBeRemoved = false
-    }
+//fun revivePlayers(){
+//    for (player in players) {
+//        if(!allEntities.contains(player) && !entsToAdd.contains(player))entsToAdd.add(player)
+//        player.toBeRemoved = false
+//    }
 
 //    player0.toBeRemoved = false
 //    player1.toBeRemoved = false
@@ -38,7 +38,7 @@ fun revivePlayers(){
 //        player0.healthStats.currentHp = player0.healthStats.maxHP
 //        player1.healthStats.currentHp = player1.healthStats.maxHP
 //    }
-}
+//}
 
 fun randEnemy():Enemy{
     val se = Enemy()
@@ -126,18 +126,18 @@ fun processShooting(me:Shoots, sht:Boolean, weap:Weapon, bulImage:Image,notOnSho
     }
     weap.framesSinceShottah++
 }
-fun processTurning(me:Shoots, lef:Boolean, righ:Boolean){
+fun processTurning(me:Shoots, lef:Boolean, righ:Boolean,tSpd:Float){
+    if(lef&&righ)return
     if (lef) {
-        val desired = me.shootStats.angy+me.shootStats.turnSpeed
+        val desired = me.shootStats.angy+tSpd
         if(desired>Math.PI){
             me.shootStats.angy = -Math.PI + (desired-Math.PI)
         }else
-            me.shootStats.angy += me.shootStats.turnSpeed
-    }
-    if (righ){
-        val desired = me.shootStats.angy-me.shootStats.turnSpeed
+            me.shootStats.angy += tSpd
+    }else if (righ){
+        val desired = me.shootStats.angy-tSpd
         if(desired<-Math.PI)me.shootStats.angy = Math.PI - (-Math.PI-desired)
-        else me.shootStats.angy -= me.shootStats.turnSpeed
+        else me.shootStats.angy -= tSpd
     }
 }
 fun drawCrosshair(me:Shoots, g: Graphics){

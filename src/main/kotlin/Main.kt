@@ -297,8 +297,9 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         player.dimensions.ypos = gatey
                         player.spawnGate = gate
                         lastsize = (player.dimensions.drawSize)
+                        if(!allEntities.contains(player) && !entsToAdd.contains(player))entsToAdd.add(player)
+                        player.toBeRemoved = false
                     }
-                    revivePlayers()
 //                    player0.dimensions.xpos = gatex
 //                    player0.dimensions.ypos = gatey
 //                    player0.spawnGate = gate
@@ -316,6 +317,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
         }
     }
 }
+val entsToDraw = mutableListOf<Entity>()
 
 fun main() {
 
@@ -376,79 +378,20 @@ fun main() {
 //    myFrame.createBufferStrategy(3)
 //    myFrame.graphics.dispose()
 //    myFrame.bufferStrategy.show()
+
+
     val myPanel:JPanel =object : JPanel() {
         override fun paint(g: Graphics) {
             super.paint(g)
             if(myrepaint){
                 myrepaint = false
-                val preupdateEnts : List<EntDimens> = allEntities.map { it.dimensions.copy() }
-//                val preupdateEnts = mutableListOf<EntDimens>()
-                allEntities.forEach { entity: Entity ->
-//                    preupdateEnts.add(EntDimens(entity.dimensions.xpos,entity.dimensions.ypos,entity.dimensions.drawSize))
-                    entity.updateEntity()
-                }
-
-                var timesTried = 0
-                do{
-                    timesTried++
-                    var triggeredReaction = false
-                    for (i in 0 until allEntities.size) {
-                        for (j in (i + 1) until allEntities.size) {
-                            val ient = allEntities[i]
-                            val jent = allEntities[j]
-                            var collided = false
-                            if(ient.overlapsOther(jent)){
-                                ient.collide(jent, preupdateEnts[i],preupdateEnts[j])
-                                collided = true
-                            }
-                            if(jent.overlapsOther(ient)){
-                                jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
-                                collided = true
-                            }
-                            if(collided && !ient.toBeRemoved && !jent.toBeRemoved && jent.overlapsOther(ient)) {
-                                if ((ient is Player || ient is Enemy) && (jent is Player ||jent is Enemy)) {
-                                    if(timesTried > 10){
-                                        println("Cannot resolve collision!")
-                                        if(jent is Wall){
-//                                jent.toBeRemoved = true
-                                        }else if(ient is Wall){
-//                                ient.toBeRemoved = true
-                                        }else{
-
-//                                ient.toBeRemoved = true
-//                                jent.toBeRemoved = true
-                                        }
-                                    }else{
-                                        triggeredReaction = true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }while (triggeredReaction)
-                allEntities.removeIf { it.toBeRemoved }
-
                 g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
-                val combatants = mutableListOf<Entity>()
-                allEntities.forEach { entity ->
-                    if(entity is Player || entity is Enemy){
-                        combatants.add(entity)
-                    }else entity.drawEntity(g)
-                }
-                combatants.forEach {
+                entsToDraw.forEach {
                     it.drawEntity(g)
                 }
-
-                allEntities.forEach { entity ->
-                    entity.drawComponents(g)
-                }
-                for(player in players){
-                    if(player.specificMenus.values.any { it }){
-                        player.menuStuff.forEach {
-                            it.updateEntity()
-                            it.drawEntity(g)
-                        }
-                    }
+                players.forEach {
+                    if(!it.toBeRemoved)
+                        it.drawComponents(g)
                 }
             }
         }
@@ -471,11 +414,77 @@ fun main() {
         } else if(changeMap){
             changeMap=false
             placeMap(nextMap,nextMapNum,currentMapNum)
-            revivePlayers()
         } else{
                 if(!gamePaused){
+
+                    val preupdateEnts : List<EntDimens> = allEntities.map { it.dimensions.copy() }
+//                val preupdateEnts = mutableListOf<EntDimens>()
+                    allEntities.forEach { entity: Entity ->
+                        //                    preupdateEnts.add(EntDimens(entity.dimensions.xpos,entity.dimensions.ypos,entity.dimensions.drawSize))
+                        entity.updateEntity()
+                    }
+
+                    var timesTried = 0
+                    do{
+                        timesTried++
+                        var triggeredReaction = false
+                        for (i in 0 until allEntities.size) {
+                            for (j in (i + 1) until allEntities.size) {
+                                val ient = allEntities[i]
+                                val jent = allEntities[j]
+                                var collided = false
+                                if(ient.overlapsOther(jent)){
+                                    ient.collide(jent, preupdateEnts[i],preupdateEnts[j])
+                                    collided = true
+                                }
+                                if(jent.overlapsOther(ient)){
+                                    jent.collide(ient, preupdateEnts[j],preupdateEnts[i])
+                                    collided = true
+                                }
+                                if(collided && !ient.toBeRemoved && !jent.toBeRemoved && jent.overlapsOther(ient)) {
+                                    if ((ient is Player || ient is Enemy) && (jent is Player ||jent is Enemy)) {
+                                        if(timesTried > 10){
+                                            println("Cannot resolve collision!")
+                                            if(jent is Wall){
+//                                jent.toBeRemoved = true
+                                            }else if(ient is Wall){
+//                                ient.toBeRemoved = true
+                                            }else{
+
+//                                ient.toBeRemoved = true
+//                                jent.toBeRemoved = true
+                                            }
+                                        }else{
+                                            triggeredReaction = true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }while (triggeredReaction)
+                    allEntities.removeIf { it.toBeRemoved }
+                    entsToDraw.clear()
+                    val combatants = mutableListOf<Entity>()
+                    val noncombatants = mutableListOf<Entity>()
+                    val bullets = mutableListOf<Entity>()
+                    allEntities.forEach {
+                        if(it is Player || it is Enemy)combatants.add(it)
+                        else if(it is Bullet){bullets.add(it)}
+                        else noncombatants.add(it)
+                    }
+                    entsToDraw.addAll(noncombatants)
+                    entsToDraw.addAll(combatants)
+                    entsToDraw.addAll(bullets)
+                    for(player in players){
+                        if(player.specificMenus.values.any { it }){
+                            player.menuStuff.forEach {
+                                it.updateEntity()
+                                entsToDraw.add(it)
+                            }
+                        }
+                    }
                     myrepaint = true
-                    myPanel.repaint()
+                    myFrame.repaint()
                     if(entsToAdd.size>0) allEntities.addAll(entsToAdd)
                     entsToAdd.clear()
                 }

@@ -8,14 +8,23 @@ import java.awt.Rectangle
 
 class Bullet(val shottah: Shoots) : Entity {
     var shotBy:ShootStats = shottah.shootStats.copy()
-    override var dimensions = EntDimens(
-        ((shottah as Entity).getMidX()-(shotBy.wep.bulSize/2))+(Math.cos(shotBy.angy)*shottah.dimensions.drawSize/2)+(Math.cos(shotBy.angy)*shotBy.wep.bulSize/2),
-        ((shottah as Entity).getMidY()-(shotBy.wep.bulSize/2))-(Math.sin(shotBy.angy)*shottah.dimensions.drawSize/2)-(Math.sin(shotBy.angy)*shotBy.wep.bulSize/2),
-        shotBy.wep.bulSize
-    )
+    override var dimensions = let {
+        (shottah as Entity)
+        val bsize = shotBy.wep.bulSize/shotBy.wep.projectiles
+        val shotBysize = shottah.dimensions.drawSize/shotBy.wep.projectiles
+        EntDimens(
+            (shottah.getMidX() - (bsize / 2)) + (Math.cos(shotBy.angy) * shotBysize / 2) + (Math.cos(
+                shotBy.angy
+            ) * bsize / 2),
+            ((shottah as Entity).getMidY() - (bsize / 2)) - (Math.sin(shotBy.angy) * shotBysize / 2) - (Math.sin(
+                shotBy.angy
+            ) * bsize / 2),
+            bsize
+        )
+    }
     var bulImage = wallImage
     var startDamage = shotBy.wep.buldmg
-    var damage = shotBy.wep.buldmg
+    var damage = shotBy.wep.buldmg/shotBy.wep.projectiles
     var framesAlive = 0
     var bulDir = shotBy.angy + ((Math.random()-0.5)*shotBy.wep.recoil/6.0)
     override var speed = shotBy.wep.bulspd
@@ -58,7 +67,7 @@ class Bullet(val shottah: Shoots) : Entity {
     }
 }
 
-
+val TURN_SMOOTH = 0.01f
 
 class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
     override var dimensions = EntDimens(0.0,0.0,40.0)
@@ -77,6 +86,7 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
         s.wep = primWep
         s
     }
+    var tSpdMod = shootStats.turnSpeed
 
     var movedRight = false
     var didMove = false
@@ -112,7 +122,8 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
             }
         }
     }
-
+    var didSpinright = false
+    var didSpinleft = false
     override fun updateEntity() {
         didMove = false
         healthStats.didHeal = false
@@ -149,7 +160,21 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(this)
         if(notOnShop){
-            processTurning(this,pCont.spenlef.booly,pCont.spinri.booly)
+            if(pCont.spenlef.booly == pCont.spinri.booly){
+                tSpdMod = shootStats.turnSpeed
+            }
+
+            if(didSpinright && !pCont.spinri.booly){
+                tSpdMod = shootStats.turnSpeed
+            }
+            if(didSpinleft && !pCont.spenlef.booly){
+                tSpdMod = shootStats.turnSpeed
+            }
+            didSpinright=pCont.spinri.booly && !pCont.spenlef.booly
+            didSpinleft= pCont.spenlef.booly && !pCont.spinri.booly
+            tSpdMod-= shootStats.turnSpeed/15
+            if(tSpdMod<0)tSpdMod=0.0f
+            processTurning(this,pCont.spenlef.booly,pCont.spinri.booly,shootStats.turnSpeed-tSpdMod)
             if(pCont.Swp.tryConsume()){
                 playStrSound("swap")
                 if (primaryEquipped){
@@ -175,7 +200,7 @@ class Player(val buttonSet: ButtonSet): Entity, Shoots, HasHealth {
 
     }
 
-    override fun drawComponents(g: Graphics) {
+    fun drawComponents(g: Graphics) {
         drawCrosshair(this,g)
         drawReload(this,g,this.shootStats.wep)
         drawHealth(this,g)
@@ -254,6 +279,8 @@ class Enemy : Entity, Shoots, HasHealth{
 
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,goblinImage,g)
+        drawHealth(this,g)
+        drawCrosshair(this,g)
 //        val r = Rectangle((xpos).toInt(),(ypos - (shootStats.wep.bulSize/(drawSize))).toInt(),shootStats.wep.bulSize.toInt(),700)
 //        val path = Path2D.Double()
 //        path.append(r, false)
@@ -274,8 +301,8 @@ class Enemy : Entity, Shoots, HasHealth{
             }
         }
         healthStats.didHeal = false
-        val filteredEnts = allEntities
-            .filter { it is Player }
+        val filteredEnts = players
+            .filter { !it.toBeRemoved }
             .sortedBy { abs(it.dimensions.xpos - dimensions.xpos) + abs(it.dimensions.ypos - dimensions.ypos) }
         val packEnts = allEntities
             .filter {(it is MedPack)}
@@ -346,13 +373,8 @@ class Enemy : Entity, Shoots, HasHealth{
             val fix = absanglediff>Math.PI-shootStats.turnSpeed
             var lef = radtarget>=shootStats.angy
             if(fix)lef = !lef
-            processTurning(this,lef && !shootem,!lef && !shootem)
+            processTurning(this,lef && !shootem,!lef && !shootem,shootStats.turnSpeed)
         }
-    }
-
-    override fun drawComponents(g: Graphics) {
-        drawHealth(this,g)
-        drawCrosshair(this,g)
     }
 }
 

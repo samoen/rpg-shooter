@@ -10,7 +10,7 @@ interface Entity {
 
     fun collide(other: Entity, oldme: EntDimens, oldOther:EntDimens){}
     fun updateEntity() {}
-    fun drawComponents(g: Graphics) {}
+//    fun drawComponents(g: Graphics) {}
     fun overlapsOther(other: Entity):Boolean{
         return this.dimensions.ypos+this.dimensions.drawSize > other.dimensions.ypos &&
                 this.dimensions.ypos<other.dimensions.ypos+other.dimensions.drawSize &&
