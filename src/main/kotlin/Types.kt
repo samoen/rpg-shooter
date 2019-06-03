@@ -1,4 +1,3 @@
-import java.awt.Color
 import java.awt.Graphics
 import java.awt.Image
 
@@ -15,35 +14,37 @@ interface Entity {
     fun updateEntity() {}
 
     fun drawEntity(g: Graphics) {
-        drawAsSprite(this,commonStuff.spriteu,g)
+        drawAsSprite(this,commonStuff.spriteu,g,false)
     }
 }
-class HealthStats{
-    var didHeal :Boolean = false
-    var currentHp :Double = 10.0
-    var maxHP :Double = 10.0
-    var ouchNoise = "ouch"
-    var dieNoise = "die"
-    val DAMAGED_ANIMATION_FRAMES = 3
-    var didGetShot:Boolean = false
-    var armorIsBroken:Boolean = false
-    var armorBrokenFrames = 0
-    var gotShotFrames = DAMAGED_ANIMATION_FRAMES
-    var stopped = false
-    var shieldSkill:Int = 1
+data class HealthStats(
+    var didHeal :Boolean = false,
+    var currentHp :Double = 10.0,
+    var maxHP :Double = 10.0,
+    var ouchNoise:String = "ouch",
+    var dieNoise:String = "die",
+    val DAMAGED_ANIMATION_FRAMES:Int = 3,
+    var didGetShot:Boolean = false,
+    var armorIsBroken:Boolean = false,
+    var armorBrokenFrames :Int= 0,
+    var gotShotFrames :Int= DAMAGED_ANIMATION_FRAMES,
+    var stopped :Boolean= false,
+    var shieldSkill:Int = 1,
+    var shootySound:String = "die",
+    var angy :Double = 0.0,
+    var wep:Weapon=Weapon(),
+    var turnSpeed:Float = 0.05f,
+    var teamNumber:Int=0
+){
     fun getArmored():Boolean{
         return stopped && !armorIsBroken
     }
-    var shootySound:String = "die"
-    var angy :Double = 0.0
-    var wep:Weapon=Weapon()
-    var turnSpeed:Float = 0.05f
-    var bulColor:Color=Color.RED
-    var teamNumber:Int=0
 }
-interface HasHealth{
+
+interface HasHealth:Entity{
     var healthStats:HealthStats
 }
+
 class ButtonSet(val up:Int,val down:Int,val left:Int,val right:Int,val swapgun:Int,val shoot:Int,val spinleft:Int,val spinright:Int)
 
 class OneShotChannel(var locked:Boolean=false, var booly:Boolean=false){

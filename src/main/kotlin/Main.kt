@@ -17,6 +17,8 @@ var pressed1 = OneShotChannel()
 var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
 var gamePaused = false
+var myrepaint = false
+var painting = false
 val statsYSpace = 20.0
 val statsXSpace = 30.0
 val selectorXSpace = 45.0
@@ -25,8 +27,10 @@ val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 val YFRAMEMAGIC = 40
 const val TICK_INTERVAL = 40
 const val MIN_ENT_SIZE = 9.0
+
 val ENEMY_DRIFT_FRAMES = 30
 val soundFiles:MutableMap<String,File> = mutableMapOf()
+//val soundBank:MutableMap<String, Clip> = mutableMapOf()
 //val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
 val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
 val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
@@ -39,9 +43,11 @@ val runImage = ImageIcon("src/main/resources/walk.png").image
 val goblinImage = ImageIcon("src/main/resources/walk.png").image
 val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 val backgroundImage = ImageIcon("src/main/resources/tilemap.png").image
+val healthShopImage = ImageIcon("src/main/resources/tilemap.png").image
+val ammoShopImage = ImageIcon("src/main/resources/tilemap.png").image
 val pstoppedImage = ImageIcon("src/main/resources/floor1.png").image
 val pouchImage = ImageIcon("src/main/resources/dooropen.png").image
-val stopOuchImage = ImageIcon("src/main/resources/doorshut.png").image
+val armorBrokenImage = ImageIcon("src/main/resources/doorshut.png").image
 val wallImage = ImageIcon("src/main/resources/brick1.png").image
 val dieImage = ImageIcon("src/main/resources/shrapnel.png").image
 val impactImage = ImageIcon("src/main/resources/shrapnel.png").image
@@ -49,9 +55,7 @@ val pBulImage = ImageIcon("src/main/resources/plasma.png").image
 val eBulImage = ImageIcon("src/main/resources/badbullet.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
-var myrepaint = false
-var painting = false
-val soundBank:MutableMap<String, Clip> = mutableMapOf()
+
 var myFrame = run {
     val jf = JFrame()
     jf.isFocusable = true
@@ -110,28 +114,18 @@ val map3 =  "                " +
             "                "
 
 fun main() {
-
     soundFiles["shoot"] = longpewFil
     soundFiles["ouch"] = ouchnoiseFile
     soundFiles["die"] = dienoiseFile
     soundFiles["laser"] = enemyPewFile
     soundFiles["swap"] = swapnoiseFile
 
-    soundBank["ouch"]= AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(ouchnoiseFile))
-    }
-    soundBank["die"]= AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(dienoiseFile))
-    }
-    soundBank["swap"] = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(swapnoiseFile))
-    }
-    soundBank["shoot"] = AudioSystem.getClip().also{
-                    it.open(AudioSystem.getAudioInputStream(longpewFil))
-    }
-    soundBank["laser"] = AudioSystem.getClip().also{
-        it.open(AudioSystem.getAudioInputStream(enemyPewFile))
-    }
+//    soundBank["ouch"]= AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(ouchnoiseFile)) }
+//    soundBank["die"]= AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(dienoiseFile)) }
+//    soundBank["swap"] = AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(swapnoiseFile)) }
+//    soundBank["shoot"] = AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(longpewFil)) }
+//    soundBank["laser"] = AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(enemyPewFile)) }
+
     players.add(Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6)).also { it.commonStuff.speed = 8 })
     players.add( Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B)).also{
         it.commonStuff.dimensions.xpos=150.0
@@ -172,9 +166,9 @@ fun main() {
 
     val myPanel:JPanel =object : JPanel() {
         override fun paint(g: Graphics) {
-            if(!painting){
-                painting = true
+//            if(!painting){
                 if(myrepaint){
+                    painting = true
                     myrepaint = false
 //                    super.paint(g)
                     g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
@@ -185,9 +179,9 @@ fun main() {
                         if(!it.commonStuff.toBeRemoved)
                             it.drawComponents(g)
                     }
+                    painting = false
                 }
-                painting = false
-            }
+//            }
 
         }
     }
@@ -195,7 +189,6 @@ fun main() {
     myFrame.title = "Gunplay"
     myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE+YFRAMEMAGIC)
     myFrame.isVisible = true
-//    playSound(player0.healthStats.shootNoise)
 
     while (true){
         val pretime = System.currentTimeMillis()
@@ -222,22 +215,24 @@ fun main() {
                             val ient = allEntities[dex]
                             if(ient is Player || ient is Enemy){
                                 for(j in (0)until allEntities.size){
-                                if(dex!=j){
+                                    if(dex!=j){
                                         val jent = allEntities[j]
-                                        var collided = false
-                                        if(!ient.commonStuff.toBeRemoved && !jent.commonStuff.toBeRemoved){
-                                            if(ient.commonStuff.dimensions.overlapsOther(jent.commonStuff.dimensions)){
+                                        if(jent.commonStuff.isSolid){
+                                            var collided = false
+                                            if(!ient.commonStuff.toBeRemoved && !jent.commonStuff.toBeRemoved){
+                                                if(ient.commonStuff.dimensions.overlapsOther(jent.commonStuff.dimensions)){
                                                     collided = true
                                                     blockMovement(ient,jent,preupdateEnts[dex],preupdateEnts[j])
-//                                                    takeDamage(jent,ient)
+    //                                                    takeDamage(jent,ient)
+                                                }
                                             }
-                                        }
-                                        if(collided && jent.commonStuff.dimensions.overlapsOther(ient.commonStuff.dimensions)) {
-                                            if (ient.commonStuff.isSolid && jent.commonStuff.isSolid) {
-                                                if(timesTried > 10){
-                                                    println("Cannot resolve collision!")
-                                                }else{
-                                                    triggeredReaction = true
+                                            if(dex>j && collided && jent.commonStuff.dimensions.overlapsOther(ient.commonStuff.dimensions)) {
+                                                if (ient.commonStuff.isSolid && jent.commonStuff.isSolid) {
+                                                    if(timesTried > 10){
+                                                        println("Cannot resolve collision!")
+                                                    }else{
+                                                        triggeredReaction = true
+                                                    }
                                                 }
                                             }
                                         }
@@ -268,7 +263,9 @@ fun main() {
                         }
                     }
                     myrepaint = true
+                    painting = true
                     myPanel.repaint()
+                    while (painting){Thread.sleep(1)}
                     if(entsToAdd.size>0) allEntities.addAll(entsToAdd)
                     entsToAdd.clear()
                 }

@@ -30,8 +30,7 @@ class Bullet(shottah: HasHealth) : Entity {
     override fun updateEntity() {
         allEntities.filter { it is HasHealth && it.commonStuff.dimensions.overlapsOther(this.commonStuff.dimensions) }.forEach {
             it as HasHealth
-            if(it.healthStats.teamNumber!=bTeam)
-                takeDamage(this,it)
+            if(it.healthStats.teamNumber!=bTeam) takeDamage(this,it)
         }
 
         allEntities.filter { it is Wall && commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions)}.forEach {
@@ -62,7 +61,7 @@ class Bullet(shottah: HasHealth) : Entity {
 }
 
 
-class Player(val buttonSet: ButtonSet): Entity, HasHealth {
+class Player(val buttonSet: ButtonSet): HasHealth {
     override var commonStuff=EntCommon(
         isSolid = true
     )
@@ -74,16 +73,14 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
     var movedRight = false
     var didMove = false
     var didShoot = false
-//    override var speed = 10
-    override var healthStats=HealthStats().also {
-        it.maxHP=commonStuff.dimensions.drawSize
-        it.currentHp = it.maxHP
-        it.teamNumber = 1
-        it.turnSpeed = 0.1f
-        it.shootySound = "shoot"
-        it.bulColor = Color.LIGHT_GRAY
-        it.wep = primWep
-    }
+    override var healthStats=HealthStats(
+        maxHP = commonStuff.dimensions.drawSize,
+        currentHp = commonStuff.dimensions.drawSize,
+        teamNumber = 1,
+        turnSpeed = 0.1f,
+        shootySound = "shoot",
+        wep = primWep
+    )
     var tSpdMod = healthStats.turnSpeed
     var primaryEquipped = true
 
@@ -179,16 +176,6 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
                 healthStats.armorBrokenFrames = 0
             }
         }
-
-    }
-
-    fun drawComponents(g: Graphics) {
-        drawCrosshair(this,g)
-        drawReload(this,g,this.healthStats.wep)
-        drawHealth(this,g)
-    }
-
-    override fun drawEntity(g: Graphics) {
         var todraw = stillImage
         if(didShoot){
             pewframecount++
@@ -211,7 +198,7 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
             if(healthStats.getArmored())todraw = pstoppedImage
         }
         if( healthStats.armorIsBroken){
-            todraw = stopOuchImage
+            todraw = armorBrokenImage
             healthStats.didGetShot = false
         }else{
             if (healthStats.didGetShot) {
@@ -223,24 +210,29 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
                 }
             }
         }
-        if(healthStats.angy>Math.PI/2 || healthStats.angy<-Math.PI/2){
-            drawAsSprite(this,todraw,g)
-        }else{
-            g.drawImage(todraw,getWindowAdjustedPos(commonStuff.dimensions.xpos+commonStuff.dimensions.drawSize).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos).toInt(),-getWindowAdjustedPos(commonStuff.dimensions.drawSize).toInt(),getWindowAdjustedPos(commonStuff.dimensions.drawSize).toInt(),null)
-        }
+        commonStuff.spriteu = todraw
+    }
+
+    fun drawComponents(g: Graphics) {
+        drawCrosshair(this,g)
+        drawReload(this,g,this.healthStats.wep)
+        drawHealth(this,g)
+    }
+
+    override fun drawEntity(g: Graphics) {
+        drawAsSprite(this,commonStuff.spriteu,g,!(healthStats.angy>Math.PI/2 || healthStats.angy<-Math.PI/2))
     }
     var gaitcount = 0
     var pewframecount = 0
 }
-class Enemy : Entity, HasHealth{
+class Enemy : HasHealth{
     override var commonStuff=EntCommon(isSolid = true,spriteu = goblinImage)
-    override var healthStats=HealthStats().also {
-        it.maxHP=commonStuff.dimensions.drawSize
-        it.currentHp = it.maxHP
-        it.teamNumber = 0
-        it.bulColor = Color.RED
-        it.shootySound = "laser"
-    }
+    override var healthStats=HealthStats(
+        maxHP = commonStuff.dimensions.drawSize,
+        currentHp = commonStuff.dimensions.drawSize,
+        teamNumber = 0,
+        shootySound = "laser"
+    )
     var framesSinceDrift = 100
     var randnumx = 0.0
     var randnumy = 0.0

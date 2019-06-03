@@ -7,20 +7,27 @@ fun getWindowAdjustedPos(pos:Double):Double{
     return pos * myFrame.width/INTENDED_FRAME_SIZE
 }
 
-fun drawAsSprite(entity: Entity,image:Image,g:Graphics){
-    g.drawImage(image,getWindowAdjustedPos(entity.commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.ypos).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt(),null)
+fun drawAsSprite(entity: Entity,image:Image,g:Graphics,flipped:Boolean){
+    var flipAdjust = 1
+    var flipaddAdj = 0.0
+    if(flipped){
+        flipAdjust = -1
+        flipaddAdj = entity.commonStuff.dimensions.drawSize
+    }
+    g.drawImage(image,getWindowAdjustedPos(entity.commonStuff.dimensions.xpos + flipaddAdj).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.ypos).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt()*flipAdjust,getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt(),null)
 }
 
 fun playStrSound(str:String){
-            if(soundBank[str]!!.isRunning){
-            val newclip = AudioSystem.getClip().also{
-                it.open(AudioSystem.getAudioInputStream(soundFiles[str]))
-            }
-            newclip.start()
-        }else{
-                soundBank[str]!!.framePosition=0
-                soundBank[str]!!.start()
-        }
+//        if(soundBank.containsKey(str)){
+//            if(soundBank[str]!!.isRunning){
+                AudioSystem.getClip().also{
+                    it.open(AudioSystem.getAudioInputStream(soundFiles[str]))
+                }.start()
+//            }else{
+//                soundBank[str]!!.framePosition=0
+//                soundBank[str]!!.start()
+//            }
+//        }
 }
 
 fun randEnemy():Enemy{
@@ -165,46 +172,41 @@ fun drawReload(me:HasHealth, g: Graphics, weap: Weapon){
     }
 }
 
-fun takeDamage(other:Entity,me:Entity):Boolean{
+fun takeDamage(other:Entity,me:Entity){
     me as HasHealth
-    if(other is Bullet) {
-            if(me.healthStats.teamNumber==other.bTeam)return false
-        other.commonStuff.toBeRemoved = true
-        var desirDam = other.damage
-        if(me.healthStats.getArmored()){
-            if(me.healthStats.shieldSkill<other.damage){
-                desirDam = me.healthStats.shieldSkill
-            }
+    other as Bullet
+    other.commonStuff.toBeRemoved = true
+    var desirDam = other.damage
+    if(me.healthStats.getArmored()){
+        if(me.healthStats.shieldSkill<other.damage){
+            desirDam = me.healthStats.shieldSkill
         }
-        val desirHealth = me.healthStats.currentHp - desirDam
-        if(desirHealth<=0){
-            if(me is Player){
-                me.healthStats.currentHp = me.healthStats.maxHP
-                me.spawnGate.playersInside.add(me)
-            }
-            me.healthStats.currentHp = 0.0
-            playStrSound(me.healthStats.dieNoise)
-            me.commonStuff.toBeRemoved = true
-            val deathEnt = object: Entity{
-                var liveFrames = 8
-                override var commonStuff=EntCommon(spriteu = dieImage, dimensions = EntDimens(me.commonStuff.dimensions.xpos,me.commonStuff.dimensions.ypos,me.commonStuff.dimensions.drawSize))
-                override fun updateEntity() {
-                    liveFrames--
-                    if(liveFrames<0)commonStuff.toBeRemoved=true
-                }
-            }
-            entsToAdd.add(deathEnt)
-            return true
-        }
-        me.healthStats.currentHp = desirHealth
-        if(me.healthStats.getArmored()){
-            me.healthStats.armorIsBroken = true
-            playStrSound("swap")
-        }else playStrSound(me.healthStats.ouchNoise)
-        me.healthStats.didGetShot = true
-        me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
     }
-    return false
+    val desirHealth = me.healthStats.currentHp - desirDam
+    if(desirHealth<=0){
+        if(me is Player){
+            me.healthStats.currentHp = me.healthStats.maxHP
+            me.spawnGate.playersInside.add(me)
+        }else me.healthStats.currentHp = 0.0
+        playStrSound(me.healthStats.dieNoise)
+        me.commonStuff.toBeRemoved = true
+        val deathEnt = object: Entity{
+            var liveFrames = 8
+            override var commonStuff=EntCommon(spriteu = dieImage, dimensions = EntDimens(me.commonStuff.dimensions.xpos,me.commonStuff.dimensions.ypos,me.commonStuff.dimensions.drawSize))
+            override fun updateEntity() {
+                liveFrames--
+                if(liveFrames<0)commonStuff.toBeRemoved=true
+            }
+        }
+        entsToAdd.add(deathEnt)
+    }
+    me.healthStats.currentHp = desirHealth
+    if(me.healthStats.getArmored()){
+        me.healthStats.armorIsBroken = true
+        playStrSound("swap")
+    }else playStrSound(me.healthStats.ouchNoise)
+    me.healthStats.didGetShot = true
+    me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
 }
 
 fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,otherpos:Double,oldotherpos:Double,oldmecoord:Double,oldothercoord:Double):Double{
@@ -238,16 +240,14 @@ fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,o
 }
 
 fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
-    if(other.commonStuff.isSolid){
-        val xdiff = me.commonStuff.dimensions.xpos - oldme.xpos
-        val ydiff = me.commonStuff.dimensions.ypos - oldme.ypos
-        val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
-        val midDistY = abs(abs(oldOther.getMidY())-abs(oldme.getMidY()))
-        if(midDistX>midDistY){
-            me.commonStuff.dimensions.xpos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,xdiff,me.commonStuff.dimensions.xpos,other.commonStuff.dimensions.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
-        }else{
-            me.commonStuff.dimensions.ypos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,ydiff,me.commonStuff.dimensions.ypos,other.commonStuff.dimensions.ypos,oldOther.ypos,oldme.getMidY(),oldOther.getMidY())
-        }
+    val xdiff = me.commonStuff.dimensions.xpos - oldme.xpos
+    val ydiff = me.commonStuff.dimensions.ypos - oldme.ypos
+    val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
+    val midDistY = abs(abs(oldOther.getMidY())-abs(oldme.getMidY()))
+    if(midDistX>midDistY){
+        me.commonStuff.dimensions.xpos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,xdiff,me.commonStuff.dimensions.xpos,other.commonStuff.dimensions.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
+    }else{
+        me.commonStuff.dimensions.ypos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,ydiff,me.commonStuff.dimensions.ypos,other.commonStuff.dimensions.ypos,oldOther.ypos,oldme.getMidY(),oldOther.getMidY())
     }
 }
 fun stayInMap(me:Entity){
@@ -325,6 +325,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             if(ch == 'b'){
                 entsToAdd.add(Shop().also {
                     it.char = 'b'
+                    it.commonStuff.spriteu = ammoShopImage
                     it.commonStuff.dimensions.drawSize = mapGridSize
                     it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
@@ -367,6 +368,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             }
             if(ch == 'm'){
                 entsToAdd.add(Shop().also {
+                    it.commonStuff.spriteu = healthShopImage
                     it.char = 'm'
                     it.commonStuff.dimensions.drawSize = mapGridSize
                     it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
@@ -404,6 +406,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             }
             if(ch == 'g'){
                 entsToAdd.add(Shop().also {
+                    it.commonStuff.spriteu = ammoShopImage
                     it.menuThings = {other->listOf(
                         StatView({"Run"},other.commonStuff.dimensions.xpos,other.commonStuff.dimensions.ypos),
                         StatView({"HP"},other.commonStuff.dimensions.xpos,statsYSpace+other.commonStuff.dimensions.ypos),
