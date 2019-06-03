@@ -62,9 +62,6 @@ class Bullet(shottah: HasHealth) : Entity {
 
 
 class Player(val buttonSet: ButtonSet): HasHealth {
-    override var commonStuff=EntCommon(
-        isSolid = true
-    )
     var canEnterGateway:Boolean = true
     var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
@@ -73,6 +70,17 @@ class Player(val buttonSet: ButtonSet): HasHealth {
     var movedRight = false
     var didMove = false
     var didShoot = false
+    var tSpdMod = 0.1f
+    var primaryEquipped = true
+    var didSpinright = false
+    var didSpinleft = false
+    var notOnShop = true
+    override var commonStuff=EntCommon(
+        dimensions = EntDimens(0.0,0.0,40.0),
+        isSolid = true,
+        speed = 8
+    )
+
     override var healthStats=HealthStats(
         maxHP = commonStuff.dimensions.drawSize,
         currentHp = commonStuff.dimensions.drawSize,
@@ -81,8 +89,6 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         shootySound = "shoot",
         wep = primWep
     )
-    var tSpdMod = healthStats.turnSpeed
-    var primaryEquipped = true
 
     var spareWep:Weapon = Weapon(
         atkSpd = 60,
@@ -91,10 +97,6 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         bulSize = 12.0,
         buldmg = 4
     )
-
-    var didSpinright = false
-    var didSpinleft = false
-    var notOnShop = true
     override fun updateEntity() {
         didMove = false
         healthStats.didHeal = false
@@ -125,7 +127,6 @@ class Player(val buttonSet: ButtonSet): HasHealth {
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
         }
-//        val notOnShop = specificMenus.values.all { !it }
         if(notOnShop){
             if(pCont.spenlef.booly||pCont.spinri.booly){
                 toMovex *= healthStats.wep.mobility
@@ -166,7 +167,10 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         }
         processShooting(this,pCont.sht.booly,this.healthStats.wep,pBulImage,notOnShop)
         
-        if(notOnShop)healthStats.stopped =!pCont.sht.booly && !pCont.spenlef.booly && !pCont.spinri.booly && !didMove
+        if(notOnShop)healthStats.stopped =!pCont.sht.booly &&
+//                !pCont.spenlef.booly &&
+//                !pCont.spinri.booly &&
+                !didMove
         else healthStats.stopped = !didMove
 
         if(healthStats.armorIsBroken){
@@ -213,14 +217,11 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         commonStuff.spriteu = todraw
     }
 
-    fun drawComponents(g: Graphics) {
+    override fun drawEntity(g: Graphics) {
+        drawAsSprite(this,commonStuff.spriteu,g,!(healthStats.angy>Math.PI/2 || healthStats.angy<-Math.PI/2))
         drawCrosshair(this,g)
         drawReload(this,g,this.healthStats.wep)
         drawHealth(this,g)
-    }
-
-    override fun drawEntity(g: Graphics) {
-        drawAsSprite(this,commonStuff.spriteu,g,!(healthStats.angy>Math.PI/2 || healthStats.angy<-Math.PI/2))
     }
     var gaitcount = 0
     var pewframecount = 0
@@ -495,7 +496,9 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
         }
     }
 }
-class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity{
+class StatView(val showText: ()->String,other:Entity,rownumba:Int,colNuma:Int ):Entity{
+    val xloc:Double = statsXSpace*colNuma + other.commonStuff.dimensions.xpos
+    val yloc:Double =statsYSpace*rownumba + other.commonStuff.dimensions.ypos
     override var commonStuff=EntCommon()
     override fun drawEntity(g: Graphics) {
         g.color = Color.BLUE

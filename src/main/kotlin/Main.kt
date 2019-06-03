@@ -45,7 +45,7 @@ val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 val backgroundImage = ImageIcon("src/main/resources/tilemap.png").image
 val healthShopImage = ImageIcon("src/main/resources/tilemap.png").image
 val ammoShopImage = ImageIcon("src/main/resources/tilemap.png").image
-val pstoppedImage = ImageIcon("src/main/resources/floor1.png").image
+val pstoppedImage = ImageIcon("src/main/resources/plasma.png").image
 val pouchImage = ImageIcon("src/main/resources/dooropen.png").image
 val armorBrokenImage = ImageIcon("src/main/resources/doorshut.png").image
 val wallImage = ImageIcon("src/main/resources/brick1.png").image
@@ -126,8 +126,22 @@ fun main() {
 //    soundBank["shoot"] = AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(longpewFil)) }
 //    soundBank["laser"] = AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(enemyPewFile)) }
 
-    players.add(Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6)).also { it.commonStuff.speed = 8 })
-    players.add( Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B)).also{
+    players.add(Player(
+        ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6))
+        .also { it.commonStuff.speed = 8 })
+    players.add(
+        Player(
+            ButtonSet(
+                KeyEvent.VK_W,
+                KeyEvent.VK_S,
+                KeyEvent.VK_A,
+                KeyEvent.VK_D,
+                KeyEvent.VK_F,
+                KeyEvent.VK_V,
+                KeyEvent.VK_C,
+                KeyEvent.VK_B
+            )
+        ).also{
         it.commonStuff.dimensions.xpos=150.0
         it.commonStuff.speed = 8
         it.commonStuff.dimensions.drawSize = 40.0
@@ -166,23 +180,15 @@ fun main() {
 
     val myPanel:JPanel =object : JPanel() {
         override fun paint(g: Graphics) {
-//            if(!painting){
-                if(myrepaint){
-                    painting = true
-                    myrepaint = false
+            if(myrepaint){
+                myrepaint = false
 //                    super.paint(g)
-                    g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
-                    entsToDraw.forEach {
-                        it.drawEntity(g)
-                    }
-                    players.forEach {
-                        if(!it.commonStuff.toBeRemoved)
-                            it.drawComponents(g)
-                    }
-                    painting = false
+                g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
+                entsToDraw.forEach {
+                    it.drawEntity(g)
                 }
-//            }
-
+                painting = false
+            }
         }
     }
     myFrame.contentPane = myPanel
@@ -223,12 +229,11 @@ fun main() {
                                                 if(ient.commonStuff.dimensions.overlapsOther(jent.commonStuff.dimensions)){
                                                     collided = true
                                                     blockMovement(ient,jent,preupdateEnts[dex],preupdateEnts[j])
-    //                                                    takeDamage(jent,ient)
                                                 }
                                             }
                                             if(dex>j && collided && jent.commonStuff.dimensions.overlapsOther(ient.commonStuff.dimensions)) {
                                                 if (ient.commonStuff.isSolid && jent.commonStuff.isSolid) {
-                                                    if(timesTried > 10){
+                                                    if(timesTried > players.size+1){
                                                         println("Cannot resolve collision!")
                                                     }else{
                                                         triggeredReaction = true
