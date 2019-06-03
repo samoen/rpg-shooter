@@ -25,7 +25,7 @@ class Bullet(shottah: HasHealth) : Entity {
                 bsize
             )
         },
-        speed = shtbywep.bulspd
+        speed = shtbywep.bulspd+(shtbywep.projectiles)
     )
     override fun updateEntity() {
         allEntities.filter { it is HasHealth && it.commonStuff.dimensions.overlapsOther(this.commonStuff.dimensions) }.forEach {
@@ -238,9 +238,9 @@ class Enemy : HasHealth{
     var randnumx = 0.0
     var randnumy = 0.0
     var iTried = Pair(-1.0,-1.0)
-
+    var runTick = 0
     override fun drawEntity(g: Graphics) {
-        super.drawEntity(g)
+        drawAsSprite(this,commonStuff.spriteu,g,!(healthStats.angy>Math.PI/2 || healthStats.angy<-Math.PI/2))
         drawHealth(this,g)
         drawCrosshair(this,g)
 //        val r = Rectangle((xpos).toInt(),(ypos - (healthStats.wep.bulSize/(drawSize))).toInt(),healthStats.wep.bulSize.toInt(),700)
@@ -271,17 +271,28 @@ class Enemy : HasHealth{
             .sortedBy { abs(it.commonStuff.dimensions.xpos - commonStuff.dimensions.xpos) + abs(it.commonStuff.dimensions.ypos - commonStuff.dimensions.ypos) }
 
         if(filteredEnts.isNotEmpty()){
-            var firstplayer = filteredEnts.first()
+            val firstplayer = filteredEnts.first()
             if(framesSinceDrift<ENEMY_DRIFT_FRAMES) framesSinceDrift++
+            if(runTick>1000)runTick = 0
+            runTick+=40
+            var xdiff = firstplayer.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
+            var ydiff = firstplayer.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
             if(!(iTried.first==commonStuff.dimensions.xpos && iTried.second==commonStuff.dimensions.ypos)){
                 randnumx = (Math.random()-0.5)*2
                 randnumy = (Math.random()-0.5)*2
                 framesSinceDrift = 0
             } else{
+                fun modifyPos(xamt:Double,yamt:Double){
+                    commonStuff.dimensions.xpos+=xamt
+                    commonStuff.dimensions.ypos+=yamt
+                    runTick+=((xamt+yamt)*7).toInt()
+                    if(runTick<500)commonStuff.spriteu = goblinImage
+                    else commonStuff.spriteu = runImage
+                }
+
                 var adjSpd = commonStuff.speed.toFloat()
                 if(framesSinceDrift>=ENEMY_DRIFT_FRAMES){
-                    var xdiff = 0.0
-                    var ydiff = 0.0
+
                     if(healthStats.currentHp<healthStats.maxHP/3 && packEnts.isNotEmpty()){
                         val firstpack = packEnts.first()
                         val packxd = firstpack.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
@@ -290,34 +301,30 @@ class Enemy : HasHealth{
                             xdiff = packxd
                             ydiff = packyd
 //                        }
-                    }else{
-                        xdiff = firstplayer.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
-                        ydiff = firstplayer.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
                     }
 
                     if(healthStats.wep.framesSinceShottah<healthStats.wep.atkSpd){
                         adjSpd *= healthStats.wep.mobility
                         adjSpd *= healthStats.wep.mobility
                     }
-                    if (xdiff>adjSpd){
-                        commonStuff.dimensions.xpos += adjSpd
-                    } else if(xdiff<-adjSpd) {
-                        commonStuff.dimensions.xpos -= adjSpd
-                    }
-                    if (ydiff>adjSpd) commonStuff.dimensions.ypos += adjSpd
-                    else if(ydiff<-adjSpd) commonStuff.dimensions.ypos -= adjSpd
+                    var adjx = adjSpd.toDouble()
+                    var adjy = adjSpd.toDouble()
+                    if(xdiff<0)adjx=adjSpd.toDouble()*-1
+                    if(ydiff<0)adjy=adjSpd.toDouble()*-1
+                    if(Math.abs(xdiff)<5)adjx=0.0
+                    if(Math.abs(ydiff)<5)adjy=0.0
+                    modifyPos(adjx,adjy)
                 }else{
-                    commonStuff.dimensions.ypos += adjSpd*randnumy
-                    commonStuff.dimensions.xpos += adjSpd*randnumx
+                    modifyPos(adjSpd*randnumx,adjSpd*randnumy)
                 }
             }
             iTried = Pair(commonStuff.dimensions.xpos,commonStuff.dimensions.ypos)
             stayInMap(this)
 
-            val dx = commonStuff.dimensions.getMidX() - firstplayer.commonStuff.dimensions.getMidX()
-            val dy = commonStuff.dimensions.getMidY() - firstplayer.commonStuff.dimensions.getMidY()
+//            val dx = commonStuff.dimensions.getMidX() - firstplayer.commonStuff.dimensions.getMidX()
+//            val dy = commonStuff.dimensions.getMidY() - firstplayer.commonStuff.dimensions.getMidY()
 
-            val radtarget = ((atan2( dy , -dx)))
+            val radtarget = ((atan2( -ydiff , xdiff)))
             val absanglediff = abs(radtarget-this.healthStats.angy)
             val shootem =absanglediff<0.2
             var shoot2 = false

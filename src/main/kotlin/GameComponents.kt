@@ -335,9 +335,11 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Mob"},other,2,0),
                         Selector(3,other,
                             {
-                                if(other.healthStats.wep.recoil+1<23)other.healthStats.wep.recoil++
+                                val desired = other.healthStats.wep.recoil+0.5
+                                if(desired<15)other.healthStats.wep.recoil=desired
                             },{
-                                if(other.healthStats.wep.recoil-1>=0)other.healthStats.wep.recoil--
+                                val desired = other.healthStats.wep.recoil-0.5
+                                if(desired>=0.0)other.healthStats.wep.recoil=desired
                             },{
                                 if(other.healthStats.wep.atkSpd+1<200){
                                     other.healthStats.wep.atkSpd++
@@ -351,7 +353,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                                 val desired = other.healthStats.wep.mobility-0.1f
                                 if(desired>=0)other.healthStats.wep.mobility = desired
                             }),
-                        StatView({other.healthStats.wep.recoil.toInt().toString() }, other,0,1),
+                        StatView({other.healthStats.wep.recoil.toString() }, other,0,1),
                         StatView({other.healthStats.wep.atkSpd.toString() }, other,1,1),
                         StatView({( other.healthStats.wep.mobility*10).toInt().toString() }, other,2,1)
                     )
@@ -382,11 +384,15 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                                     other.healthStats.wep.buldmg = desiredDmg
                                 }
                             },{
-                                if(other.healthStats.wep.bulspd+1<50)other.healthStats.wep.bulspd++
-                                if(other.healthStats.wep.bulLifetime+1<100)other.healthStats.wep.bulLifetime++
+                                if(other.healthStats.wep.bulspd+1<50 && other.healthStats.wep.bulLifetime+1<100){
+                                    other.healthStats.wep.bulspd++
+                                    other.healthStats.wep.bulLifetime++
+                                }
                             },{
-                                if(other.healthStats.wep.bulspd-1>1)other.healthStats.wep.bulspd--
-                                if(other.healthStats.wep.bulLifetime-1>=1)other.healthStats.wep.bulLifetime--
+                                if(other.healthStats.wep.bulspd-1>1 && other.healthStats.wep.bulLifetime-1>=1){
+                                    other.healthStats.wep.bulspd--
+                                    other.healthStats.wep.bulLifetime--
+                                }
                             },{
                                 if(other.healthStats.wep.projectiles+1<15)other.healthStats.wep.projectiles++
                             },{
