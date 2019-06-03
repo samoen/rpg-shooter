@@ -8,7 +8,7 @@ fun getWindowAdjustedPos(pos:Double):Double{
 }
 
 fun drawAsSprite(entity: Entity,image:Image,g:Graphics){
-    g.drawImage(image,getWindowAdjustedPos(entity.dimensions.xpos).toInt(),getWindowAdjustedPos(entity.dimensions.ypos).toInt(),getWindowAdjustedPos(entity.dimensions.drawSize).toInt(),getWindowAdjustedPos(entity.dimensions.drawSize).toInt(),null)
+    g.drawImage(image,getWindowAdjustedPos(entity.commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.ypos).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt(),null)
 }
 
 fun playStrSound(str:String){
@@ -26,10 +26,10 @@ fun playStrSound(str:String){
 fun randEnemy():Enemy{
     val se = Enemy()
     se.healthStats.turnSpeed = (0.01+(Math.random()/14)).toFloat()
-    se.dimensions.drawSize = 20+(Math.random()*30)
-    se.healthStats.maxHP = (se.dimensions.drawSize/2)
+    se.commonStuff.dimensions.drawSize = 20+(Math.random()*30)
+    se.healthStats.maxHP = (se.commonStuff.dimensions.drawSize/2)
     se.healthStats.currentHp = se.healthStats.maxHP
-    se.speed = (Math.random()*4).toInt()+1
+    se.commonStuff.speed = (Math.random()*4).toInt()+1
     se.healthStats.wep.bulSize = 8.0+(Math.random()*40)
     se.healthStats.wep.buldmg = se.healthStats.wep.bulSize.toInt()
     se.healthStats.wep.atkSpd = (Math.random()*20).toInt()+10
@@ -41,9 +41,9 @@ fun startWave(numberofenemies: Int) {
     var lastsize = 0.0
     for (i in 1..numberofenemies) {
         val e = randEnemy()
-        e.dimensions.xpos = (lastsize)
-        lastsize += e.dimensions.drawSize
-        e.dimensions.ypos = 10.0
+        e.commonStuff.dimensions.xpos = (lastsize)
+        lastsize += e.commonStuff.dimensions.drawSize
+        e.commonStuff.dimensions.ypos = 10.0
         entsToAdd.add(e)
     }
 }
@@ -90,14 +90,14 @@ fun processShooting(me:HasHealth, sht:Boolean, weap:Weapon, bulImage:Image,notOn
             val b = Bullet(me)
             b.bulImage = bulImage
             var canspawn = true
-            allEntities.forEach { if(it is Wall && it.overlapsOther(b))canspawn = false }
+            allEntities.forEach { if(it is Wall && it.commonStuff.dimensions.overlapsOther(b.commonStuff.dimensions))canspawn = false }
             if(canspawn)
                 entsToAdd.add(b)
             else {
                 val imp = Impact()
-                imp.dimensions.drawSize = b.dimensions.drawSize
-                imp.dimensions.xpos = (b).dimensions.xpos
-                imp.dimensions.ypos = (b).dimensions.ypos
+                imp.commonStuff.dimensions.drawSize = b.commonStuff.dimensions.drawSize
+                imp.commonStuff.dimensions.xpos = (b).commonStuff.dimensions.xpos
+                imp.commonStuff.dimensions.ypos = (b).commonStuff.dimensions.ypos
                 entsToAdd.add(imp)
             }
         }
@@ -125,23 +125,23 @@ fun drawCrosshair(me:HasHealth, g: Graphics){
     g.color = Color.CYAN
     val strkw = 1.5f
     g.stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
-    val arcdiameter = (me as Entity).dimensions.drawSize
+    val arcdiameter = (me as Entity).commonStuff.dimensions.drawSize
     fun doarc(diver:Double,timeser:Double){
         val spread = (7)*(me.healthStats.wep.recoil+1)
         val bspd = me.healthStats.wep.bulspd*2
         g.drawArc(
-            getWindowAdjustedPos((me.dimensions.xpos)+(diver)).toInt()-bspd,
-            getWindowAdjustedPos((me.dimensions.ypos)+(diver)).toInt()-bspd,
+            getWindowAdjustedPos((me.commonStuff.dimensions.xpos)+(diver)).toInt()-bspd,
+            getWindowAdjustedPos((me.commonStuff.dimensions.ypos)+(diver)).toInt()-bspd,
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
             ((me.healthStats.angy*180/Math.PI)-spread/2).toInt(),
             spread.toInt()
         )
     }
-    doarc(me.dimensions.drawSize/4,0.5)
-    doarc(-me.dimensions.drawSize/3.5,1.55)
+    doarc(me.commonStuff.dimensions.drawSize/4,0.5)
+    doarc(-me.commonStuff.dimensions.drawSize/3.5,1.55)
     doarc(0.0,1.0)
-    doarc(-me.dimensions.drawSize/1.7,2.15)
+    doarc(-me.commonStuff.dimensions.drawSize/1.7,2.15)
     g.stroke = BasicStroke(1f)
 }
 fun drawReload(me:HasHealth, g: Graphics, weap: Weapon){
@@ -150,16 +150,16 @@ fun drawReload(me:HasHealth, g: Graphics, weap: Weapon){
         g.color = Color.CYAN
         (g as Graphics2D).stroke = BasicStroke(2f)
         g.drawLine(
-            getWindowAdjustedPos (me.dimensions.xpos).toInt(),
-            getWindowAdjustedPos(me.dimensions.ypos).toInt()-2,
-            getWindowAdjustedPos  ( (me.dimensions.xpos + (me.dimensions.drawSize * (me.healthStats.wep.atkSpd - weap.framesSinceShottah) / me.healthStats.wep.atkSpd)) ).toInt(),
-            getWindowAdjustedPos(me.dimensions.ypos).toInt()-2
+            getWindowAdjustedPos (me.commonStuff.dimensions.xpos).toInt(),
+            getWindowAdjustedPos(me.commonStuff.dimensions.ypos).toInt()-2,
+            getWindowAdjustedPos  ( (me.commonStuff.dimensions.xpos + (me.commonStuff.dimensions.drawSize * (me.healthStats.wep.atkSpd - weap.framesSinceShottah) / me.healthStats.wep.atkSpd)) ).toInt(),
+            getWindowAdjustedPos(me.commonStuff.dimensions.ypos).toInt()-2
         )
         g.drawLine(
-            getWindowAdjustedPos (me.dimensions.xpos).toInt(),
-            getWindowAdjustedPos(me.dimensions.ypos).toInt()-4,
-            getWindowAdjustedPos  ((me.dimensions.xpos + (me.dimensions.drawSize * (me.healthStats.wep.atkSpd - weap.framesSinceShottah) / me.healthStats.wep.atkSpd)) ).toInt(),
-            getWindowAdjustedPos(me.dimensions.ypos).toInt()-4
+            getWindowAdjustedPos (me.commonStuff.dimensions.xpos).toInt(),
+            getWindowAdjustedPos(me.commonStuff.dimensions.ypos).toInt()-4,
+            getWindowAdjustedPos  ((me.commonStuff.dimensions.xpos + (me.commonStuff.dimensions.drawSize * (me.healthStats.wep.atkSpd - weap.framesSinceShottah) / me.healthStats.wep.atkSpd)) ).toInt(),
+            getWindowAdjustedPos(me.commonStuff.dimensions.ypos).toInt()-4
         )
         g.stroke = BasicStroke(1f)
     }
@@ -169,7 +169,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
     me as HasHealth
     if(other is Bullet) {
             if(me.healthStats.teamNumber==other.shottah.healthStats.teamNumber)return false
-        other.toBeRemoved = true
+        other.commonStuff.toBeRemoved = true
         var desirDam = other.damage
         if(me.healthStats.getArmored()){
             if(me.healthStats.shieldSkill<other.damage){
@@ -180,12 +180,9 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
         if(desirHealth<=0){
             me.healthStats.currentHp = 0.0
             playStrSound(me.healthStats.dieNoise)
-            me.toBeRemoved = true
+            me.commonStuff.toBeRemoved = true
             val deathEnt = object: Entity{
-                override var isSolid=false
-                override var dimensions = EntDimens(me.dimensions.xpos,me.dimensions.ypos,me.dimensions.drawSize)
-                override var toBeRemoved: Boolean = false
-                override var speed: Int = 2
+                override var commonStuff=EntCommon(dimensions = EntDimens(me.commonStuff.dimensions.xpos,me.commonStuff.dimensions.ypos,me.commonStuff.dimensions.drawSize))
                 override fun drawEntity(g: Graphics) {
                     drawAsSprite(this,dieImage,g)
                 }
@@ -193,7 +190,7 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
                 var liveFrames = 8
                 override fun updateEntity() {
                     liveFrames--
-                    if(liveFrames<0)toBeRemoved=true
+                    if(liveFrames<0)commonStuff.toBeRemoved=true
                 }
             }
             entsToAdd.add(deathEnt)
@@ -204,13 +201,10 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
             me.healthStats.armorIsBroken = true
             playStrSound("swap")
         }else playStrSound(me.healthStats.ouchNoise)
-        me.healthStats.armorWillBreak = true
-
         me.healthStats.didGetShot = true
         me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
-
     }else if (other is MedPack && (me as HasHealth).healthStats.currentHp<me.healthStats.maxHP){
-        other.toBeRemoved = true
+        other.commonStuff.toBeRemoved = true
         me.healthStats.didHeal = true
         val desiredhp = (me as HasHealth).healthStats.currentHp+20
         if (desiredhp>me.healthStats.maxHP){
@@ -253,32 +247,32 @@ fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,o
 }
 
 fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
-    if(other.isSolid){
-        val xdiff = me.dimensions.xpos - oldme.xpos
-        val ydiff = me.dimensions.ypos - oldme.ypos
+    if(other.commonStuff.isSolid){
+        val xdiff = me.commonStuff.dimensions.xpos - oldme.xpos
+        val ydiff = me.commonStuff.dimensions.ypos - oldme.ypos
         val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
         val midDistY = abs(abs(oldOther.getMidY())-abs(oldme.getMidY()))
         if(midDistX>midDistY){
-            me.dimensions.xpos += specialk(me.dimensions.drawSize,me.speed,other.dimensions.drawSize,xdiff,me.dimensions.xpos,other.dimensions.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
+            me.commonStuff.dimensions.xpos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,xdiff,me.commonStuff.dimensions.xpos,other.commonStuff.dimensions.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
         }else{
-            me.dimensions.ypos += specialk(me.dimensions.drawSize,me.speed,other.dimensions.drawSize,ydiff,me.dimensions.ypos,other.dimensions.ypos,oldOther.ypos,oldme.getMidY(),oldOther.getMidY())
+            me.commonStuff.dimensions.ypos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,ydiff,me.commonStuff.dimensions.ypos,other.commonStuff.dimensions.ypos,oldOther.ypos,oldme.getMidY(),oldOther.getMidY())
         }
     }
 }
 fun stayInMap(me:Entity){
-    var limit = INTENDED_FRAME_SIZE-me.dimensions.drawSize
+    var limit = INTENDED_FRAME_SIZE-me.commonStuff.dimensions.drawSize
     limit -= XMAXMAGIC/myFrame.width
-    if(me.dimensions.xpos>limit){
-        me.dimensions.xpos -= me.dimensions.xpos - limit
+    if(me.commonStuff.dimensions.xpos>limit){
+        me.commonStuff.dimensions.xpos -= me.commonStuff.dimensions.xpos - limit
     }
-    if(me.dimensions.xpos<0){
-        me.dimensions.xpos -= me.dimensions.xpos
+    if(me.commonStuff.dimensions.xpos<0){
+        me.commonStuff.dimensions.xpos -= me.commonStuff.dimensions.xpos
     }
-    if(me.dimensions.ypos>INTENDED_FRAME_SIZE-me.dimensions.drawSize) {
-        me.dimensions.ypos -= me.dimensions.ypos - INTENDED_FRAME_SIZE + me.dimensions.drawSize
+    if(me.commonStuff.dimensions.ypos>INTENDED_FRAME_SIZE-me.commonStuff.dimensions.drawSize) {
+        me.commonStuff.dimensions.ypos -= me.commonStuff.dimensions.ypos - INTENDED_FRAME_SIZE + me.commonStuff.dimensions.drawSize
     }
-    if(me.dimensions.ypos<0){
-        me.dimensions.ypos -= me.dimensions.ypos
+    if(me.commonStuff.dimensions.ypos<0){
+        me.commonStuff.dimensions.ypos -= me.commonStuff.dimensions.ypos
     }
 }
 
@@ -287,16 +281,16 @@ fun drawHealth(me:HasHealth, g:Graphics){
     g.color = Color.GREEN
     (g as Graphics2D).stroke = BasicStroke(2f)
     g.drawLine(
-        getWindowAdjustedPos(me.dimensions.xpos).toInt(),
-        getWindowAdjustedPos(me.dimensions.ypos).toInt() - 8,
-        getWindowAdjustedPos((me.dimensions.xpos + (me.dimensions.drawSize * me.healthStats.currentHp / me.healthStats.maxHP))).toInt(),
-        getWindowAdjustedPos(me.dimensions.ypos).toInt() - 8
+        getWindowAdjustedPos(me.commonStuff.dimensions.xpos).toInt(),
+        getWindowAdjustedPos(me.commonStuff.dimensions.ypos).toInt() - 8,
+        getWindowAdjustedPos((me.commonStuff.dimensions.xpos + (me.commonStuff.dimensions.drawSize * me.healthStats.currentHp / me.healthStats.maxHP))).toInt(),
+        getWindowAdjustedPos(me.commonStuff.dimensions.ypos).toInt() - 8
     )
     g.drawLine(
-        getWindowAdjustedPos(me.dimensions.xpos).toInt(),
-        getWindowAdjustedPos(me.dimensions.ypos).toInt() - 10,
-        getWindowAdjustedPos(me.dimensions.xpos + (me.dimensions.drawSize * me.healthStats.currentHp / me.healthStats.maxHP)).toInt(),
-        getWindowAdjustedPos(me.dimensions.ypos).toInt() - 10
+        getWindowAdjustedPos(me.commonStuff.dimensions.xpos).toInt(),
+        getWindowAdjustedPos(me.commonStuff.dimensions.ypos).toInt() - 10,
+        getWindowAdjustedPos(me.commonStuff.dimensions.xpos + (me.commonStuff.dimensions.drawSize * me.healthStats.currentHp / me.healthStats.maxHP)).toInt(),
+        getWindowAdjustedPos(me.commonStuff.dimensions.ypos).toInt() - 10
     )
     g.stroke = BasicStroke(1f)
 }

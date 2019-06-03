@@ -9,53 +9,51 @@ import java.awt.Rectangle
 class Bullet(val shottah: HasHealth) : Entity {
     var shtbywep = shottah.healthStats.wep.copy()
     var anglo = shottah.healthStats.angy
-    override var isSolid=false
-    override var dimensions = let {
+    override var commonStuff=EntCommon(dimensions = let {
         (shottah as Entity)
         val bsize = shtbywep.bulSize/shtbywep.projectiles
-        val shotBysize = shottah.dimensions.drawSize/shtbywep.projectiles
+        val shotBysize = shottah.commonStuff.dimensions.drawSize/shtbywep.projectiles
         EntDimens(
-            (shottah.getMidX() - (bsize / 2)) + (Math.cos(anglo) * shotBysize / 2) + (Math.cos(
+            (shottah.commonStuff.dimensions.getMidX() - (bsize / 2)) + (Math.cos(anglo) * shotBysize / 2) + (Math.cos(
                 anglo
             ) * bsize / 2),
-            ((shottah as Entity).getMidY() - (bsize / 2)) - (Math.sin(anglo) * shotBysize / 2) - (Math.sin(
+            ((shottah as Entity).commonStuff.dimensions.getMidY() - (bsize / 2)) - (Math.sin(anglo) * shotBysize / 2) - (Math.sin(
                 anglo
             ) * bsize / 2),
             bsize
         )
-    }
+    },
+        speed = shtbywep.bulspd)
     var bulImage = wallImage
     var startDamage = shtbywep.buldmg
     var damage = shtbywep.buldmg/shtbywep.projectiles
     var framesAlive = 0
     var bulDir = anglo + ((Math.random()-0.5)*shtbywep.recoil/6.0)
-    override var speed = shtbywep.bulspd
-    override var toBeRemoved: Boolean = false
     override fun updateEntity() {
-        allEntities.filter { it is Wall && overlapsOther(it)}.forEach {
-            toBeRemoved = true
+        allEntities.filter { it is Wall && commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions)}.forEach {
+            commonStuff.toBeRemoved = true
             val imp = Impact()
-            imp.dimensions.drawSize = dimensions.drawSize
-            imp.dimensions.xpos = dimensions.xpos
-            imp.dimensions.ypos = dimensions.ypos
+            imp.commonStuff.dimensions.drawSize = commonStuff.dimensions.drawSize
+            imp.commonStuff.dimensions.xpos = commonStuff.dimensions.xpos
+            imp.commonStuff.dimensions.ypos = commonStuff.dimensions.ypos
             entsToAdd.add(imp)
         }
-        dimensions.ypos -= ((((Math.sin(bulDir))) * speed.toDouble()))
-        dimensions.xpos += ((((Math.cos(bulDir))) * speed))
-        if(dimensions.xpos<0)toBeRemoved = true
-        if(dimensions.xpos > INTENDED_FRAME_SIZE - (dimensions.drawSize) - (XMAXMAGIC/myFrame.width))toBeRemoved = true
-        if(dimensions.ypos > INTENDED_FRAME_SIZE - dimensions.drawSize) toBeRemoved = true
-        if(dimensions.ypos<0)toBeRemoved = true
+        commonStuff.dimensions.ypos -= ((((Math.sin(bulDir))) * commonStuff.speed.toDouble()))
+        commonStuff.dimensions.xpos += ((((Math.cos(bulDir))) * commonStuff.speed))
+        if(commonStuff.dimensions.xpos<0)commonStuff.toBeRemoved = true
+        if(commonStuff.dimensions.xpos > INTENDED_FRAME_SIZE - (commonStuff.dimensions.drawSize) - (XMAXMAGIC/myFrame.width))commonStuff.toBeRemoved = true
+        if(commonStuff.dimensions.ypos > INTENDED_FRAME_SIZE - commonStuff.dimensions.drawSize) commonStuff.toBeRemoved = true
+        if(commonStuff.dimensions.ypos<0)commonStuff.toBeRemoved = true
         framesAlive++
         if(framesAlive>shtbywep.bulLifetime){
             val shrinky = shtbywep.bulSize/13
-            damage-=( shrinky*(startDamage/ dimensions.drawSize)).toInt()
-            dimensions.drawSize-=shrinky
-            dimensions.xpos+=shrinky/2
-            dimensions.ypos+=shrinky/2
+            damage-=( shrinky*(startDamage/ commonStuff.dimensions.drawSize)).toInt()
+            commonStuff.dimensions.drawSize-=shrinky
+            commonStuff.dimensions.xpos+=shrinky/2
+            commonStuff.dimensions.ypos+=shrinky/2
 //            if(damage<0)damage=0
         }
-        if(dimensions.drawSize<=4 || damage<0.5)toBeRemoved=true
+        if(commonStuff.dimensions.drawSize<=4 || damage<0.5)commonStuff.toBeRemoved=true
     }
 
     override fun drawEntity(g: Graphics) {
@@ -65,8 +63,9 @@ class Bullet(val shottah: HasHealth) : Entity {
 
 
 class Player(val buttonSet: ButtonSet): Entity, HasHealth {
-    override var isSolid=true
-    override var dimensions = EntDimens(0.0,0.0,40.0)
+    override var commonStuff=EntCommon(
+        isSolid = true
+    )
     var canEnterGateway:Boolean = true
     var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
@@ -75,9 +74,9 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
     var movedRight = false
     var didMove = false
     var didShoot = false
-    override var speed = 10
+//    override var speed = 10
     override var healthStats=HealthStats().also {
-        it.maxHP=dimensions.drawSize
+        it.maxHP=commonStuff.dimensions.drawSize
         it.currentHp = it.maxHP
         it.teamNumber = 1
         it.turnSpeed = 0.1f
@@ -96,7 +95,6 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
         buldmg = 4
     )
 
-    override var toBeRemoved: Boolean = false
     var didSpinright = false
     var didSpinleft = false
     var notOnShop = true
@@ -104,7 +102,7 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
         didMove = false
         healthStats.didHeal = false
         val shops = allEntities.filter { it is Shop }
-        val onshops = shops.filter { overlapsOther(it) }
+        val onshops = shops.filter { commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions) }
         var isonshop = onshops.isNotEmpty()
         if(isonshop && notOnShop){
             val theShop = onshops.first() as Shop
@@ -115,13 +113,13 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
 
         var toMovex = 0.0
         var toMovey = 0.0
-        if (pCont.riri.booly) toMovex += speed.toDouble()
-        if (pCont.leflef.booly) toMovex -= speed.toDouble()
+        if (pCont.riri.booly) toMovex += commonStuff.speed.toDouble()
+        if (pCont.leflef.booly) toMovex -= commonStuff.speed.toDouble()
         if (pCont.up.booly){
-            toMovey -= speed.toDouble()
+            toMovey -= commonStuff.speed.toDouble()
         }
         if (pCont.dwm.booly) {
-            toMovey += speed.toDouble()
+            toMovey += commonStuff.speed.toDouble()
         }
         if(toMovex!=0.0&&toMovey!=0.0){
             toMovex=toMovex*0.707
@@ -138,8 +136,8 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
                 toMovey *= healthStats.wep.mobility
             }
         }
-        dimensions.xpos += toMovex
-        dimensions.ypos += toMovey
+        commonStuff.dimensions.xpos += toMovex
+        commonStuff.dimensions.ypos += toMovey
         if(toMovex>0)movedRight = true
         if(toMovex<0)movedRight = false
         if(toMovex!=0.0||toMovey!=0.0)didMove = true
@@ -229,25 +227,16 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
         if(healthStats.angy>Math.PI/2 || healthStats.angy<-Math.PI/2){
             drawAsSprite(this,todraw,g)
         }else{
-            g.drawImage(todraw,getWindowAdjustedPos(dimensions.xpos+dimensions.drawSize).toInt(),getWindowAdjustedPos(dimensions.ypos).toInt(),-getWindowAdjustedPos(dimensions.drawSize).toInt(),getWindowAdjustedPos(dimensions.drawSize).toInt(),null)
+            g.drawImage(todraw,getWindowAdjustedPos(commonStuff.dimensions.xpos+commonStuff.dimensions.drawSize).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos).toInt(),-getWindowAdjustedPos(commonStuff.dimensions.drawSize).toInt(),getWindowAdjustedPos(commonStuff.dimensions.drawSize).toInt(),null)
         }
     }
     var gaitcount = 0
     var pewframecount = 0
 }
 class Enemy : Entity, HasHealth{
-
-    override var dimensions = EntDimens(0.0,0.0,25.0)
-//    override var healthStats= let{
-//        val ss = ShootStats()
-//        ss.teamNumber = 0
-//        ss.bulColor = Color.RED
-//        ss.shootySound = "laser"
-//        ss
-//    }
-    override var speed = 1
+    override var commonStuff=EntCommon(isSolid = true)
     override var healthStats=HealthStats().also {
-        it.maxHP=dimensions.drawSize
+        it.maxHP=commonStuff.dimensions.drawSize
         it.currentHp = it.maxHP
         it.teamNumber = 0
         it.bulColor = Color.RED
@@ -257,8 +246,6 @@ class Enemy : Entity, HasHealth{
     var randnumx = 0.0
     var randnumy = 0.0
     var iTried = Pair(-1.0,-1.0)
-    override var isSolid=true
-    override var toBeRemoved: Boolean = false
 
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,goblinImage,g)
@@ -285,35 +272,35 @@ class Enemy : Entity, HasHealth{
 //        }
         healthStats.didHeal = false
         val filteredEnts = players
-            .filter { !it.toBeRemoved }
-            .sortedBy { abs(it.dimensions.xpos - dimensions.xpos) + abs(it.dimensions.ypos - dimensions.ypos) }
+            .filter { !it.commonStuff.toBeRemoved }
+            .sortedBy { abs(it.commonStuff.dimensions.xpos - commonStuff.dimensions.xpos) + abs(it.commonStuff.dimensions.ypos - commonStuff.dimensions.ypos) }
         val packEnts = allEntities
             .filter {(it is MedPack)}
-            .sortedBy { abs(it.dimensions.xpos - dimensions.xpos) + abs(it.dimensions.ypos - dimensions.ypos) }
+            .sortedBy { abs(it.commonStuff.dimensions.xpos - commonStuff.dimensions.xpos) + abs(it.commonStuff.dimensions.ypos - commonStuff.dimensions.ypos) }
 
         if(filteredEnts.isNotEmpty()){
             var firstplayer = filteredEnts.first()
             if(framesSinceDrift<ENEMY_DRIFT_FRAMES) framesSinceDrift++
-            if(!(iTried.first==dimensions.xpos && iTried.second==dimensions.ypos)){
+            if(!(iTried.first==commonStuff.dimensions.xpos && iTried.second==commonStuff.dimensions.ypos)){
                 randnumx = (Math.random()-0.5)*2
                 randnumy = (Math.random()-0.5)*2
                 framesSinceDrift = 0
             } else{
-                var adjSpd = speed.toFloat()
+                var adjSpd = commonStuff.speed.toFloat()
                 if(framesSinceDrift>=ENEMY_DRIFT_FRAMES){
                     var xdiff = 0.0
                     var ydiff = 0.0
                     if(healthStats.currentHp<healthStats.maxHP/3 && packEnts.isNotEmpty()){
                         val firstpack = packEnts.first()
-                        val packxd = firstpack.getMidX() - getMidX()
-                        val packyd = firstpack.getMidY() - getMidY()
+                        val packxd = firstpack.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
+                        val packyd = firstpack.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
 //                        if((Math.abs(packxd)+Math.abs(packyd))<(Math.abs(xdiff)+Math.abs(ydiff))){
                             xdiff = packxd
                             ydiff = packyd
 //                        }
                     }else{
-                        xdiff = firstplayer.getMidX() - getMidX()
-                        ydiff = firstplayer.getMidY() - getMidY()
+                        xdiff = firstplayer.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
+                        ydiff = firstplayer.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
                     }
 
                     if(healthStats.wep.framesSinceShottah<healthStats.wep.atkSpd){
@@ -321,35 +308,35 @@ class Enemy : Entity, HasHealth{
                         adjSpd *= healthStats.wep.mobility
                     }
                     if (xdiff>adjSpd){
-                        dimensions.xpos += adjSpd
+                        commonStuff.dimensions.xpos += adjSpd
                     } else if(xdiff<-adjSpd) {
-                        dimensions.xpos -= adjSpd
+                        commonStuff.dimensions.xpos -= adjSpd
                     }
-                    if (ydiff>adjSpd) dimensions.ypos += adjSpd
-                    else if(ydiff<-adjSpd) dimensions.ypos -= adjSpd
+                    if (ydiff>adjSpd) commonStuff.dimensions.ypos += adjSpd
+                    else if(ydiff<-adjSpd) commonStuff.dimensions.ypos -= adjSpd
                 }else{
-                    dimensions.ypos += adjSpd*randnumy
-                    dimensions.xpos += adjSpd*randnumx
+                    commonStuff.dimensions.ypos += adjSpd*randnumy
+                    commonStuff.dimensions.xpos += adjSpd*randnumx
                 }
             }
-            iTried = Pair(dimensions.xpos,dimensions.ypos)
+            iTried = Pair(commonStuff.dimensions.xpos,commonStuff.dimensions.ypos)
             stayInMap(this)
 
-            val dx = getMidX() - firstplayer.getMidX()
-            val dy = getMidY() - firstplayer.getMidY()
+            val dx = commonStuff.dimensions.getMidX() - firstplayer.commonStuff.dimensions.getMidX()
+            val dy = commonStuff.dimensions.getMidY() - firstplayer.commonStuff.dimensions.getMidY()
 
             val radtarget = ((atan2( dy , -dx)))
             val absanglediff = abs(radtarget-this.healthStats.angy)
             val shootem =absanglediff<0.2
             var shoot2 = false
             if(shootem){
-                val r = Rectangle((dimensions.xpos).toInt(),(dimensions.ypos - (healthStats.wep.bulSize/(dimensions.drawSize))).toInt(),healthStats.wep.bulSize.toInt(),healthStats.wep.bulspd*80)
+                val r = Rectangle((commonStuff.dimensions.xpos).toInt(),(commonStuff.dimensions.ypos - (healthStats.wep.bulSize/(commonStuff.dimensions.drawSize))).toInt(),healthStats.wep.bulSize.toInt(),healthStats.wep.bulspd*80)
                 val path = Path2D.Double()
                 path.append(r, false)
                 val t = AffineTransform()
-                t.rotate(-healthStats.angy+(-Math.PI/2),(dimensions.xpos+(dimensions.drawSize/2)),(dimensions.ypos+(dimensions.drawSize/2)))
+                t.rotate(-healthStats.angy+(-Math.PI/2),(commonStuff.dimensions.xpos+(commonStuff.dimensions.drawSize/2)),(commonStuff.dimensions.ypos+(commonStuff.dimensions.drawSize/2)))
                 path.transform(t)
-                val intersectors = allEntities.filter {it is Wall || it is Player}.filter {  path.intersects(Rectangle(it.dimensions.xpos.toInt(),it.dimensions.ypos.toInt(),it.dimensions.drawSize.toInt(),it.dimensions.drawSize.toInt()))}.sortedBy { Math.abs(it.dimensions.ypos-dimensions.ypos)+Math.abs(it.dimensions.xpos-dimensions.xpos) }
+                val intersectors = allEntities.filter {it is Wall || it is Player}.filter {  path.intersects(Rectangle(it.commonStuff.dimensions.xpos.toInt(),it.commonStuff.dimensions.ypos.toInt(),it.commonStuff.dimensions.drawSize.toInt(),it.commonStuff.dimensions.drawSize.toInt()))}.sortedBy { Math.abs(it.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos)+Math.abs(it.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos) }
                 if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
             }
             processShooting(this,shoot2,this.healthStats.wep,eBulImage,true)
@@ -362,26 +349,20 @@ class Enemy : Entity, HasHealth{
 }
 
 class Wall : Entity{
-    override var isSolid=true
-    override var dimensions = EntDimens(0.0,0.0,20.0)
-    override var toBeRemoved: Boolean = false
-    override var speed: Int = 2
+    override var commonStuff=EntCommon(isSolid = true)
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,wallImage,g)
     }
 }
 
 class Gateway : Entity{
-    override var isSolid=false
-    override var dimensions = EntDimens(0.0,0.0,20.0)
+    override var commonStuff=EntCommon()
     var playersInside = mutableListOf<Player>()
     var map = map1
     var mapnum = 1
     var locked = true
     var someoneSpawned:Entity = this
     var sumspn = false
-    override var toBeRemoved: Boolean = false
-    override var speed: Int = 2
     override fun drawEntity(g: Graphics) {
         if(locked) drawAsSprite(this,gateClosedImage,g)
         else drawAsSprite(this,gateOpenImage,g)
@@ -389,7 +370,7 @@ class Gateway : Entity{
 
     override fun updateEntity() {
         if(sumspn){
-            if(!overlapsOther(someoneSpawned)){
+            if(!commonStuff.dimensions.overlapsOther(someoneSpawned.commonStuff.dimensions)){
                 sumspn = false
                 (someoneSpawned as Player).canEnterGateway = true
             }
@@ -398,21 +379,21 @@ class Gateway : Entity{
         
         for ((index,player) in playersInside.withIndex()){
             if(player.pCont.sht.tryConsume()){
-                player.dimensions.xpos = dimensions.xpos
-                player.dimensions.ypos = dimensions.ypos
+                player.commonStuff.dimensions.xpos = commonStuff.dimensions.xpos
+                player.commonStuff.dimensions.ypos = commonStuff.dimensions.ypos
                 var canSpawn = true
                 if(locked)canSpawn = false
                 else
                 for(ent in allEntities.filter { it is Player || it is Enemy }){
-                    if(player.overlapsOther(ent))canSpawn = false
-                    if(player.dimensions.xpos+player.dimensions.drawSize>INTENDED_FRAME_SIZE || player.dimensions.ypos+player.dimensions.drawSize>INTENDED_FRAME_SIZE)canSpawn = false
+                    if(player.commonStuff.dimensions.overlapsOther(ent.commonStuff.dimensions))canSpawn = false
+                    if(player.commonStuff.dimensions.xpos+player.commonStuff.dimensions.drawSize>INTENDED_FRAME_SIZE || player.commonStuff.dimensions.ypos+player.commonStuff.dimensions.drawSize>INTENDED_FRAME_SIZE)canSpawn = false
                 }
                 if(canSpawn){
                     toremove = index
                     sumspn = true
                     someoneSpawned = player
                     player.canEnterGateway = false
-                    player.toBeRemoved = false
+                    player.commonStuff.toBeRemoved = false
                     entsToAdd.add(player)
                     break
                 }
@@ -427,11 +408,11 @@ class Gateway : Entity{
         }
         if(!locked){
             for (pp in players){
-                if(pp.overlapsOther(this)){
-                    if(pp.canEnterGateway&&!pp.toBeRemoved){
-                        pp.toBeRemoved = true
-                        pp.dimensions.xpos = dimensions.xpos
-                        pp.dimensions.ypos = dimensions.ypos
+                if(pp.commonStuff.dimensions.overlapsOther(commonStuff.dimensions)){
+                    if(pp.canEnterGateway&&!pp.commonStuff.toBeRemoved){
+                        pp.commonStuff.toBeRemoved = true
+                        pp.commonStuff.dimensions.xpos = commonStuff.dimensions.xpos
+                        pp.commonStuff.dimensions.ypos = commonStuff.dimensions.ypos
                         playersInside.add(pp)
                     }
                 }
@@ -440,15 +421,12 @@ class Gateway : Entity{
     }
 }
 class GateSwitch:Entity{
-    override var isSolid=false
-    override var dimensions = EntDimens(0.0,0.0,20.0)
-    override var toBeRemoved: Boolean = false
-    override var speed: Int = 2
+    override var commonStuff=EntCommon()
     var beenSwitched = false
     override fun updateEntity() {
         if(!beenSwitched){
             players.forEach {
-                if(it.overlapsOther(this)){
+                if(it.commonStuff.dimensions.overlapsOther(commonStuff.dimensions)){
                     beenSwitched = true
                     allEntities.filter { it is Gateway }.forEach {
                         (it as Gateway).locked = false
@@ -465,10 +443,7 @@ var changeMap = false
 var NumPlayers = 2
 
 class Impact : Entity{
-    override var isSolid=false
-    override var dimensions = EntDimens(0.0,0.0,20.0)
-    override var toBeRemoved: Boolean = false
-    override var speed: Int = 2
+    override var commonStuff=EntCommon()
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,impactImage,g)
     }
@@ -476,24 +451,18 @@ class Impact : Entity{
     var liveFrames = 4
     override fun updateEntity() {
        liveFrames--
-        if(liveFrames<0)toBeRemoved=true
+        if(liveFrames<0)commonStuff.toBeRemoved=true
     }
 }
 
 class MedPack : Entity {
-    override var isSolid=false
-    override var dimensions = EntDimens(0.0,0.0,20.0)
-    override var toBeRemoved: Boolean = false
-    override var speed: Int = 2
+    override var commonStuff=EntCommon()
 }
 
 class Shop:Entity{
-    override var isSolid=false
-    override var dimensions = EntDimens(0.0,0.0,20.0)
+    override var commonStuff=EntCommon()
     var char:Char = 'z'
     var menuThings:(Player)->List<Entity> ={ listOf()}
-    override var toBeRemoved: Boolean = false
-    override var speed: Int = 2
     var image = backgroundImage
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,image,g)
@@ -501,22 +470,19 @@ class Shop:Entity{
 }
 
 class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()->Unit,val onUp1:()->Unit,val onDown1:()->Unit,val onUp2:()->Unit={},val onDown2:()->Unit={},val onUp3:()->Unit={},val onDown3:()->Unit={}):Entity{
-    override var isSolid=false
-    override var dimensions = EntDimens(other.dimensions.xpos+selectorXSpace,other.dimensions.ypos,20.0)
+    override var commonStuff=EntCommon(dimensions = EntDimens(other.commonStuff.dimensions.xpos+selectorXSpace,other.commonStuff.dimensions.ypos,20.0))
     var indexer = 0
-    override var toBeRemoved: Boolean = false
-    override var speed: Int = 2
     override fun updateEntity() {
         if(other.pCont.sht.tryConsume()){
             if(indexer+1<numStats){
                 indexer++
-                dimensions.ypos+=statsYSpace
+                commonStuff.dimensions.ypos+=statsYSpace
             }
         }
         if(other.pCont.Swp.tryConsume()){
             if(indexer-1>=0){
                 indexer--
-                dimensions.ypos -= statsYSpace
+                commonStuff.dimensions.ypos -= statsYSpace
             }
         }
         if(other.pCont.spinri.tryConsume()){
@@ -537,10 +503,7 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
     }
 }
 class StatView(val showText: ()->String, val xloc:Double,val yloc:Double):Entity{
-    override var isSolid=false
-    override var dimensions = EntDimens(0.0,0.0,20.0)
-    override var toBeRemoved: Boolean = false
-    override var speed: Int = 2
+    override var commonStuff=EntCommon()
     override fun drawEntity(g: Graphics) {
         g.color = Color.BLUE
         g.font = g.font.deriveFont((myFrame.width/70).toFloat())

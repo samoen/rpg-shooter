@@ -52,6 +52,7 @@ val eBulImage = ImageIcon("src/main/resources/badbullet.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 var myrepaint = false
+var painting = false
 val soundBank:MutableMap<String, Clip> = mutableMapOf()
 var myFrame=object:JFrame(){
 
@@ -118,44 +119,44 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
         for((ind:Int,ch:Char) in map.substring(rownumber*mapGridColumns,(rownumber*mapGridColumns)+mapGridColumns).withIndex()){
             if(ch=='w'){
                 entsToAdd.add(Wall().also {
-                    it.dimensions.drawSize = mapGridSize
-                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.drawSize = mapGridSize
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if (ch == 'h'){
                 entsToAdd.add(MedPack().also {
-                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if (ch == 'e'){
                 entsToAdd.add(randEnemy().also {
-                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if(ch == 's'){
                 entsToAdd.add(GateSwitch().also {
-                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
             if(ch == 'b'){
                 entsToAdd.add(Shop().also {
                     it.char = 'b'
-                    it.dimensions.drawSize = mapGridSize
-                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.drawSize = mapGridSize
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                     it.menuThings = {other->listOf(
-                        StatView({"Vel"},other.dimensions.xpos,other.dimensions.ypos),
-                        StatView({"Rcl"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
-                        StatView({"Rld"},other.dimensions.xpos,statsYSpace*2+other.dimensions.ypos),
-                        StatView({"Mob"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
+                        StatView({"Vel"},other.commonStuff.dimensions.xpos,other.commonStuff.dimensions.ypos),
+                        StatView({"Rcl"},other.commonStuff.dimensions.xpos,statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({"Rld"},other.commonStuff.dimensions.xpos,statsYSpace*2+other.commonStuff.dimensions.ypos),
+                        StatView({"Mob"},other.commonStuff.dimensions.xpos,3*statsYSpace+other.commonStuff.dimensions.ypos),
                         Selector(4,other,
                         {
                             if(other.healthStats.wep.bulspd+1<50)other.healthStats.wep.bulspd++
@@ -179,10 +180,10 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                                 val desired = other.healthStats.wep.mobility-0.1f
                                 if(desired>=0)other.healthStats.wep.mobility = desired
                             }),
-                        StatView({other.healthStats.wep.bulspd.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
-                        StatView({other.healthStats.wep.recoil.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
-                        StatView({other.healthStats.wep.atkSpd.toString() }, statsXSpace+other.dimensions.xpos,  2*statsYSpace+other.dimensions.ypos),
-                        StatView({( other.healthStats.wep.mobility*10).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
+                        StatView({other.healthStats.wep.bulspd.toString() }, statsXSpace+other.commonStuff.dimensions.xpos, other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.wep.recoil.toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.wep.atkSpd.toString() }, statsXSpace+other.commonStuff.dimensions.xpos,  2*statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({( other.healthStats.wep.mobility*10).toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, 3*statsYSpace+other.commonStuff.dimensions.ypos)
                     )
                     }
                 })
@@ -191,13 +192,13 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             if(ch == 'm'){
                 entsToAdd.add(Shop().also {
                     it.char = 'm'
-                    it.dimensions.drawSize = mapGridSize
-                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.drawSize = mapGridSize
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                     it.menuThings = {other->listOf(
-                        StatView({"Dmg"},other.dimensions.xpos,other.dimensions.ypos),
-                        StatView({"Lftm"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
-                        StatView({"Buck"},other.dimensions.xpos,2*statsYSpace+other.dimensions.ypos),
+                        StatView({"Dmg"},other.commonStuff.dimensions.xpos,other.commonStuff.dimensions.ypos),
+                        StatView({"Lftm"},other.commonStuff.dimensions.xpos,statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({"Buck"},other.commonStuff.dimensions.xpos,2*statsYSpace+other.commonStuff.dimensions.ypos),
                         Selector(3,other,
                             {
                                 other.healthStats.wep.buldmg+=1
@@ -218,9 +219,9 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                             },{
                                 if(other.healthStats.wep.projectiles-1>=1)other.healthStats.wep.projectiles--
                             }),
-                        StatView({other.healthStats.wep.buldmg.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
-                        StatView({other.healthStats.wep.bulLifetime.toString() }, statsXSpace+other.dimensions.xpos,  statsYSpace+other.dimensions.ypos),
-                        StatView({other.healthStats.wep.projectiles.toString() }, statsXSpace+other.dimensions.xpos,  2*statsYSpace+other.dimensions.ypos)
+                        StatView({other.healthStats.wep.buldmg.toString() }, statsXSpace+other.commonStuff.dimensions.xpos, other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.wep.bulLifetime.toString() }, statsXSpace+other.commonStuff.dimensions.xpos,  statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.wep.projectiles.toString() }, statsXSpace+other.commonStuff.dimensions.xpos,  2*statsYSpace+other.commonStuff.dimensions.ypos)
                     )}
                 })
                 continue
@@ -228,24 +229,24 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             if(ch == 'g'){
                 entsToAdd.add(Shop().also {
                     it.menuThings = {other->listOf(
-                        StatView({"Run"},other.dimensions.xpos,other.dimensions.ypos),
-                        StatView({"HP"},other.dimensions.xpos,statsYSpace+other.dimensions.ypos),
-                        StatView({"Turn"},other.dimensions.xpos,2*statsYSpace+other.dimensions.ypos),
-                        StatView({"Block"},other.dimensions.xpos,3*statsYSpace+other.dimensions.ypos),
+                        StatView({"Run"},other.commonStuff.dimensions.xpos,other.commonStuff.dimensions.ypos),
+                        StatView({"HP"},other.commonStuff.dimensions.xpos,statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({"Turn"},other.commonStuff.dimensions.xpos,2*statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({"Block"},other.commonStuff.dimensions.xpos,3*statsYSpace+other.commonStuff.dimensions.ypos),
                         Selector(4,other,{
-                            other.speed += 1
+                            other.commonStuff.speed += 1
                         },{
-                            val desiredspeed = other.speed-1
-                            if(desiredspeed>0)other.speed = desiredspeed
+                            val desiredspeed = other.commonStuff.speed-1
+                            if(desiredspeed>0)other.commonStuff.speed = desiredspeed
                         },{
-                            other.dimensions.drawSize  += 3
+                            other.commonStuff.dimensions.drawSize  += 3
                             other.healthStats.maxHP +=10
                             other.healthStats.currentHp = other.healthStats.maxHP
                         },{
-                            val desiredSize = other.dimensions.drawSize-3
+                            val desiredSize = other.commonStuff.dimensions.drawSize-3
                             val desiredHp = other.healthStats.maxHP-10
                             if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
-                                other.dimensions.drawSize = desiredSize
+                                other.commonStuff.dimensions.drawSize = desiredSize
                                 other.healthStats.maxHP = desiredHp
                             }
                             other.healthStats.currentHp = other.healthStats.maxHP
@@ -261,15 +262,15 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                             val desired = other.healthStats.shieldSkill-1
                             if(desired>=1)other.healthStats.shieldSkill = desired
                         }),
-                        StatView({other.speed.toString() }, statsXSpace+other.dimensions.xpos, other.dimensions.ypos),
-                        StatView({other.healthStats.maxHP.toInt().toString() }, statsXSpace+other.dimensions.xpos, statsYSpace+other.dimensions.ypos),
-                        StatView({( other.healthStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.dimensions.xpos, 2*statsYSpace+other.dimensions.ypos),
-                        StatView({( other.healthStats.shieldSkill).toInt().toString() }, statsXSpace+other.dimensions.xpos, 3*statsYSpace+other.dimensions.ypos)
+                        StatView({other.commonStuff.speed.toString() }, statsXSpace+other.commonStuff.dimensions.xpos, other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.maxHP.toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({( other.healthStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, 2*statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({( other.healthStats.shieldSkill).toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, 3*statsYSpace+other.commonStuff.dimensions.ypos)
                     )}
                     it.char = 'g'
-                    it.dimensions.drawSize = mapGridSize
-                    it.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.drawSize = mapGridSize
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                 })
                 continue
             }
@@ -286,19 +287,19 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                 val gate = Gateway().also {
                     it.map = mappy
                     it.mapnum = charint
-                    it.dimensions.xpos = gatex
-                    it.dimensions.ypos = gatey
-                    it.dimensions.drawSize = mapGridSize
+                    it.commonStuff.dimensions.xpos = gatex
+                    it.commonStuff.dimensions.ypos = gatey
+                    it.commonStuff.dimensions.drawSize = mapGridSize
                 }
                 if(charint==fromMapNum){
                     var lastsize = 0.0
                     for(player in players){
-                        player.dimensions.xpos = gatex + lastsize
-                        player.dimensions.ypos = gatey
+                        player.commonStuff.dimensions.xpos = gatex + lastsize
+                        player.commonStuff.dimensions.ypos = gatey
                         player.spawnGate = gate
-                        lastsize = (player.dimensions.drawSize)
+                        lastsize = (player.commonStuff.dimensions.drawSize)
                         if(!allEntities.contains(player) && !entsToAdd.contains(player))entsToAdd.add(player)
-                        player.toBeRemoved = false
+                        player.commonStuff.toBeRemoved = false
                     }
                 }
                 entsToAdd.add(gate)
@@ -333,11 +334,11 @@ fun main() {
     soundBank["laser"] = AudioSystem.getClip().also{
         it.open(AudioSystem.getAudioInputStream(enemyPewFile))
     }
-    players.add(Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6)).also { it.speed = 8 })
+    players.add(Player(ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6)).also { it.commonStuff.speed = 8 })
     players.add( Player(ButtonSet(KeyEvent.VK_W,KeyEvent.VK_S,KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_V,KeyEvent.VK_C,KeyEvent.VK_B)).also{
-        it.dimensions.xpos=150.0
-        it.speed = 8
-        it.dimensions.drawSize = 40.0
+        it.commonStuff.dimensions.xpos=150.0
+        it.commonStuff.speed = 8
+        it.commonStuff.dimensions.drawSize = 40.0
     })
     entsToAdd.addAll(players)
 
@@ -373,18 +374,23 @@ fun main() {
 
     val myPanel:JPanel =object : JPanel() {
         override fun paint(g: Graphics) {
-            super.paint(g)
-            if(myrepaint){
-                myrepaint = false
-                g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
-                entsToDraw.forEach {
-                    it.drawEntity(g)
+            if(!painting){
+                painting = true
+                if(myrepaint){
+                    myrepaint = false
+//                    super.paint(g)
+                    g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
+                    entsToDraw.forEach {
+                        it.drawEntity(g)
+                    }
+                    players.forEach {
+                        if(!it.commonStuff.toBeRemoved)
+                            it.drawComponents(g)
+                    }
                 }
-                players.forEach {
-                    if(!it.toBeRemoved)
-                        it.drawComponents(g)
-                }
+                painting = false
             }
+
         }
     }
     myFrame.contentPane = myPanel
@@ -406,7 +412,7 @@ fun main() {
             placeMap(nextMap,nextMapNum,currentMapNum)
         } else{
                 if(!gamePaused){
-                    val preupdateEnts = allEntities.map { it.dimensions.copy() }
+                    val preupdateEnts = allEntities.map { it.commonStuff.dimensions.copy() }
                     allEntities.forEach { entity: Entity ->
                         entity.updateEntity()
                     }
@@ -421,8 +427,8 @@ fun main() {
                                 if(dex!=j){
                                         val jent = allEntities[j]
                                         var collided = false
-                                        if(!ient.toBeRemoved && !jent.toBeRemoved){
-                                            if(ient.overlapsOther(jent)){
+                                        if(!ient.commonStuff.toBeRemoved && !jent.commonStuff.toBeRemoved){
+                                            if(ient.commonStuff.dimensions.overlapsOther(jent.commonStuff.dimensions)){
                                                     collided = true
                                                     blockMovement(ient,jent,preupdateEnts[dex],preupdateEnts[j])
                                                     val died = takeDamage(jent,ient)
@@ -432,8 +438,8 @@ fun main() {
                                                     }
                                             }
                                         }
-                                        if(collided && jent.overlapsOther(ient)) {
-                                            if (ient.isSolid && jent.isSolid) {
+                                        if(collided && jent.commonStuff.dimensions.overlapsOther(ient.commonStuff.dimensions)) {
+                                            if (ient.commonStuff.isSolid && jent.commonStuff.isSolid) {
                                                 if(timesTried > 10){
                                                     println("Cannot resolve collision!")
                                                 }else{
@@ -446,7 +452,7 @@ fun main() {
                             }
                         }
                     }while (triggeredReaction)
-                    allEntities.removeIf { it.toBeRemoved }
+                    allEntities.removeIf { it.commonStuff.toBeRemoved }
                     entsToDraw.clear()
                     val combatants = mutableListOf<Entity>()
                     val noncombatants = mutableListOf<Entity>()
@@ -468,7 +474,7 @@ fun main() {
                         }
                     }
                     myrepaint = true
-                    myFrame.repaint()
+                    myPanel.repaint()
                     if(entsToAdd.size>0) allEntities.addAll(entsToAdd)
                     entsToAdd.clear()
                 }

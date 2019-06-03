@@ -1,44 +1,25 @@
 import java.awt.Color
 import java.awt.Graphics
-import java.awt.Image
 
-class EntCommon{
-
-}
+data class EntCommon(
+    var toBeRemoved: Boolean = false,
+    var speed: Int = 0,
+    var dimensions:EntDimens = EntDimens(0.0,0.0,50.0),
+    var isSolid:Boolean = false
+)
 
 interface Entity {
-    var toBeRemoved: Boolean
-    var speed: Int
-    var dimensions:EntDimens
-    var isSolid:Boolean
+    var commonStuff : EntCommon
+//    var toBeRemoved: Boolean
+//    var speed: Int
+//    var dimensions:EntDimens
+//    var isSolid:Boolean
 //    var spriteu: Image
-
     fun updateEntity() {}
-    fun overlapsOther(other: Entity):Boolean{
-        return this.dimensions.ypos+this.dimensions.drawSize > other.dimensions.ypos &&
-                this.dimensions.ypos<other.dimensions.ypos+other.dimensions.drawSize &&
-                this.dimensions.xpos+this.dimensions.drawSize > other.dimensions.xpos &&
-                this.dimensions.xpos<other.dimensions.xpos+other.dimensions.drawSize
-    }
-    fun getMidY():Double{
-        return dimensions.ypos+(dimensions.drawSize/2)
-    }
-    fun getMidX():Double{
-        return dimensions.xpos+(dimensions.drawSize/2)
-    }
+
     fun drawEntity(g: Graphics) {
         drawAsSprite(this,gateClosedImage,g)
     }
-}
-data class ShootStats(var shootySound:String = "die",
-                      var angy :Double = 0.0,
-                      var wep:Weapon=Weapon(),
-                      var turnSpeed:Float = 0.05f,
-                      var bulColor:Color=Color.RED,
-                      var teamNumber:Int=0
-)
-interface Shoots{
-    var healthStats :ShootStats
 }
 class HealthStats{
     var didHeal :Boolean = false
@@ -49,7 +30,6 @@ class HealthStats{
     val DAMAGED_ANIMATION_FRAMES = 3
     var didGetShot:Boolean = false
     var armorIsBroken:Boolean = false
-    var armorWillBreak:Boolean = false
     var armorBrokenFrames = 0
     var gotShotFrames = DAMAGED_ANIMATION_FRAMES
     var stopped = false
@@ -96,9 +76,24 @@ data class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
     fun getMidX():Double{
         return xpos+(drawSize/2)
     }
+    fun overlapsOther(other: EntDimens):Boolean{
+        return ypos+drawSize > other.ypos &&
+                ypos<other.ypos+other.drawSize &&
+                xpos+drawSize > other.xpos &&
+                xpos<other.xpos+other.drawSize
+    }
 }
 
-class playControls(var up:OneShotChannel=OneShotChannel(), var dwm:OneShotChannel=OneShotChannel(), var sht:OneShotChannel=OneShotChannel(), var Swp:OneShotChannel=OneShotChannel(), var riri:OneShotChannel=OneShotChannel(), var leflef:OneShotChannel=OneShotChannel(), var spinri:OneShotChannel=OneShotChannel(), var spenlef:OneShotChannel=OneShotChannel())
+class playControls(
+    var up:OneShotChannel=OneShotChannel(),
+    var dwm:OneShotChannel=OneShotChannel(),
+    var sht:OneShotChannel=OneShotChannel(),
+    var Swp:OneShotChannel=OneShotChannel(),
+    var riri:OneShotChannel=OneShotChannel(),
+    var leflef:OneShotChannel=OneShotChannel(),
+    var spinri:OneShotChannel=OneShotChannel(),
+    var spenlef:OneShotChannel=OneShotChannel()
+)
 
 data class Weapon(
     var mobility:Float = 0.3f,
