@@ -88,7 +88,7 @@ fun processShooting(me:HasHealth, sht:Boolean, weap:Weapon, bulImage:Image,notOn
         if(me is Player)me.didShoot=true
         for( i in 1..weap.projectiles){
             val b = Bullet(me)
-            b.bulImage = bulImage
+            b.commonStuff.spriteu = bulImage
             var canspawn = true
             allEntities.forEach { if(it is Wall && it.commonStuff.dimensions.overlapsOther(b.commonStuff.dimensions))canspawn = false }
             if(canspawn)
@@ -168,7 +168,7 @@ fun drawReload(me:HasHealth, g: Graphics, weap: Weapon){
 fun takeDamage(other:Entity,me:Entity):Boolean{
     me as HasHealth
     if(other is Bullet) {
-            if(me.healthStats.teamNumber==other.shottah.healthStats.teamNumber)return false
+            if(me.healthStats.teamNumber==other.bTeam)return false
         other.commonStuff.toBeRemoved = true
         var desirDam = other.damage
         if(me.healthStats.getArmored()){
@@ -178,16 +178,16 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
         }
         val desirHealth = me.healthStats.currentHp - desirDam
         if(desirHealth<=0){
+            if(me is Player){
+                me.healthStats.currentHp = me.healthStats.maxHP
+                me.spawnGate.playersInside.add(me)
+            }
             me.healthStats.currentHp = 0.0
             playStrSound(me.healthStats.dieNoise)
             me.commonStuff.toBeRemoved = true
             val deathEnt = object: Entity{
-                override var commonStuff=EntCommon(dimensions = EntDimens(me.commonStuff.dimensions.xpos,me.commonStuff.dimensions.ypos,me.commonStuff.dimensions.drawSize))
-                override fun drawEntity(g: Graphics) {
-                    drawAsSprite(this,dieImage,g)
-                }
-
                 var liveFrames = 8
+                override var commonStuff=EntCommon(spriteu = dieImage, dimensions = EntDimens(me.commonStuff.dimensions.xpos,me.commonStuff.dimensions.ypos,me.commonStuff.dimensions.drawSize))
                 override fun updateEntity() {
                     liveFrames--
                     if(liveFrames<0)commonStuff.toBeRemoved=true
@@ -203,15 +203,6 @@ fun takeDamage(other:Entity,me:Entity):Boolean{
         }else playStrSound(me.healthStats.ouchNoise)
         me.healthStats.didGetShot = true
         me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
-    }else if (other is MedPack && (me as HasHealth).healthStats.currentHp<me.healthStats.maxHP){
-        other.commonStuff.toBeRemoved = true
-        me.healthStats.didHeal = true
-        val desiredhp = (me as HasHealth).healthStats.currentHp+20
-        if (desiredhp>me.healthStats.maxHP){
-            me.healthStats.currentHp = me.healthStats.maxHP
-        }else{
-            me.healthStats.currentHp = desiredhp
-        }
     }
     return false
 }
@@ -295,3 +286,202 @@ fun drawHealth(me:HasHealth, g:Graphics){
     g.stroke = BasicStroke(1f)
 }
 
+fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
+    val mapGridSize = (INTENDED_FRAME_SIZE/mapGridColumns.toDouble())-2
+    currentMapNum = mapNum
+    allEntities.clear()
+    val starty = 0
+    for(rownumber in 0 until (map.length/mapGridColumns)){
+        for((ind:Int,ch:Char) in map.substring(rownumber*mapGridColumns,(rownumber*mapGridColumns)+mapGridColumns).withIndex()){
+            if(ch=='w'){
+                entsToAdd.add(Wall().also {
+                    it.commonStuff.dimensions.drawSize = mapGridSize
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                })
+                continue
+            }
+            if (ch == 'h'){
+                entsToAdd.add(MedPack().also {
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                })
+                continue
+            }
+            if (ch == 'e'){
+                entsToAdd.add(randEnemy().also {
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                })
+                continue
+            }
+            if(ch == 's'){
+                entsToAdd.add(GateSwitch().also {
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                })
+                continue
+            }
+            if(ch == 'b'){
+                entsToAdd.add(Shop().also {
+                    it.char = 'b'
+                    it.commonStuff.dimensions.drawSize = mapGridSize
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.menuThings = {other->listOf(
+                        StatView({"Vel"},other.commonStuff.dimensions.xpos,other.commonStuff.dimensions.ypos),
+                        StatView({"Rcl"},other.commonStuff.dimensions.xpos,statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({"Rld"},other.commonStuff.dimensions.xpos,statsYSpace*2+other.commonStuff.dimensions.ypos),
+                        StatView({"Mob"},other.commonStuff.dimensions.xpos,3*statsYSpace+other.commonStuff.dimensions.ypos),
+                        Selector(4,other,
+                            {
+                                if(other.healthStats.wep.bulspd+1<50)other.healthStats.wep.bulspd++
+                            },{
+                                if(other.healthStats.wep.bulspd-1>1)other.healthStats.wep.bulspd--
+                            },{
+                                if(other.healthStats.wep.recoil+1<23)other.healthStats.wep.recoil++
+                            },{
+                                if(other.healthStats.wep.recoil-1>=0)other.healthStats.wep.recoil--
+                            },{
+                                if(other.healthStats.wep.atkSpd+1<200){
+                                    other.healthStats.wep.atkSpd++
+//                                other.healthStats.wep.framesSinceShottah = 999
+                                }
+                            },{
+                                if(other.healthStats.wep.atkSpd-1>1)other.healthStats.wep.atkSpd--
+                            },{
+                                val desired = other.healthStats.wep.mobility+0.1f
+                                if(desired<=1.001f) other.healthStats.wep.mobility = desired
+                            },{
+                                val desired = other.healthStats.wep.mobility-0.1f
+                                if(desired>=0)other.healthStats.wep.mobility = desired
+                            }),
+                        StatView({other.healthStats.wep.bulspd.toString() }, statsXSpace+other.commonStuff.dimensions.xpos, other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.wep.recoil.toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.wep.atkSpd.toString() }, statsXSpace+other.commonStuff.dimensions.xpos,  2*statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({( other.healthStats.wep.mobility*10).toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, 3*statsYSpace+other.commonStuff.dimensions.ypos)
+                    )
+                    }
+                })
+                continue
+            }
+            if(ch == 'm'){
+                entsToAdd.add(Shop().also {
+                    it.char = 'm'
+                    it.commonStuff.dimensions.drawSize = mapGridSize
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.menuThings = {other->listOf(
+                        StatView({"Dmg"},other.commonStuff.dimensions.xpos,other.commonStuff.dimensions.ypos),
+                        StatView({"Lftm"},other.commonStuff.dimensions.xpos,statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({"Buck"},other.commonStuff.dimensions.xpos,2*statsYSpace+other.commonStuff.dimensions.ypos),
+                        Selector(3,other,
+                            {
+                                other.healthStats.wep.buldmg+=1
+                                other.healthStats.wep.bulSize+=3
+                            },{
+                                val desiredDmg = other.healthStats.wep.buldmg-1
+                                val desiredSize = other.healthStats.wep.bulSize -3
+                                if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
+                                    other.healthStats.wep.bulSize = desiredSize
+                                    other.healthStats.wep.buldmg = desiredDmg
+                                }
+                            },{
+                                if(other.healthStats.wep.bulLifetime+1<100)other.healthStats.wep.bulLifetime++
+                            },{
+                                if(other.healthStats.wep.bulLifetime-1>=1)other.healthStats.wep.bulLifetime--
+                            },{
+                                if(other.healthStats.wep.projectiles+1<15)other.healthStats.wep.projectiles++
+                            },{
+                                if(other.healthStats.wep.projectiles-1>=1)other.healthStats.wep.projectiles--
+                            }),
+                        StatView({other.healthStats.wep.buldmg.toString() }, statsXSpace+other.commonStuff.dimensions.xpos, other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.wep.bulLifetime.toString() }, statsXSpace+other.commonStuff.dimensions.xpos,  statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.wep.projectiles.toString() }, statsXSpace+other.commonStuff.dimensions.xpos,  2*statsYSpace+other.commonStuff.dimensions.ypos)
+                    )}
+                })
+                continue
+            }
+            if(ch == 'g'){
+                entsToAdd.add(Shop().also {
+                    it.menuThings = {other->listOf(
+                        StatView({"Run"},other.commonStuff.dimensions.xpos,other.commonStuff.dimensions.ypos),
+                        StatView({"HP"},other.commonStuff.dimensions.xpos,statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({"Turn"},other.commonStuff.dimensions.xpos,2*statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({"Block"},other.commonStuff.dimensions.xpos,3*statsYSpace+other.commonStuff.dimensions.ypos),
+                        Selector(4,other,{
+                            other.commonStuff.speed += 1
+                        },{
+                            val desiredspeed = other.commonStuff.speed-1
+                            if(desiredspeed>0)other.commonStuff.speed = desiredspeed
+                        },{
+                            other.commonStuff.dimensions.drawSize  += 3
+                            other.healthStats.maxHP +=10
+                            other.healthStats.currentHp = other.healthStats.maxHP
+                        },{
+                            val desiredSize = other.commonStuff.dimensions.drawSize-3
+                            val desiredHp = other.healthStats.maxHP-10
+                            if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
+                                other.commonStuff.dimensions.drawSize = desiredSize
+                                other.healthStats.maxHP = desiredHp
+                            }
+                            other.healthStats.currentHp = other.healthStats.maxHP
+                        },{
+                            val desired = "%.4f".format(other.healthStats.turnSpeed+0.01f).toFloat()
+                            if(desired<1) other.healthStats.turnSpeed = desired
+                        },{
+                            val desired = "%.4f".format(other.healthStats.turnSpeed-0.01f).toFloat()
+                            if(desired>0) other.healthStats.turnSpeed = desired
+                        },{
+                            other.healthStats.shieldSkill += 1
+                        },{
+                            val desired = other.healthStats.shieldSkill-1
+                            if(desired>=1)other.healthStats.shieldSkill = desired
+                        }),
+                        StatView({other.commonStuff.speed.toString() }, statsXSpace+other.commonStuff.dimensions.xpos, other.commonStuff.dimensions.ypos),
+                        StatView({other.healthStats.maxHP.toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({( other.healthStats.turnSpeed*100).toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, 2*statsYSpace+other.commonStuff.dimensions.ypos),
+                        StatView({( other.healthStats.shieldSkill).toInt().toString() }, statsXSpace+other.commonStuff.dimensions.xpos, 3*statsYSpace+other.commonStuff.dimensions.ypos)
+                    )}
+                    it.char = 'g'
+                    it.commonStuff.dimensions.drawSize = mapGridSize
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                })
+                continue
+            }
+            val charint :Int= Character.getNumericValue(ch)
+            if(charint in 1..9){
+                val mappy:String =when(charint){
+                    1->map1
+                    2->map2
+                    3->map3
+                    else ->map1
+                }
+                val gatex = ind.toDouble()+(ind* mapGridSize)
+                val gatey = starty + (mapGridSize+1)*(rownumber+1)
+                val gate = Gateway().also {
+                    it.map = mappy
+                    it.mapnum = charint
+                    it.commonStuff.dimensions.xpos = gatex
+                    it.commonStuff.dimensions.ypos = gatey
+                    it.commonStuff.dimensions.drawSize = mapGridSize
+                }
+                if(charint==fromMapNum){
+                    var lastsize = 0.0
+                    for(player in players){
+                        player.commonStuff.dimensions.xpos = gatex + lastsize
+                        player.commonStuff.dimensions.ypos = gatey
+                        player.spawnGate = gate
+                        lastsize = (player.commonStuff.dimensions.drawSize)
+                        if(!allEntities.contains(player) && !entsToAdd.contains(player))entsToAdd.add(player)
+                        player.commonStuff.toBeRemoved = false
+                    }
+                }
+                entsToAdd.add(gate)
+                continue
+            }
+
+        }
+    }
+}

@@ -1,24 +1,21 @@
 import java.awt.Color
 import java.awt.Graphics
+import java.awt.Image
 
 data class EntCommon(
     var toBeRemoved: Boolean = false,
     var speed: Int = 0,
     var dimensions:EntDimens = EntDimens(0.0,0.0,50.0),
-    var isSolid:Boolean = false
+    var isSolid:Boolean = false,
+    var spriteu: Image = backgroundImage
 )
 
 interface Entity {
     var commonStuff : EntCommon
-//    var toBeRemoved: Boolean
-//    var speed: Int
-//    var dimensions:EntDimens
-//    var isSolid:Boolean
-//    var spriteu: Image
     fun updateEntity() {}
 
     fun drawEntity(g: Graphics) {
-        drawAsSprite(this,gateClosedImage,g)
+        drawAsSprite(this,commonStuff.spriteu,g)
     }
 }
 class HealthStats{

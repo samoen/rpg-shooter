@@ -6,30 +6,34 @@ import java.awt.geom.Path2D
 import java.awt.Rectangle
 
 
-class Bullet(val shottah: HasHealth) : Entity {
+class Bullet(shottah: HasHealth) : Entity {
+    var shDims = (shottah as Entity).commonStuff.dimensions
     var shtbywep = shottah.healthStats.wep.copy()
+    var bTeam = shottah.healthStats.teamNumber
     var anglo = shottah.healthStats.angy
-    override var commonStuff=EntCommon(dimensions = let {
-        (shottah as Entity)
-        val bsize = shtbywep.bulSize/shtbywep.projectiles
-        val shotBysize = shottah.commonStuff.dimensions.drawSize/shtbywep.projectiles
-        EntDimens(
-            (shottah.commonStuff.dimensions.getMidX() - (bsize / 2)) + (Math.cos(anglo) * shotBysize / 2) + (Math.cos(
-                anglo
-            ) * bsize / 2),
-            ((shottah as Entity).commonStuff.dimensions.getMidY() - (bsize / 2)) - (Math.sin(anglo) * shotBysize / 2) - (Math.sin(
-                anglo
-            ) * bsize / 2),
-            bsize
-        )
-    },
-        speed = shtbywep.bulspd)
-    var bulImage = wallImage
     var startDamage = shtbywep.buldmg
     var damage = shtbywep.buldmg/shtbywep.projectiles
     var framesAlive = 0
     var bulDir = anglo + ((Math.random()-0.5)*shtbywep.recoil/6.0)
+    override var commonStuff=EntCommon(
+        dimensions = run {
+            val bsize = shtbywep.bulSize/shtbywep.projectiles
+            val shotBysize = shDims.drawSize/shtbywep.projectiles
+            EntDimens(
+                (shDims.getMidX() - (bsize / 2)) + (Math.cos(anglo) * shotBysize / 2) + (Math.cos(anglo) * bsize / 2),
+                (shDims.getMidY() - (bsize / 2)) - (Math.sin(anglo) * shotBysize / 2) - (Math.sin(anglo) * bsize / 2),
+                bsize
+            )
+        },
+        speed = shtbywep.bulspd
+    )
     override fun updateEntity() {
+        allEntities.filter { it is HasHealth && it.commonStuff.dimensions.overlapsOther(this.commonStuff.dimensions) }.forEach {
+            it as HasHealth
+            if(it.healthStats.teamNumber!=bTeam)
+                takeDamage(this,it)
+        }
+
         allEntities.filter { it is Wall && commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions)}.forEach {
             commonStuff.toBeRemoved = true
             val imp = Impact()
@@ -51,14 +55,10 @@ class Bullet(val shottah: HasHealth) : Entity {
             commonStuff.dimensions.drawSize-=shrinky
             commonStuff.dimensions.xpos+=shrinky/2
             commonStuff.dimensions.ypos+=shrinky/2
-//            if(damage<0)damage=0
         }
         if(commonStuff.dimensions.drawSize<=4 || damage<0.5)commonStuff.toBeRemoved=true
     }
 
-    override fun drawEntity(g: Graphics) {
-        drawAsSprite(this,bulImage,g)
-    }
 }
 
 
@@ -101,15 +101,14 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
     override fun updateEntity() {
         didMove = false
         healthStats.didHeal = false
-        val shops = allEntities.filter { it is Shop }
-        val onshops = shops.filter { commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions) }
-        var isonshop = onshops.isNotEmpty()
-        if(isonshop && notOnShop){
-            val theShop = onshops.first() as Shop
-            menuStuff = theShop.menuThings(this)
-        }
-        notOnShop = !isonshop
-
+        val onshops = allEntities.filter { it is Shop && commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions) }.firstOrNull()
+        if(onshops!=null){
+            if(notOnShop){
+                val theShop = onshops as Shop
+                menuStuff = theShop.menuThings(this)
+            }
+            notOnShop = false
+        }else notOnShop = true
 
         var toMovex = 0.0
         var toMovey = 0.0
@@ -234,7 +233,7 @@ class Player(val buttonSet: ButtonSet): Entity, HasHealth {
     var pewframecount = 0
 }
 class Enemy : Entity, HasHealth{
-    override var commonStuff=EntCommon(isSolid = true)
+    override var commonStuff=EntCommon(isSolid = true,spriteu = goblinImage)
     override var healthStats=HealthStats().also {
         it.maxHP=commonStuff.dimensions.drawSize
         it.currentHp = it.maxHP
@@ -248,7 +247,7 @@ class Enemy : Entity, HasHealth{
     var iTried = Pair(-1.0,-1.0)
 
     override fun drawEntity(g: Graphics) {
-        drawAsSprite(this,goblinImage,g)
+        super.drawEntity(g)
         drawHealth(this,g)
         drawCrosshair(this,g)
 //        val r = Rectangle((xpos).toInt(),(ypos - (healthStats.wep.bulSize/(drawSize))).toInt(),healthStats.wep.bulSize.toInt(),700)
@@ -349,10 +348,7 @@ class Enemy : Entity, HasHealth{
 }
 
 class Wall : Entity{
-    override var commonStuff=EntCommon(isSolid = true)
-    override fun drawEntity(g: Graphics) {
-        drawAsSprite(this,wallImage,g)
-    }
+    override var commonStuff=EntCommon(isSolid = true,spriteu = wallImage)
 }
 
 class Gateway : Entity{
@@ -363,10 +359,6 @@ class Gateway : Entity{
     var locked = true
     var someoneSpawned:Entity = this
     var sumspn = false
-    override fun drawEntity(g: Graphics) {
-        if(locked) drawAsSprite(this,gateClosedImage,g)
-        else drawAsSprite(this,gateOpenImage,g)
-    }
 
     override fun updateEntity() {
         if(sumspn){
@@ -421,7 +413,7 @@ class Gateway : Entity{
     }
 }
 class GateSwitch:Entity{
-    override var commonStuff=EntCommon()
+    override var commonStuff=EntCommon(spriteu = gateClosedImage)
     var beenSwitched = false
     override fun updateEntity() {
         if(!beenSwitched){
@@ -429,6 +421,7 @@ class GateSwitch:Entity{
                 if(it.commonStuff.dimensions.overlapsOther(commonStuff.dimensions)){
                     beenSwitched = true
                     allEntities.filter { it is Gateway }.forEach {
+                        it.commonStuff.spriteu = gateOpenImage
                         (it as Gateway).locked = false
                     }
                 }
@@ -443,12 +436,8 @@ var changeMap = false
 var NumPlayers = 2
 
 class Impact : Entity{
-    override var commonStuff=EntCommon()
-    override fun drawEntity(g: Graphics) {
-        drawAsSprite(this,impactImage,g)
-    }
-
     var liveFrames = 4
+    override var commonStuff=EntCommon(spriteu = impactImage)
     override fun updateEntity() {
        liveFrames--
         if(liveFrames<0)commonStuff.toBeRemoved=true
@@ -457,16 +446,28 @@ class Impact : Entity{
 
 class MedPack : Entity {
     override var commonStuff=EntCommon()
+    override fun updateEntity() {
+        allEntities.filter { it is HasHealth }.forEach {
+            it as HasHealth
+            if(commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions)){
+                if(it.healthStats.currentHp<it.healthStats.maxHP){
+                    commonStuff.toBeRemoved = true
+                    val desiredhp = it.healthStats.currentHp+20
+                    if (desiredhp>it.healthStats.maxHP){
+                        it.healthStats.currentHp = it.healthStats.maxHP
+                    }else{
+                        it.healthStats.currentHp = desiredhp
+                    }
+                }
+            }
+        }
+    }
 }
 
 class Shop:Entity{
-    override var commonStuff=EntCommon()
+    override var commonStuff=EntCommon(spriteu = backgroundImage)
     var char:Char = 'z'
     var menuThings:(Player)->List<Entity> ={ listOf()}
-    var image = backgroundImage
-    override fun drawEntity(g: Graphics) {
-        drawAsSprite(this,image,g)
-    }
 }
 
 class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()->Unit,val onUp1:()->Unit,val onDown1:()->Unit,val onUp2:()->Unit={},val onDown2:()->Unit={},val onUp3:()->Unit={},val onDown3:()->Unit={}):Entity{
