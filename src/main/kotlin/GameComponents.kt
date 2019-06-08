@@ -55,39 +55,39 @@ fun startWave(numberofenemies: Int) {
     }
 }
 
-fun playerKeyPressed(player: Player, e: KeyEvent){
-    if (e.keyCode == player.buttonSet.swapgun) player.pCont.Swp.tryProduce()
-    if (e.keyCode == player.buttonSet.up) player.pCont.up.tryProduce()
-    if (e.keyCode == player.buttonSet.down) player.pCont.dwm.tryProduce()
-    if (e.keyCode == player.buttonSet.shoot) player.pCont.sht.tryProduce()
-    if (e.keyCode == player.buttonSet.right) player.pCont.riri.tryProduce()
-    if (e.keyCode == player.buttonSet.left) player.pCont.leflef.tryProduce()
-    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.tryProduce()
-    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.tryProduce()
-}
+//fun playerKeyPressed(player: Player, e: KeyEvent){
+//    if (e.keyCode == player.buttonSet.swapgun) player.pCont.Swp.tryProduce()
+//    if (e.keyCode == player.buttonSet.up) player.pCont.up.tryProduce()
+//    if (e.keyCode == player.buttonSet.down) player.pCont.dwm.tryProduce()
+//    if (e.keyCode == player.buttonSet.shoot) player.pCont.sht.tryProduce()
+//    if (e.keyCode == player.buttonSet.right) player.pCont.riri.tryProduce()
+//    if (e.keyCode == player.buttonSet.left) player.pCont.leflef.tryProduce()
+//    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.tryProduce()
+//    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.tryProduce()
+//}
 
-fun playerKeyReleased(player: Player,e: KeyEvent){
-    if (e.keyCode == player.buttonSet.swapgun) {
-        player.pCont.Swp.release()
-    }
-    if (e.keyCode == player.buttonSet.up) {
-        player.pCont.up.release()
-    }
-    if (e.keyCode == player.buttonSet.down) {
-        player.pCont.dwm.release()
-    }
-    if (e.keyCode == player.buttonSet.shoot){
-        player.pCont.sht.release()
-    }
-    if (e.keyCode == player.buttonSet.right){
-        player.pCont.riri.release()
-    }
-    if (e.keyCode == player.buttonSet.left) {
-        player.pCont.leflef.release()
-    }
-    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.release()
-    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
-}
+//fun playerKeyReleased(player: Player,e: KeyEvent){
+//    if (e.keyCode == player.buttonSet.swapgun) {
+//        player.pCont.Swp.release()
+//    }
+//    if (e.keyCode == player.buttonSet.up) {
+//        player.pCont.up.release()
+//    }
+//    if (e.keyCode == player.buttonSet.down) {
+//        player.pCont.dwm.release()
+//    }
+//    if (e.keyCode == player.buttonSet.shoot){
+//        player.pCont.sht.release()
+//    }
+//    if (e.keyCode == player.buttonSet.right){
+//        player.pCont.riri.release()
+//    }
+//    if (e.keyCode == player.buttonSet.left) {
+//        player.pCont.leflef.release()
+//    }
+//    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.release()
+//    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
+//}
 
 fun processShooting(me:HasHealth, sht:Boolean, weap:Weapon, bulImage:Image,notOnShop:Boolean){
     if (sht && weap.framesSinceShottah > me.healthStats.wep.atkSpd && notOnShop) {

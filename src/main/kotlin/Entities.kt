@@ -157,7 +157,7 @@ class Player(val buttonSet: ButtonSet): HasHealth {
             tSpdMod-= healthStats.turnSpeed/15
             if(tSpdMod<0)tSpdMod=0.0f
             processTurning(this,pCont.spenlef.booly,pCont.spinri.booly,healthStats.turnSpeed-tSpdMod)
-            if(pCont.Swp.tryConsume()){
+            if(pCont.Swp.booly){
                 playStrSound(soundType.SWAP)
                 if (primaryEquipped){
                     healthStats.wep = spareWep
@@ -375,7 +375,7 @@ class Gateway : Entity{
         var toremove:Int = -1
         
         for ((index,player) in playersInside.withIndex()){
-            if(player.pCont.sht.tryConsume()){
+            if(player.pCont.sht.booly){
                 player.commonStuff.dimensions.xpos = commonStuff.dimensions.xpos
                 player.commonStuff.dimensions.ypos = commonStuff.dimensions.ypos
                 var canSpawn = true
@@ -479,26 +479,26 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
     override var commonStuff=EntCommon(dimensions = EntDimens(other.commonStuff.dimensions.xpos+selectorXSpace,other.commonStuff.dimensions.ypos,20.0))
     var indexer = 0
     override fun updateEntity() {
-        if(other.pCont.sht.tryConsume()){
+        if(other.pCont.sht.booly){
             if(indexer+1<numStats){
                 indexer++
                 commonStuff.dimensions.ypos+=statsYSpace
             }
         }
-        if(other.pCont.Swp.tryConsume()){
+        if(other.pCont.Swp.booly){
             if(indexer-1>=0){
                 indexer--
                 commonStuff.dimensions.ypos -= statsYSpace
             }
         }
-        if(other.pCont.spinri.tryConsume()){
+        if(other.pCont.spinri.booly){
             when(indexer){
                 0->{ onUp() }
                 1->{ onUp1() }
                 2->{ onUp2() }
                 3->{ onUp3() }
             }
-        }else if(other.pCont.spenlef.tryConsume()){
+        }else if(other.pCont.spenlef.booly){
             when(indexer){
                 0->{ onDown() }
                 1->{ onDown1() }

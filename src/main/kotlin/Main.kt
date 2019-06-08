@@ -1,4 +1,5 @@
 
+import com.studiohartman.jamepad.ControllerManager
 import java.awt.Graphics
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
@@ -9,6 +10,7 @@ import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JPanel
 
+
 val allEntities = mutableListOf<Entity>()
 val entsToAdd = mutableListOf<Entity>()
 val entsToDraw = mutableListOf<Entity>()
@@ -16,6 +18,7 @@ val players:MutableList<Player> = mutableListOf()
 var pressed1 = OneShotChannel()
 var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
+
 var gamePaused = false
 var myrepaint = false
 var painting = false
@@ -123,6 +126,10 @@ enum class soundType{
 }
 
 fun main() {
+
+    val controllers = ControllerManager()
+    controllers.initSDLGamepad()
+
     soundFiles[soundType.SHOOT] = longpewFil
     soundFiles[soundType.OUCH] = ouchnoiseFile
     soundFiles[soundType.DIE] = dienoiseFile
@@ -157,31 +164,31 @@ fun main() {
     })
     entsToAdd.addAll(players)
 
-    myFrame.addKeyListener(
-        object :KeyListener{
-            override fun keyTyped(e: KeyEvent?) {}
-            override fun keyPressed(e: KeyEvent?) {
-                if(e!=null){
-                    if (e.keyCode == KeyEvent.VK_1) pressed1.tryProduce()
-                    if (e.keyCode == KeyEvent.VK_2) pressed2.tryProduce()
-                    if (e.keyCode == KeyEvent.VK_3) pressed3.tryProduce()
-                    for(player in players){
-                        playerKeyPressed(player,e)
-                    }
-                }
-            }
-            override fun keyReleased(e: KeyEvent?) {
-                if(e!=null){
-                    if (e.keyCode == KeyEvent.VK_1) pressed1.release()
-                    if (e.keyCode == KeyEvent.VK_2) pressed2.release()
-                    if (e.keyCode == KeyEvent.VK_3) pressed3.release()
-                    for (player in players){
-                        playerKeyReleased(player,e)
-                    }
-                }
-            }
-        }
-    )
+//    myFrame.addKeyListener(
+//        object :KeyListener{
+//            override fun keyTyped(e: KeyEvent?) {}
+//            override fun keyPressed(e: KeyEvent?) {
+//                if(e!=null){
+//                    if (e.keyCode == KeyEvent.VK_1) pressed1.tryProduce()
+//                    if (e.keyCode == KeyEvent.VK_2) pressed2.tryProduce()
+//                    if (e.keyCode == KeyEvent.VK_3) pressed3.tryProduce()
+//                    for(player in players){
+//                        playerKeyPressed(player,e)
+//                    }
+//                }
+//            }
+//            override fun keyReleased(e: KeyEvent?) {
+//                if(e!=null){
+//                    if (e.keyCode == KeyEvent.VK_1) pressed1.release()
+//                    if (e.keyCode == KeyEvent.VK_2) pressed2.release()
+//                    if (e.keyCode == KeyEvent.VK_3) pressed3.release()
+//                    for (player in players){
+//                        playerKeyReleased(player,e)
+//                    }
+//                }
+//            }
+//        }
+//    )
 //    myFrame.createBufferStrategy(3)
 //    myFrame.graphics.dispose()
 //    myFrame.bufferStrategy.show()
@@ -209,17 +216,44 @@ fun main() {
 
     while (true){
         val pretime = System.currentTimeMillis()
-        if(pressed3.tryConsume()){
+        var pressed1contr : Boolean = false
+        var pressed2contr : Boolean = false
+        var pressed3contr : Boolean = false
+        for((i,p1) in players.withIndex()){
+            val currState = controllers.getState(i)
+            p1.pCont.sht.booly = currState.a
+            p1.pCont.Swp.booly = currState.xJustPressed
+            p1.pCont.spenlef.booly = currState.lb
+            p1.pCont.spinri.booly = currState.rb
+            p1.pCont.riri.booly = currState.dpadRight
+            p1.pCont.leflef.booly = currState.dpadLeft
+            p1.pCont.up.booly = currState.dpadUp
+            p1.pCont.dwm.booly = currState.dpadDown
+            if(currState.bJustPressed){
+                pressed1contr = true
+            }
+            if(currState.startJustPressed){
+                pressed2contr = true
+            }
+            if(currState.yJustPressed){
+                pressed3contr = true
+            }
+
+        }
+        if(pressed3.booly || pressed3contr){
             placeMap(map1,1,1)
-        }else if(pressed2.tryConsume()) {
+        }else if(pressed2.booly || pressed2contr) {
             gamePaused = !gamePaused
-        } else if (pressed1.tryConsume()) {
+        } else if (pressed1.booly || pressed1contr) {
             startWave(4)
         } else if(changeMap){
             changeMap=false
             placeMap(nextMap,nextMapNum,currentMapNum)
         } else{
                 if(!gamePaused){
+
+
+
                     val preupdateEnts = allEntities.map { it.commonStuff.dimensions.copy() }
                     allEntities.forEach { entity: Entity ->
                         entity.updateEntity()
