@@ -12,7 +12,6 @@ data class EntCommon(
 interface Entity {
     var commonStuff : EntCommon
     fun updateEntity() {}
-
     fun drawEntity(g: Graphics) {
         drawAsSprite(this,commonStuff.spriteu,g,false)
     }
@@ -21,16 +20,15 @@ data class HealthStats(
     var didHeal :Boolean = false,
     var currentHp :Double = 10.0,
     var maxHP :Double = 10.0,
-    var ouchNoise:String = "ouch",
-    var dieNoise:String = "die",
-    val DAMAGED_ANIMATION_FRAMES:Int = 3,
+    var ouchNoise:soundType = soundType.OUCH,
+    var dieNoise:soundType = soundType.DIE,
     var didGetShot:Boolean = false,
     var armorIsBroken:Boolean = false,
     var armorBrokenFrames :Int= 0,
     var gotShotFrames :Int= DAMAGED_ANIMATION_FRAMES,
     var stopped :Boolean= false,
     var shieldSkill:Int = 1,
-    var shootySound:String = "die",
+    var shootySound:soundType = soundType.DIE,
     var angy :Double = 0.0,
     var wep:Weapon=Weapon(),
     var turnSpeed:Float = 0.05f,

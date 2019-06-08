@@ -17,7 +17,7 @@ fun drawAsSprite(entity: Entity,image:Image,g:Graphics,flipped:Boolean){
     g.drawImage(image,getWindowAdjustedPos(entity.commonStuff.dimensions.xpos + flipaddAdj).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.ypos).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt()*flipAdjust,getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt(),null)
 }
 
-fun playStrSound(str:String){
+fun playStrSound(str:soundType){
 //        if(soundBank.containsKey(str)){
 //            if(soundBank[str]!!.isRunning){
                 AudioSystem.getClip().also{
@@ -203,10 +203,10 @@ fun takeDamage(other:Entity,me:Entity){
         me.healthStats.currentHp = desirHealth
         if(me.healthStats.getArmored()){
             me.healthStats.armorIsBroken = true
-            playStrSound("swap")
+            playStrSound(soundType.SWAP)
         }else playStrSound(me.healthStats.ouchNoise)
         me.healthStats.didGetShot = true
-        me.healthStats.gotShotFrames = me.healthStats.DAMAGED_ANIMATION_FRAMES
+        me.healthStats.gotShotFrames = DAMAGED_ANIMATION_FRAMES
     }
 }
 
@@ -325,7 +325,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             if(ch == 'b'){
                 entsToAdd.add(Shop().also {
                     it.char = 'b'
-                    it.commonStuff.spriteu = ammoShopImage
+                    it.commonStuff.spriteu = gunShopImage
                     it.commonStuff.dimensions.drawSize = mapGridSize
                     it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
@@ -363,15 +363,15 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             }
             if(ch == 'm'){
                 entsToAdd.add(Shop().also {
-                    it.commonStuff.spriteu = healthShopImage
+                    it.commonStuff.spriteu = ammoShopImage
                     it.char = 'm'
                     it.commonStuff.dimensions.drawSize = mapGridSize
                     it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
                     it.menuThings = {other->listOf(
-                        StatView({"Dmag"},other,0,0),
-                        StatView({"Rang"},other,1,0),
-                        StatView({"Buck"},other,2,0),
+                        StatView({"Dmg"},other,0,0),
+                        StatView({"Rng"},other,1,0),
+                        StatView({"Buk"},other,2,0),
                         Selector(3,other,
                             {
                                 other.healthStats.wep.buldmg+=1
@@ -394,7 +394,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                                     other.healthStats.wep.bulLifetime--
                                 }
                             },{
-                                if(other.healthStats.wep.projectiles+1<15)other.healthStats.wep.projectiles++
+                                if(other.healthStats.wep.projectiles+1<20)other.healthStats.wep.projectiles++
                             },{
                                 if(other.healthStats.wep.projectiles-1>=1)other.healthStats.wep.projectiles--
                             }),
@@ -407,7 +407,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             }
             if(ch == 'g'){
                 entsToAdd.add(Shop().also {
-                    it.commonStuff.spriteu = ammoShopImage
+                    it.commonStuff.spriteu = healthShopImage
                     it.menuThings = {other->listOf(
                         StatView({"Run"},other,0,0),
                         StatView({"HP"},other,1,0),

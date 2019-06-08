@@ -12,20 +12,20 @@ class Bullet(shottah: HasHealth) : Entity {
     var bTeam = shottah.healthStats.teamNumber
     var anglo = shottah.healthStats.angy
     var startDamage = shtbywep.buldmg
-    var damage = shtbywep.buldmg/shtbywep.projectiles
+    var damage = shtbywep.buldmg
     var framesAlive = 0
     var bulDir = anglo + ((Math.random()-0.5)*shtbywep.recoil/6.0)
     override var commonStuff=EntCommon(
         dimensions = run {
-            val bsize = shtbywep.bulSize/shtbywep.projectiles
-            val shotBysize = shDims.drawSize/shtbywep.projectiles
+            val bsize = shtbywep.bulSize
+            val shotBysize = shDims.drawSize
             EntDimens(
                 (shDims.getMidX() - (bsize / 2)) + (Math.cos(anglo) * shotBysize / 2) + (Math.cos(anglo) * bsize / 2),
                 (shDims.getMidY() - (bsize / 2)) - (Math.sin(anglo) * shotBysize / 2) - (Math.sin(anglo) * bsize / 2),
                 bsize
             )
         },
-        speed = shtbywep.bulspd+(shtbywep.projectiles)
+        speed = shtbywep.bulspd
     )
     override fun updateEntity() {
         allEntities.filter { it is HasHealth && it.commonStuff.dimensions.overlapsOther(this.commonStuff.dimensions) }.forEach {
@@ -86,7 +86,7 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         currentHp = commonStuff.dimensions.drawSize,
         teamNumber = 1,
         turnSpeed = 0.1f,
-        shootySound = "shoot",
+        shootySound = soundType.SHOOT,
         wep = primWep
     )
 
@@ -107,7 +107,9 @@ class Player(val buttonSet: ButtonSet): HasHealth {
                 menuStuff = theShop.menuThings(this)
             }
             notOnShop = false
-        }else notOnShop = true
+        }else {
+                notOnShop = true
+        }
 
         var toMovex = 0.0
         var toMovey = 0.0
@@ -156,7 +158,7 @@ class Player(val buttonSet: ButtonSet): HasHealth {
             if(tSpdMod<0)tSpdMod=0.0f
             processTurning(this,pCont.spenlef.booly,pCont.spinri.booly,healthStats.turnSpeed-tSpdMod)
             if(pCont.Swp.tryConsume()){
-                playStrSound("swap")
+                playStrSound(soundType.SWAP)
                 if (primaryEquipped){
                     healthStats.wep = spareWep
                 }else{
@@ -167,10 +169,12 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         }
         processShooting(this,pCont.sht.booly,this.healthStats.wep,pBulImage,notOnShop)
         
-        if(notOnShop)healthStats.stopped =!pCont.sht.booly &&
-//                !pCont.spenlef.booly &&
-//                !pCont.spinri.booly &&
-                !didMove
+        if(notOnShop){
+            healthStats.stopped = !didMove
+            if(healthStats.wep.framesSinceShottah<healthStats.shieldSkill){
+                healthStats.stopped = false
+            }
+        }
         else healthStats.stopped = !didMove
 
         if(healthStats.armorIsBroken){
@@ -232,7 +236,7 @@ class Enemy : HasHealth{
         maxHP = commonStuff.dimensions.drawSize,
         currentHp = commonStuff.dimensions.drawSize,
         teamNumber = 0,
-        shootySound = "laser"
+        shootySound = soundType.LASER
     )
     var framesSinceDrift = 100
     var randnumx = 0.0
@@ -271,10 +275,13 @@ class Enemy : HasHealth{
             .sortedBy { abs(it.commonStuff.dimensions.xpos - commonStuff.dimensions.xpos) + abs(it.commonStuff.dimensions.ypos - commonStuff.dimensions.ypos) }
 
         if(filteredEnts.isNotEmpty()){
+            val maxTick = commonStuff.dimensions.drawSize*2
             val firstplayer = filteredEnts.first()
             if(framesSinceDrift<ENEMY_DRIFT_FRAMES) framesSinceDrift++
-            if(runTick>1000)runTick = 0
-            runTick+=40
+            if(runTick>maxTick)runTick = 0
+            runTick+=(4).toInt()
+            if(runTick<maxTick/2)commonStuff.spriteu = goblinImage
+            else commonStuff.spriteu = runImage
             var xdiff = firstplayer.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
             var ydiff = firstplayer.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
             if(!(iTried.first==commonStuff.dimensions.xpos && iTried.second==commonStuff.dimensions.ypos)){
@@ -285,9 +292,7 @@ class Enemy : HasHealth{
                 fun modifyPos(xamt:Double,yamt:Double){
                     commonStuff.dimensions.xpos+=xamt
                     commonStuff.dimensions.ypos+=yamt
-                    runTick+=((xamt+yamt)*7).toInt()
-                    if(runTick<500)commonStuff.spriteu = goblinImage
-                    else commonStuff.spriteu = runImage
+                    runTick+=((xamt+yamt)).toInt()
                 }
 
                 var adjSpd = commonStuff.speed.toFloat()

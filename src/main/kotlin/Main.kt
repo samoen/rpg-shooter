@@ -27,15 +27,15 @@ val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 val YFRAMEMAGIC = 40
 const val TICK_INTERVAL = 40
 const val MIN_ENT_SIZE = 9.0
-
+val DAMAGED_ANIMATION_FRAMES:Int = 3
 val ENEMY_DRIFT_FRAMES = 30
-val soundFiles:MutableMap<String,File> = mutableMapOf()
+
+val soundFiles:MutableMap<soundType,File> = mutableMapOf()
 //val soundBank:MutableMap<String, Clip> = mutableMapOf()
 //val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
 val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
 val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
 val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
-
 val ouchnoiseFile = File("src/main/resources/ouch.wav").getAbsoluteFile()
 val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
 val stillImage = ImageIcon("src/main/resources/main.png").image
@@ -43,8 +43,9 @@ val runImage = ImageIcon("src/main/resources/walk.png").image
 val goblinImage = ImageIcon("src/main/resources/main.png").image
 val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 val backgroundImage = ImageIcon("src/main/resources/tilemap.png").image
-val healthShopImage = ImageIcon("src/main/resources/tilemap.png").image
-val ammoShopImage = ImageIcon("src/main/resources/tilemap.png").image
+val healthShopImage = ImageIcon("src/main/resources/hospital.png").image
+val ammoShopImage = ImageIcon("src/main/resources/ammoshop.png").image
+val gunShopImage = ImageIcon("src/main/resources/gunshop.png").image
 val pstoppedImage = ImageIcon("src/main/resources/plasma.png").image
 val pouchImage = ImageIcon("src/main/resources/dooropen.png").image
 val armorBrokenImage = ImageIcon("src/main/resources/doorshut.png").image
@@ -113,12 +114,20 @@ val map3 =  "                " +
             "                " +
             "                "
 
+enum class soundType{
+    SHOOT,
+    OUCH,
+    DIE,
+    LASER,
+    SWAP
+}
+
 fun main() {
-    soundFiles["shoot"] = longpewFil
-    soundFiles["ouch"] = ouchnoiseFile
-    soundFiles["die"] = dienoiseFile
-    soundFiles["laser"] = enemyPewFile
-    soundFiles["swap"] = swapnoiseFile
+    soundFiles[soundType.SHOOT] = longpewFil
+    soundFiles[soundType.OUCH] = ouchnoiseFile
+    soundFiles[soundType.DIE] = dienoiseFile
+    soundFiles[soundType.LASER] = enemyPewFile
+    soundFiles[soundType.SWAP] = swapnoiseFile
 
 //    soundBank["ouch"]= AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(ouchnoiseFile)) }
 //    soundBank["die"]= AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(dienoiseFile)) }
@@ -195,6 +204,8 @@ fun main() {
     myFrame.title = "Gunplay"
     myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE+YFRAMEMAGIC)
     myFrame.isVisible = true
+
+    playStrSound(soundType.SWAP)
 
     while (true){
         val pretime = System.currentTimeMillis()
