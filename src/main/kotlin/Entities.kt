@@ -99,6 +99,7 @@ class Player(val buttonSet: ButtonSet): HasHealth {
     )
     override fun updateEntity() {
         didMove = false
+        var didStopBlock = false
         healthStats.didHeal = false
         val onshops = allEntities.filter { it is Shop && commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions) }.firstOrNull()
         if(onshops!=null){
@@ -118,8 +119,20 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         if (pCont.up.booly){ toMovey -= commonStuff.speed.toDouble() }
         if (pCont.dwm.booly) { toMovey += commonStuff.speed.toDouble() }
 
-        toMovex +=  Math.cos( pCont.stickAngle.toDouble())*pCont.stickMag.toInt()*commonStuff.speed
-        toMovey -=  Math.sin( pCont.stickAngle.toDouble())*pCont.stickMag.toInt()*commonStuff.speed
+        toMovex +=  Math.cos( pCont.stickAngle*Math.PI/180)* pCont.stickMag*commonStuff.speed
+        toMovey -=  Math.sin( pCont.stickAngle*Math.PI/180)* pCont.stickMag*commonStuff.speed
+
+        if(pCont.stickMag>0.15)didStopBlock = true
+
+        if(Math.abs(toMovex)<0.09&&Math.abs(toMovey)<0.09){
+            toMovex = 0.0
+            toMovey = 0.0
+        }
+        else{
+            didMove=true
+//            toMovex *=commonStuff.speed
+//            toMovey *=commonStuff.speed
+        }
 
         if(toMovex!=0.0&&toMovey!=0.0){
             toMovex=toMovex*0.707
@@ -139,7 +152,7 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         commonStuff.dimensions.ypos += toMovey
         if(toMovex>0)movedRight = true
         if(toMovex<0)movedRight = false
-        if(toMovex!=0.0||toMovey!=0.0)didMove = true
+//        if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(this)
         if(notOnShop){
             if(pCont.spenlef.booly == pCont.spinri.booly){
@@ -170,12 +183,12 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         processShooting(this,pCont.sht.booly,this.healthStats.wep,pBulImage,notOnShop)
         
         if(notOnShop){
-            healthStats.stopped = !didMove
+            healthStats.stopped = !didStopBlock
             if(healthStats.wep.framesSinceShottah<healthStats.shieldSkill){
                 healthStats.stopped = false
             }
         }
-        else healthStats.stopped = !didMove
+        else healthStats.stopped = !didStopBlock
 
         if(healthStats.armorIsBroken){
             healthStats.armorBrokenFrames++
@@ -203,8 +216,9 @@ class Player(val buttonSet: ButtonSet): HasHealth {
             }
         }else{
             gaitcount = 0
-            if(healthStats.getArmored())todraw = pstoppedImage
         }
+        if(healthStats.getArmored())todraw = pstoppedImage
+
         if( healthStats.armorIsBroken){
             todraw = armorBrokenImage
             healthStats.didGetShot = false
