@@ -54,9 +54,9 @@ val ammoShopImage = ImageIcon("src/main/resources/ammoshop.png").image
 val gunShopImage = ImageIcon("src/main/resources/gunshop.png").image
 val pstoppedImage = ImageIcon("src/main/resources/shield.png").image
 val pouchImage = ImageIcon("src/main/resources/manhit.png").image
-val armorBrokenImage = ImageIcon("src/main/resources/doorshut.png").image
+val armorBrokenImage = ImageIcon("src/main/resources/halfshield.png").image
 val wallImage = ImageIcon("src/main/resources/brick1.png").image
-val dieImage = ImageIcon("src/main/resources/shrapnel.png").image
+val dieImage = ImageIcon("src/main/resources/deadman.png").image
 val impactImage = ImageIcon("src/main/resources/shrapnel.png").image
 val pBulImage = ImageIcon("src/main/resources/plasma.png").image
 val eBulImage = ImageIcon("src/main/resources/badbullet.png").image
@@ -298,10 +298,11 @@ fun main() {
                     do{
                         timesTried++
                         var triggeredReaction = false
-                        for(dex in 0 until allEntities.size) {
+                        val allSize = allEntities.size
+                        for(dex in 0 until allSize) {
                             val ient = allEntities[dex]
                             if(ient is Player || ient is Enemy){
-                                for(j in (0)until allEntities.size){
+                                for(j in (0)until allSize){
                                     if(dex!=j){
                                         val jent = allEntities[j]
                                         if(jent.commonStuff.isSolid){
@@ -314,7 +315,7 @@ fun main() {
                                             }
                                             if(dex>j && collided && jent.commonStuff.dimensions.overlapsOther(ient.commonStuff.dimensions)) {
                                                 if (ient.commonStuff.isSolid && jent.commonStuff.isSolid) {
-                                                    if(timesTried > players.size+1){
+                                                    if(timesTried > allSize){
                                                         println("Cannot resolve collision!")
                                                     }else{
                                                         triggeredReaction = true

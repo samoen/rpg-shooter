@@ -68,7 +68,7 @@ class Player(val buttonSet: ButtonSet): HasHealth {
     val pCont:playControls = playControls()
     var primWep = Weapon()
     var movedRight = false
-    var didMove = false
+//    var didMove = false
     var didShoot = false
     var tSpdMod = 0.1f
     var primaryEquipped = true
@@ -98,7 +98,6 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         buldmg = 4
     )
     override fun updateEntity() {
-        didMove = false
         var didStopBlock = false
         healthStats.didHeal = false
         val onshops = allEntities.filter { it is Shop && commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions) }.firstOrNull()
@@ -114,27 +113,24 @@ class Player(val buttonSet: ButtonSet): HasHealth {
 
         var toMovex = 0.0
         var toMovey = 0.0
-        if (pCont.riri.booly) toMovex += commonStuff.speed.toDouble()
-        if (pCont.leflef.booly) toMovex -= commonStuff.speed.toDouble()
-        if (pCont.up.booly){ toMovey -= commonStuff.speed.toDouble() }
-        if (pCont.dwm.booly) { toMovey += commonStuff.speed.toDouble() }
+//        if (pCont.riri.booly) toMovex += commonStuff.speed.toDouble()
+//        if (pCont.leflef.booly) toMovex -= commonStuff.speed.toDouble()
+//        if (pCont.up.booly){ toMovey -= commonStuff.speed.toDouble() }
+//        if (pCont.dwm.booly) { toMovey += commonStuff.speed.toDouble() }
 
         toMovex +=  Math.cos( pCont.stickAngle*Math.PI/180)* pCont.stickMag*commonStuff.speed
         toMovey -=  Math.sin( pCont.stickAngle*Math.PI/180)* pCont.stickMag*commonStuff.speed
 
-        if(pCont.stickMag>0.15)didStopBlock = true
+        if(pCont.stickMag>0.15){
+            didStopBlock = true
 
-        if(Math.abs(pCont.stickMag)<0.009&&Math.abs(pCont.stickMag)<0.009){
+        }
+
+        if(Math.abs(pCont.stickMag)<0.009){
             toMovex = 0.0
             toMovey = 0.0
-        } else{
-            didMove=true
         }
 
-        if(toMovex!=0.0&&toMovey!=0.0){
-            toMovex=toMovex*0.707
-            toMovey=toMovey*0.707
-        }
         if(healthStats.wep.framesSinceShottah<healthStats.wep.atkSpd){
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
@@ -144,6 +140,10 @@ class Player(val buttonSet: ButtonSet): HasHealth {
                 toMovex *= healthStats.wep.mobility
                 toMovey *= healthStats.wep.mobility
             }
+        }
+        if(Math.abs(toMovex)>0.5 &&Math.abs(toMovey)>0.5){
+            toMovex=toMovex*0.707
+            toMovey=toMovey*0.707
         }
         commonStuff.dimensions.xpos += toMovex
         commonStuff.dimensions.ypos += toMovey
@@ -204,7 +204,7 @@ class Player(val buttonSet: ButtonSet): HasHealth {
                 didShoot=false
             }
         }
-        if(didMove){
+        if(didStopBlock){
             gaitcount++
             if(gaitcount < 3){
                 todraw = runImage

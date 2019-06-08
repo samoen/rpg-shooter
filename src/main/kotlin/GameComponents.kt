@@ -230,8 +230,8 @@ fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,o
 
         var takebackx: Double = (meMovingatOtherx / (meMovingatOtherx+otherMovingAtMex)) * overlapx
         if (xright) takebackx = takebackx * -1.0
-        if(takebackx>0)takebackx+=0.001
-        else if(takebackx<0)takebackx-=0.001
+        if(takebackx>0)takebackx+=0.1
+        else if(takebackx<0)takebackx-=0.1
         if(abs(takebackx)<mespd+2) {
             return(takebackx)
         }
