@@ -127,10 +127,9 @@ fun processTurning(me:HasHealth, lef:Boolean, righ:Boolean,tSpd:Float){
     }
 }
 fun drawCrosshair(me:HasHealth, g: Graphics){
-    me as Entity
     g as Graphics2D
     g.color = Color.CYAN
-    val strkw = 1.5f
+    val strkw = 2f
     g.stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
     val arcdiameter = (me as Entity).commonStuff.dimensions.drawSize
     fun doarc(diver:Double,timeser:Double){

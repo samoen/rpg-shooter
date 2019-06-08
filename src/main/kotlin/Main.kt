@@ -3,12 +3,15 @@ import com.studiohartman.jamepad.ControllerManager
 import java.awt.Graphics
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
+import java.awt.event.WindowEvent
+import java.awt.event.WindowListener
 import java.io.File
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JPanel
+import javax.swing.WindowConstants
 
 
 val allEntities = mutableListOf<Entity>()
@@ -18,7 +21,7 @@ val players:MutableList<Player> = mutableListOf()
 var pressed1 = OneShotChannel()
 var pressed2 = OneShotChannel()
 var pressed3 = OneShotChannel()
-
+var frameNotClosing = true
 var gamePaused = false
 var myrepaint = false
 var painting = false
@@ -207,6 +210,32 @@ fun main() {
             }
         }
     }
+    myFrame.addWindowListener(object:WindowListener{
+        override fun windowClosing(e: WindowEvent?) {
+            frameNotClosing = false
+            controllers.quitSDLGamepad()
+            System.out.println("closed!")
+        }
+
+        override fun windowDeiconified(e: WindowEvent?) {}
+
+        override fun windowClosed(e: WindowEvent?) {
+
+        }
+
+        override fun windowActivated(e: WindowEvent?) {
+        }
+
+        override fun windowDeactivated(e: WindowEvent?) {
+        }
+
+        override fun windowOpened(e: WindowEvent?) {
+        }
+
+        override fun windowIconified(e: WindowEvent?) {
+        }
+    })
+    myFrame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
     myFrame.contentPane = myPanel
     myFrame.title = "Gunplay"
     myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE+YFRAMEMAGIC)
@@ -214,13 +243,15 @@ fun main() {
 
     playStrSound(soundType.SWAP)
 
-    while (true){
+    while (frameNotClosing){
         val pretime = System.currentTimeMillis()
         var pressed1contr : Boolean = false
         var pressed2contr : Boolean = false
         var pressed3contr : Boolean = false
+        controllers.update()
         for((i,p1) in players.withIndex()){
             val currState = controllers.getState(i)
+            if(!currState.isConnected)continue
             p1.pCont.sht.booly = currState.a
             p1.pCont.selDwn.booly = currState.aJustPressed
             p1.pCont.Swp.booly = currState.xJustPressed
@@ -229,6 +260,8 @@ fun main() {
             p1.pCont.spinri.booly = currState.rb
             p1.pCont.selRight.booly = currState.rbJustPressed
             p1.pCont.riri.booly = currState.dpadRight
+            p1.pCont.stickAngle = currState.leftStickAngle
+            p1.pCont.stickMag = currState.leftStickMagnitude
             p1.pCont.leflef.booly = currState.dpadLeft
             p1.pCont.up.booly = currState.dpadUp
             p1.pCont.dwm.booly = currState.dpadDown

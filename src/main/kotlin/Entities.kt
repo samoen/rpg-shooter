@@ -115,12 +115,12 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         var toMovey = 0.0
         if (pCont.riri.booly) toMovex += commonStuff.speed.toDouble()
         if (pCont.leflef.booly) toMovex -= commonStuff.speed.toDouble()
-        if (pCont.up.booly){
-            toMovey -= commonStuff.speed.toDouble()
-        }
-        if (pCont.dwm.booly) {
-            toMovey += commonStuff.speed.toDouble()
-        }
+        if (pCont.up.booly){ toMovey -= commonStuff.speed.toDouble() }
+        if (pCont.dwm.booly) { toMovey += commonStuff.speed.toDouble() }
+
+        toMovex +=  Math.cos( pCont.stickAngle.toDouble())*pCont.stickMag.toInt()*commonStuff.speed
+        toMovey -=  Math.sin( pCont.stickAngle.toDouble())*pCont.stickMag.toInt()*commonStuff.speed
+
         if(toMovex!=0.0&&toMovey!=0.0){
             toMovex=toMovex*0.707
             toMovey=toMovey*0.707

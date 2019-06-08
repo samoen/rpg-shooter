@@ -87,6 +87,8 @@ class playControls(
     var Swp:OneShotChannel=OneShotChannel(),
     var selDwn:OneShotChannel=OneShotChannel(),
     var riri:OneShotChannel=OneShotChannel(),
+    var stickAngle:Float = 0f,
+    var stickMag:Float = 0f,
     var leflef:OneShotChannel=OneShotChannel(),
     var spinri:OneShotChannel=OneShotChannel(),
     var selRight:OneShotChannel=OneShotChannel(),
