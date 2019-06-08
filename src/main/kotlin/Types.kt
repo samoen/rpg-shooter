@@ -85,9 +85,12 @@ class playControls(
     var dwm:OneShotChannel=OneShotChannel(),
     var sht:OneShotChannel=OneShotChannel(),
     var Swp:OneShotChannel=OneShotChannel(),
+    var selDwn:OneShotChannel=OneShotChannel(),
     var riri:OneShotChannel=OneShotChannel(),
     var leflef:OneShotChannel=OneShotChannel(),
     var spinri:OneShotChannel=OneShotChannel(),
+    var selRight:OneShotChannel=OneShotChannel(),
+    var selLeft:OneShotChannel=OneShotChannel(),
     var spenlef:OneShotChannel=OneShotChannel()
 )
 

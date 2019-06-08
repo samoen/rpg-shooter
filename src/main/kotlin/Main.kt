@@ -222,9 +222,12 @@ fun main() {
         for((i,p1) in players.withIndex()){
             val currState = controllers.getState(i)
             p1.pCont.sht.booly = currState.a
+            p1.pCont.selDwn.booly = currState.aJustPressed
             p1.pCont.Swp.booly = currState.xJustPressed
             p1.pCont.spenlef.booly = currState.lb
+            p1.pCont.selLeft.booly = currState.lbJustPressed
             p1.pCont.spinri.booly = currState.rb
+            p1.pCont.selRight.booly = currState.rbJustPressed
             p1.pCont.riri.booly = currState.dpadRight
             p1.pCont.leflef.booly = currState.dpadLeft
             p1.pCont.up.booly = currState.dpadUp

@@ -357,7 +357,7 @@ class Wall : Entity{
 }
 
 class Gateway : Entity{
-    override var commonStuff=EntCommon()
+    override var commonStuff=EntCommon(spriteu = gateClosedImage)
     var playersInside = mutableListOf<Player>()
     var map = map1
     var mapnum = 1
@@ -418,7 +418,7 @@ class Gateway : Entity{
     }
 }
 class GateSwitch:Entity{
-    override var commonStuff=EntCommon(spriteu = gateClosedImage)
+    override var commonStuff=EntCommon(spriteu = eBulImage)
     var beenSwitched = false
     override fun updateEntity() {
         if(!beenSwitched){
@@ -479,7 +479,7 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
     override var commonStuff=EntCommon(dimensions = EntDimens(other.commonStuff.dimensions.xpos+selectorXSpace,other.commonStuff.dimensions.ypos,20.0))
     var indexer = 0
     override fun updateEntity() {
-        if(other.pCont.sht.booly){
+        if(other.pCont.selDwn.booly){
             if(indexer+1<numStats){
                 indexer++
                 commonStuff.dimensions.ypos+=statsYSpace
@@ -491,14 +491,14 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
                 commonStuff.dimensions.ypos -= statsYSpace
             }
         }
-        if(other.pCont.spinri.booly){
+        if(other.pCont.selRight.booly){
             when(indexer){
                 0->{ onUp() }
                 1->{ onUp1() }
                 2->{ onUp2() }
                 3->{ onUp3() }
             }
-        }else if(other.pCont.spenlef.booly){
+        }else if(other.pCont.selLeft.booly){
             when(indexer){
                 0->{ onDown() }
                 1->{ onDown1() }
