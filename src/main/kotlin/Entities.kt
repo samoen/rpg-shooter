@@ -124,14 +124,11 @@ class Player(val buttonSet: ButtonSet): HasHealth {
 
         if(pCont.stickMag>0.15)didStopBlock = true
 
-        if(Math.abs(toMovex)<0.09&&Math.abs(toMovey)<0.09){
+        if(Math.abs(pCont.stickMag)<0.009&&Math.abs(pCont.stickMag)<0.009){
             toMovex = 0.0
             toMovey = 0.0
-        }
-        else{
+        } else{
             didMove=true
-//            toMovex *=commonStuff.speed
-//            toMovey *=commonStuff.speed
         }
 
         if(toMovex!=0.0&&toMovey!=0.0){
@@ -493,16 +490,18 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
     override var commonStuff=EntCommon(dimensions = EntDimens(other.commonStuff.dimensions.xpos+selectorXSpace,other.commonStuff.dimensions.ypos,20.0))
     var indexer = 0
     override fun updateEntity() {
+        commonStuff.dimensions.xpos=other.commonStuff.dimensions.xpos+selectorXSpace
+        commonStuff.dimensions.ypos=other.commonStuff.dimensions.ypos+(indexer*statsYSpace)
         if(other.pCont.selDwn.booly){
             if(indexer+1<numStats){
                 indexer++
-                commonStuff.dimensions.ypos+=statsYSpace
+//                commonStuff.dimensions.ypos+=statsYSpace
             }
         }
         if(other.pCont.Swp.booly){
             if(indexer-1>=0){
                 indexer--
-                commonStuff.dimensions.ypos -= statsYSpace
+//                commonStuff.dimensions.ypos -= statsYSpace
             }
         }
         if(other.pCont.selRight.booly){
@@ -522,14 +521,19 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
         }
     }
 }
-class StatView(val showText: ()->String,other:Entity,rownumba:Int,colNuma:Int ):Entity{
-    val xloc:Double = statsXSpace*colNuma + other.commonStuff.dimensions.xpos
-    val yloc:Double =statsYSpace*rownumba + other.commonStuff.dimensions.ypos
+class StatView(val showText: ()->String,val other:Entity,val rownumba:Int,val colNuma:Int ):Entity{
+//    var xloc:Double = statsXSpace*colNuma + other.commonStuff.dimensions.xpos
+//    var yloc:Double =statsYSpace*rownumba + other.commonStuff.dimensions.ypos
     override var commonStuff=EntCommon()
+    override fun updateEntity() {
+        commonStuff.dimensions.xpos = statsXSpace*colNuma + other.commonStuff.dimensions.xpos
+        commonStuff.dimensions.ypos = statsYSpace*rownumba + other.commonStuff.dimensions.ypos
+    }
+
     override fun drawEntity(g: Graphics) {
         g.color = Color.BLUE
         g.font = g.font.deriveFont((myFrame.width/70).toFloat())
-        g.drawString(showText(),getWindowAdjustedPos(xloc).toInt(),getWindowAdjustedPos(yloc+15).toInt())
+        g.drawString(showText(),getWindowAdjustedPos(commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos+15).toInt())
     }
 }
 
