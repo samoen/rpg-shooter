@@ -81,19 +81,22 @@ data class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
 }
 
 class playControls(
-    var up:OneShotChannel=OneShotChannel(),
-    var dwm:OneShotChannel=OneShotChannel(),
+//    var up:OneShotChannel=OneShotChannel(),
+//    var dwm:OneShotChannel=OneShotChannel(),
     var sht:OneShotChannel=OneShotChannel(),
     var Swp:OneShotChannel=OneShotChannel(),
     var selDwn:OneShotChannel=OneShotChannel(),
-    var riri:OneShotChannel=OneShotChannel(),
-    var stickAngle:Float = 0f,
-    var stickMag:Float = 0f,
-    var leflef:OneShotChannel=OneShotChannel(),
-    var spinri:OneShotChannel=OneShotChannel(),
+    var selUp:OneShotChannel=OneShotChannel(),
+//    var riri:OneShotChannel=OneShotChannel(),
+    var leftStickAngle:Float = 0f,
+    var leftStickMag:Float = 0f,
+    var rightStickAngle:Float = 0f,
+    var rightStickMag:Float = 0f,
+//    var leflef:OneShotChannel=OneShotChannel(),
+//    var spinri:OneShotChannel=OneShotChannel(),
     var selRight:OneShotChannel=OneShotChannel(),
-    var selLeft:OneShotChannel=OneShotChannel(),
-    var spenlef:OneShotChannel=OneShotChannel()
+    var selLeft:OneShotChannel=OneShotChannel()
+//    var spenlef:OneShotChannel=OneShotChannel()
 )
 
 data class Weapon(

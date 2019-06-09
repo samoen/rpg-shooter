@@ -118,15 +118,15 @@ class Player(val buttonSet: ButtonSet): HasHealth {
 //        if (pCont.up.booly){ toMovey -= commonStuff.speed.toDouble() }
 //        if (pCont.dwm.booly) { toMovey += commonStuff.speed.toDouble() }
 
-        toMovex +=  Math.cos( pCont.stickAngle*Math.PI/180)* pCont.stickMag*commonStuff.speed
-        toMovey -=  Math.sin( pCont.stickAngle*Math.PI/180)* pCont.stickMag*commonStuff.speed
+        toMovex +=  Math.cos( pCont.leftStickAngle*Math.PI/180)* pCont.leftStickMag*commonStuff.speed
+        toMovey -=  Math.sin( pCont.leftStickAngle*Math.PI/180)* pCont.leftStickMag*commonStuff.speed
 
-        if(pCont.stickMag>0.15){
+        if(pCont.leftStickMag>0.15){
             didStopBlock = true
 
         }
 
-        if(Math.abs(pCont.stickMag)<0.009){
+        if(Math.abs(pCont.leftStickMag)<0.009){
             toMovex = 0.0
             toMovey = 0.0
         }
@@ -135,12 +135,12 @@ class Player(val buttonSet: ButtonSet): HasHealth {
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
         }
-        if(notOnShop){
-            if(pCont.spenlef.booly||pCont.spinri.booly){
-                toMovex *= healthStats.wep.mobility
-                toMovey *= healthStats.wep.mobility
-            }
-        }
+//        if(notOnShop){
+//            if(pCont.spenlef.booly||pCont.spinri.booly){
+//                toMovex *= healthStats.wep.mobility
+//                toMovey *= healthStats.wep.mobility
+//            }
+//        }
         if(Math.abs(toMovex)>0.5 &&Math.abs(toMovey)>0.5){
             toMovex=toMovex*0.707
             toMovey=toMovey*0.707
@@ -152,21 +152,23 @@ class Player(val buttonSet: ButtonSet): HasHealth {
 //        if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(this)
         if(notOnShop){
-            if(pCont.spenlef.booly == pCont.spinri.booly){
-                tSpdMod = healthStats.turnSpeed
-            }
+//            if(pCont.spenlef.booly == pCont.spinri.booly){
+//                tSpdMod = healthStats.turnSpeed
+//            }
 
-            if(didSpinright && !pCont.spinri.booly){
-                tSpdMod = healthStats.turnSpeed
-            }
-            if(didSpinleft && !pCont.spenlef.booly){
-                tSpdMod = healthStats.turnSpeed
-            }
-            didSpinright=pCont.spinri.booly && !pCont.spenlef.booly
-            didSpinleft= pCont.spenlef.booly && !pCont.spinri.booly
-            tSpdMod-= healthStats.turnSpeed/15
-            if(tSpdMod<0)tSpdMod=0.0f
-            processTurning(this,pCont.spenlef.booly,pCont.spinri.booly,healthStats.turnSpeed-tSpdMod)
+//            if(didSpinright && !pCont.spinri.booly){
+//                tSpdMod = healthStats.turnSpeed
+//            }
+//            if(didSpinleft && !pCont.spenlef.booly){
+//                tSpdMod = healthStats.turnSpeed
+//            }
+//            didSpinright=pCont.spinri.booly && !pCont.spenlef.booly
+//            didSpinleft= pCont.spenlef.booly && !pCont.spinri.booly
+//            tSpdMod-= healthStats.turnSpeed/15
+//            if(tSpdMod<0)tSpdMod=0.0f
+//            processTurning(this,pCont.spenlef.booly,pCont.spinri.booly,healthStats.turnSpeed-tSpdMod)
+            if(pCont.rightStickMag>0.25)
+                healthStats.angy = pCont.rightStickAngle*Math.PI/180
             if(pCont.Swp.booly){
                 playStrSound(soundType.SWAP)
                 if (primaryEquipped){
@@ -219,7 +221,8 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         if( healthStats.armorIsBroken){
             todraw = armorBrokenImage
             healthStats.didGetShot = false
-        }else{
+        }
+
             if (healthStats.didGetShot) {
                 if(healthStats.gotShotFrames>0) {
                     todraw = pouchImage
@@ -228,7 +231,7 @@ class Player(val buttonSet: ButtonSet): HasHealth {
                     healthStats.didGetShot = false
                 }
             }
-        }
+
         commonStuff.spriteu = todraw
     }
 
@@ -498,7 +501,7 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
 //                commonStuff.dimensions.ypos+=statsYSpace
             }
         }
-        if(other.pCont.Swp.booly){
+        if(other.pCont.selUp.booly){
             if(indexer-1>=0){
                 indexer--
 //                commonStuff.dimensions.ypos -= statsYSpace

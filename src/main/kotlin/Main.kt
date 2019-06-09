@@ -2,12 +2,9 @@
 import com.studiohartman.jamepad.ControllerManager
 import java.awt.Graphics
 import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
 import java.awt.event.WindowEvent
 import java.awt.event.WindowListener
 import java.io.File
-import javax.sound.sampled.AudioSystem
-import javax.sound.sampled.Clip
 import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -252,19 +249,22 @@ fun main() {
         for((i,p1) in players.withIndex()){
             val currState = controllers.getState(i)
             if(!currState.isConnected)continue
-            p1.pCont.sht.booly = currState.a
-            p1.pCont.selDwn.booly = currState.aJustPressed
-            p1.pCont.Swp.booly = currState.xJustPressed
-            p1.pCont.spenlef.booly = currState.lb
-            p1.pCont.selLeft.booly = currState.lbJustPressed
-            p1.pCont.spinri.booly = currState.rb
-            p1.pCont.selRight.booly = currState.rbJustPressed
-            p1.pCont.riri.booly = currState.dpadRight
-            p1.pCont.stickAngle = currState.leftStickAngle
-            p1.pCont.stickMag = currState.leftStickMagnitude
-            p1.pCont.leflef.booly = currState.dpadLeft
-            p1.pCont.up.booly = currState.dpadUp
-            p1.pCont.dwm.booly = currState.dpadDown
+//            p1.pCont.spenlef.booly = currState.lb
+//            p1.pCont.spinri.booly = currState.rb
+//            p1.pCont.riri.booly = currState.dpadRight
+//            p1.pCont.leflef.booly = currState.dpadLeft
+//            p1.pCont.up.booly = currState.dpadUp
+//            p1.pCont.dwm.booly = currState.dpadDown
+            p1.pCont.sht.booly = currState.rb
+            p1.pCont.Swp.booly = currState.lbJustPressed
+            p1.pCont.selUp.booly = currState.rbJustPressed
+            p1.pCont.selDwn.booly = currState.lbJustPressed
+            p1.pCont.selLeft.booly = currState.xJustPressed
+            p1.pCont.selRight.booly = currState.aJustPressed
+            p1.pCont.leftStickAngle = currState.leftStickAngle
+            p1.pCont.leftStickMag = currState.leftStickMagnitude
+            p1.pCont.rightStickAngle = currState.rightStickAngle
+            p1.pCont.rightStickMag = currState.rightStickMagnitude
             if(currState.bJustPressed){
                 pressed1contr = true
             }
@@ -315,8 +315,10 @@ fun main() {
                                             }
                                             if(dex>j && collided && jent.commonStuff.dimensions.overlapsOther(ient.commonStuff.dimensions)) {
                                                 if (ient.commonStuff.isSolid && jent.commonStuff.isSolid) {
-                                                    if(timesTried > allSize){
-                                                        println("Cannot resolve collision!")
+                                                    if(timesTried > 5){
+                                                        println("Cannot resolve collision")
+                                                        println(ient::class.qualifiedName)
+                                                        println(jent::class.qualifiedName)
                                                     }else{
                                                         triggeredReaction = true
                                                     }
