@@ -135,13 +135,36 @@ class Player: HasHealth {
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
         }
-        if(notOnShop){
+//        if(notOnShop){
 //            if(pCont.spenlef.booly||pCont.spinri.booly)
-            if(pCont.rightStickMag>0.2){
-                toMovex *= healthStats.wep.mobility
-                toMovey *= healthStats.wep.mobility
-            }
+        if(pCont.rightStickMag>0.1){
+            toMovex *= healthStats.wep.mobility
+            toMovey *= healthStats.wep.mobility
+            var desAng = pCont.rightStickAngle*Math.PI/180
+            var myAng =  healthStats.angy
+//            var myAng =  Math.abs(healthStats.angy)%(2*Math.PI)
+            var a = desAng - myAng
+            a = (a + Math.PI) % (2*Math.PI) - Math.PI
+
+//            var leftADist = desAng-myAng
+//            var rightADist = Math.PI*2  - leftADist
+//            var rightAdist = Math.PI*2 -
+            var goleft = false
+            if(a>0)goleft=true
+//            if(abs(leftADist)<abs(rightADist))goleft=true
+//            if(desAng>=myAng)goleft = true
+//            var fix = Math.abs(desAng-myAng)>Math.PI
+
+//            if(fix)goleft=!goleft
+//            var goleft = desAng>=healthStats.angy
+//            var goleft = Math.abs(desAng)>Math.abs(healthStats.angy)
+            if(goleft) healthStats.angy+=0.05
+            else healthStats.angy-=0.05
+//            var desAdd = pCont.rightStickMag*0.5*Math.abs(desAng-healthStats.angy)
+//            if(!fix)desAdd*=-1
+//            healthStats.angy = healthStats.angy + desAdd
         }
+//        }
         if(Math.abs(toMovex)>0.5 &&Math.abs(toMovey)>0.5){
             toMovex=toMovex*0.707
             toMovey=toMovey*0.707
@@ -150,9 +173,9 @@ class Player: HasHealth {
         commonStuff.dimensions.ypos += toMovey
         if(toMovex>0)movedRight = true
         if(toMovex<0)movedRight = false
-//        if(toMovex!=0.0||toMovey!=0.0)didMove = true
+
         stayInMap(this)
-        if(pCont.rightStickMag>0.2) healthStats.angy = pCont.rightStickAngle*Math.PI/180
+
         if(notOnShop){
 
 //            if(pCont.spenlef.booly == pCont.spinri.booly){

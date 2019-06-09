@@ -456,7 +456,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                 })
                 continue
             }
-            val charint :Int= Character.getNumericValue(ch)
+            val charint:Int= Character.getNumericValue(ch)
             if(charint in 1..9){
                 val mappy:String =when(charint){
                     1->map1
