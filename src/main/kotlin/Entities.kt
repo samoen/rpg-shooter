@@ -141,28 +141,22 @@ class Player: HasHealth {
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
             var desAng = pCont.rightStickAngle*Math.PI/180
-            var myAng =  healthStats.angy
+            var myAng =  healthStats.angy %(2*Math.PI)
 //            var myAng =  Math.abs(healthStats.angy)%(2*Math.PI)
             var a = desAng - myAng
             a = (a + Math.PI) % (2*Math.PI) - Math.PI
-
-//            var leftADist = desAng-myAng
-//            var rightADist = Math.PI*2  - leftADist
-//            var rightAdist = Math.PI*2 -
-            var goleft = false
-            if(a>0)goleft=true
-//            if(abs(leftADist)<abs(rightADist))goleft=true
-//            if(desAng>=myAng)goleft = true
-//            var fix = Math.abs(desAng-myAng)>Math.PI
-
-//            if(fix)goleft=!goleft
-//            var goleft = desAng>=healthStats.angy
-//            var goleft = Math.abs(desAng)>Math.abs(healthStats.angy)
-            if(goleft) healthStats.angy+=0.05
-            else healthStats.angy-=0.05
-//            var desAdd = pCont.rightStickMag*0.5*Math.abs(desAng-healthStats.angy)
-//            if(!fix)desAdd*=-1
-//            healthStats.angy = healthStats.angy + desAdd
+//            var goleft = false
+//            if(a>0)goleft=true
+//            if(goleft) healthStats.angy+=0.05
+//            else healthStats.angy-=0.05
+            if(a<-Math.PI){
+                a = Math.PI*2 + a
+            }
+            if(pCont.rightStickMag>0.95)healthStats.angy = desAng
+            else{
+                val desAdd = pCont.rightStickMag*0.4*a
+                healthStats.angy = (healthStats.angy + desAdd)%(Math.PI*2)
+            }
         }
 //        }
         if(Math.abs(toMovex)>0.5 &&Math.abs(toMovey)>0.5){
