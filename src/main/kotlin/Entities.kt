@@ -61,7 +61,7 @@ class Bullet(shottah: HasHealth) : Entity {
 }
 
 
-class Player(val buttonSet: ButtonSet): HasHealth {
+class Player: HasHealth {
     var canEnterGateway:Boolean = true
     var menuStuff:List<Entity> = listOf()
     var spawnGate:Gateway = Gateway()
@@ -70,10 +70,10 @@ class Player(val buttonSet: ButtonSet): HasHealth {
     var movedRight = false
 //    var didMove = false
     var didShoot = false
-    var tSpdMod = 0.1f
+//    var tSpdMod = 0.1f
     var primaryEquipped = true
     var didSpinright = false
-    var didSpinleft = false
+//    var didSpinleft = false
     var notOnShop = true
     override var commonStuff=EntCommon(
         dimensions = EntDimens(0.0,0.0,40.0),
@@ -135,12 +135,13 @@ class Player(val buttonSet: ButtonSet): HasHealth {
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
         }
-//        if(notOnShop){
-//            if(pCont.spenlef.booly||pCont.spinri.booly){
-//                toMovex *= healthStats.wep.mobility
-//                toMovey *= healthStats.wep.mobility
-//            }
-//        }
+        if(notOnShop){
+//            if(pCont.spenlef.booly||pCont.spinri.booly)
+            if(pCont.rightStickMag>0.2){
+                toMovex *= healthStats.wep.mobility
+                toMovey *= healthStats.wep.mobility
+            }
+        }
         if(Math.abs(toMovex)>0.5 &&Math.abs(toMovey)>0.5){
             toMovex=toMovex*0.707
             toMovey=toMovey*0.707
@@ -151,7 +152,9 @@ class Player(val buttonSet: ButtonSet): HasHealth {
         if(toMovex<0)movedRight = false
 //        if(toMovex!=0.0||toMovey!=0.0)didMove = true
         stayInMap(this)
+        if(pCont.rightStickMag>0.2) healthStats.angy = pCont.rightStickAngle*Math.PI/180
         if(notOnShop){
+
 //            if(pCont.spenlef.booly == pCont.spinri.booly){
 //                tSpdMod = healthStats.turnSpeed
 //            }
@@ -162,13 +165,12 @@ class Player(val buttonSet: ButtonSet): HasHealth {
 //            if(didSpinleft && !pCont.spenlef.booly){
 //                tSpdMod = healthStats.turnSpeed
 //            }
+
 //            didSpinright=pCont.spinri.booly && !pCont.spenlef.booly
 //            didSpinleft= pCont.spenlef.booly && !pCont.spinri.booly
 //            tSpdMod-= healthStats.turnSpeed/15
 //            if(tSpdMod<0)tSpdMod=0.0f
 //            processTurning(this,pCont.spenlef.booly,pCont.spinri.booly,healthStats.turnSpeed-tSpdMod)
-            if(pCont.rightStickMag>0.25)
-                healthStats.angy = pCont.rightStickAngle*Math.PI/180
             if(pCont.Swp.booly){
                 playStrSound(soundType.SWAP)
                 if (primaryEquipped){
@@ -178,9 +180,9 @@ class Player(val buttonSet: ButtonSet): HasHealth {
                 }
                 primaryEquipped = !primaryEquipped
             }
+            processShooting(this,pCont.sht.booly,this.healthStats.wep,pBulImage)
         }
-        processShooting(this,pCont.sht.booly,this.healthStats.wep,pBulImage,notOnShop)
-        
+
         if(notOnShop){
             healthStats.stopped = !didStopBlock
             if(healthStats.wep.framesSinceShottah<healthStats.shieldSkill){
@@ -345,7 +347,7 @@ class Enemy : HasHealth{
 
             val radtarget = ((atan2( -ydiff , xdiff)))
             val absanglediff = abs(radtarget-this.healthStats.angy)
-            val shootem =absanglediff<0.2
+            val shootem =absanglediff<0.4
             var shoot2 = false
             if(shootem){
                 val r = Rectangle((commonStuff.dimensions.xpos).toInt(),(commonStuff.dimensions.ypos - (healthStats.wep.bulSize/(commonStuff.dimensions.drawSize))).toInt(),healthStats.wep.bulSize.toInt(),healthStats.wep.bulspd*80)
@@ -357,11 +359,12 @@ class Enemy : HasHealth{
                 val intersectors = allEntities.filter {it is Wall || it is Player}.filter {  path.intersects(Rectangle(it.commonStuff.dimensions.xpos.toInt(),it.commonStuff.dimensions.ypos.toInt(),it.commonStuff.dimensions.drawSize.toInt(),it.commonStuff.dimensions.drawSize.toInt()))}.sortedBy { Math.abs(it.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos)+Math.abs(it.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos) }
                 if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
             }
-            processShooting(this,shoot2,this.healthStats.wep,eBulImage,true)
+            processShooting(this,shoot2,this.healthStats.wep,eBulImage)
             val fix = absanglediff>Math.PI-healthStats.turnSpeed
             var lef = radtarget>=healthStats.angy
             if(fix)lef = !lef
-            processTurning(this,lef && !shootem,!lef && !shootem,healthStats.turnSpeed)
+            val aimDone = absanglediff<0.1
+            processTurning(this,lef&&!aimDone,!lef&&!aimDone,healthStats.turnSpeed)
         }
     }
 }

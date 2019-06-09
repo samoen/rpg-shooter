@@ -37,10 +37,11 @@ fun randEnemy():Enemy{
     se.healthStats.maxHP = (se.commonStuff.dimensions.drawSize/2)
     se.healthStats.currentHp = se.healthStats.maxHP
     se.commonStuff.speed = (Math.random()*4).toInt()+1
-    se.healthStats.wep.bulSize = 8.0+(Math.random()*40)
+    se.healthStats.wep.bulSize = 8.0+(Math.random()*25)
     se.healthStats.wep.buldmg = se.healthStats.wep.bulSize.toInt()
     se.healthStats.wep.atkSpd = (Math.random()*20).toInt()+10
-    se.healthStats.wep.bulspd = (Math.random()*10).toInt()+3
+    se.healthStats.wep.bulspd = (Math.random()*11).toInt()+3
+    se.healthStats.wep.bulLifetime = 20
     return  se
 }
 
@@ -89,8 +90,8 @@ fun startWave(numberofenemies: Int) {
 //    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
 //}
 
-fun processShooting(me:HasHealth, sht:Boolean, weap:Weapon, bulImage:Image,notOnShop:Boolean){
-    if (sht && weap.framesSinceShottah > me.healthStats.wep.atkSpd && notOnShop) {
+fun processShooting(me:HasHealth, sht:Boolean, weap:Weapon, bulImage:Image){
+    if (sht && weap.framesSinceShottah > me.healthStats.wep.atkSpd) {
         weap.framesSinceShottah = 0
         if(me is Player)me.didShoot=true
         for( i in 1..weap.projectiles){
@@ -129,7 +130,7 @@ fun processTurning(me:HasHealth, lef:Boolean, righ:Boolean,tSpd:Float){
 fun drawCrosshair(me:HasHealth, g: Graphics){
     g as Graphics2D
     g.color = Color.CYAN
-    val strkw = 2f
+    val strkw = 2.5f
     g.stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
     val arcdiameter = (me as Entity).commonStuff.dimensions.drawSize
     fun doarc(diver:Double,timeser:Double){
@@ -140,8 +141,8 @@ fun drawCrosshair(me:HasHealth, g: Graphics){
             getWindowAdjustedPos((me.commonStuff.dimensions.ypos)+(diver)).toInt()-bspd,
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
             (getWindowAdjustedPos((arcdiameter)*timeser)+bspd*2).toInt(),
-            ((me.healthStats.angy*180/Math.PI)-spread/2).toInt(),
-            spread.toInt()
+            ((me.healthStats.angy*180/Math.PI)-spread/4).toInt(),
+            (spread/2).toInt()
         )
     }
     doarc(me.commonStuff.dimensions.drawSize/4,0.5)
@@ -398,7 +399,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                                 if(other.healthStats.wep.projectiles-1>=1)other.healthStats.wep.projectiles--
                             }),
                         StatView({other.healthStats.wep.buldmg.toString() }, other,0,1),
-                        StatView({other.healthStats.wep.bulLifetime.toString() }, other,1,1),
+                        StatView({other.healthStats.wep.bulspd.toString() }, other,1,1),
                         StatView({other.healthStats.wep.projectiles.toString() }, other,2,1)
                     )}
                 })
@@ -410,9 +411,9 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                     it.menuThings = {other->listOf(
                         StatView({"Run"},other,0,0),
                         StatView({"HP"},other,1,0),
-                        StatView({"Turn"},other,2,0),
-                        StatView({"Blok"},other,3,0),
-                        Selector(4,other,{
+//                        StatView({"Turn"},other,2,0),
+                        StatView({"Blok"},other,2,0),
+                        Selector(3,other,{
                             other.commonStuff.speed += 1
                         },{
                             val desiredspeed = other.commonStuff.speed-1
@@ -429,13 +430,15 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                                 other.healthStats.maxHP = desiredHp
                             }
                             other.healthStats.currentHp = other.healthStats.maxHP
-                        },{
-                            val desired = "%.4f".format(other.healthStats.turnSpeed+0.01f).toFloat()
-                            if(desired<1) other.healthStats.turnSpeed = desired
-                        },{
-                            val desired = "%.4f".format(other.healthStats.turnSpeed-0.01f).toFloat()
-                            if(desired>0) other.healthStats.turnSpeed = desired
-                        },{
+                        },
+//                            {
+//                            val desired = "%.4f".format(other.healthStats.turnSpeed+0.01f).toFloat()
+//                            if(desired<1) other.healthStats.turnSpeed = desired
+//                        }, {
+//                            val desired = "%.4f".format(other.healthStats.turnSpeed-0.01f).toFloat()
+//                            if(desired>0) other.healthStats.turnSpeed = desired
+//                        },
+                            {
                             other.healthStats.shieldSkill += 1
                         },{
                             val desired = other.healthStats.shieldSkill-1
@@ -443,8 +446,8 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         }),
                         StatView({other.commonStuff.speed.toString() }, other,0,1),
                         StatView({other.healthStats.maxHP.toInt().toString() }, other,1,1),
-                        StatView({( other.healthStats.turnSpeed*100).toInt().toString() }, other,2,1),
-                        StatView({( other.healthStats.shieldSkill).toInt().toString() }, other,3,1)
+//                        StatView({( other.healthStats.turnSpeed*100).toInt().toString() }, other,2,1),
+                        StatView({( other.healthStats.shieldSkill).toInt().toString() }, other,2,1)
                     )}
                     it.char = 'g'
                     it.commonStuff.dimensions.drawSize = mapGridSize

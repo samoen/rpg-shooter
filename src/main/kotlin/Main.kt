@@ -69,11 +69,11 @@ var myFrame = run {
 const val mapGridColumns = 16
 
 val map1 =  "        w       " +
-            "       e        " +
-            "      ww        " +
-            "ww wh ww    w   " +
-            " whwh          w" +
-            "  hwh    m     w" +
+            "                " +
+            "                " +
+            "ww          w   " +
+            " whw           w" +
+            "  hw     m     w" +
             " whwh          h" +
             "            w ww" +
             "  wh  www     ww" +
@@ -97,12 +97,12 @@ val map2 =  "s       we      " +
             "       h    w  w" +
             "      www   wh w" +
             "        w   w  w" +
-            "        w   w  w" +
+            " e      w e w ew" +
             "        w      w"
 
 
-val map3 =  "                " +
-            "                " +
+val map3 =  "e ee e e eeeee  " +
+            "   e e e e      " +
             "       2     h  " +
             "                " +
             "               w" +
@@ -143,24 +143,24 @@ fun main() {
 //    soundBank["laser"] = AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(enemyPewFile)) }
 
     players.add(Player(
-        ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6))
-        .also { it.commonStuff.speed = 8 })
+//        ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6)
+    ))
     players.add(
         Player(
-            ButtonSet(
-                KeyEvent.VK_W,
-                KeyEvent.VK_S,
-                KeyEvent.VK_A,
-                KeyEvent.VK_D,
-                KeyEvent.VK_F,
-                KeyEvent.VK_V,
-                KeyEvent.VK_C,
-                KeyEvent.VK_B
-            )
+//            ButtonSet(
+//                KeyEvent.VK_W,
+//                KeyEvent.VK_S,
+//                KeyEvent.VK_A,
+//                KeyEvent.VK_D,
+//                KeyEvent.VK_F,
+//                KeyEvent.VK_V,
+//                KeyEvent.VK_C,
+//                KeyEvent.VK_B
+//            )
         ).also{
         it.commonStuff.dimensions.xpos=150.0
-        it.commonStuff.speed = 8
-        it.commonStuff.dimensions.drawSize = 40.0
+//        it.commonStuff.speed = 8
+//        it.commonStuff.dimensions.drawSize = 40.0
     })
     entsToAdd.addAll(players)
 
