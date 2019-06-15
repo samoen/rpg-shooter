@@ -245,6 +245,7 @@ fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
     val ydiff = me.commonStuff.dimensions.ypos - oldme.ypos
     val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
     val midDistY = abs(abs(oldOther.getMidY())-abs(oldme.getMidY()))
+    if(abs(midDistX-midDistY)<0.5)return
     if(midDistX>midDistY){
         me.commonStuff.dimensions.xpos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,xdiff,me.commonStuff.dimensions.xpos,other.commonStuff.dimensions.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
     }else{
@@ -287,7 +288,7 @@ fun drawHealth(me:HasHealth, g:Graphics){
 }
 
 fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
-    val mapGridSize = (INTENDED_FRAME_SIZE/mapGridColumns.toDouble())-2
+    val mapGridSize = ((INTENDED_FRAME_SIZE/mapGridColumns.toDouble())-2).toInt().toDouble()
     currentMapNum = mapNum
     allEntities.clear()
     val starty = 0
@@ -296,29 +297,29 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             if(ch=='w'){
                 entsToAdd.add(Wall().also {
                     it.commonStuff.dimensions.drawSize = mapGridSize
-                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.xpos = (ind +(ind* mapGridSize.toInt()).toInt()).toInt().toDouble()
+                    it.commonStuff.dimensions.ypos = (starty + (mapGridSize)*(rownumber+1)).toInt().toDouble()
                 })
                 continue
             }
             if (ch == 'h'){
                 entsToAdd.add(MedPack().also {
                     it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize)*(rownumber+1)
                 })
                 continue
             }
             if (ch == 'e'){
                 entsToAdd.add(randEnemy().also {
                     it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize)*(rownumber+1)
                 })
                 continue
             }
             if(ch == 's'){
                 entsToAdd.add(GateSwitch().also {
                     it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize)*(rownumber+1)
                 })
                 continue
             }
@@ -328,7 +329,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                     it.commonStuff.spriteu = gunShopImage
                     it.commonStuff.dimensions.drawSize = mapGridSize
                     it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.commonStuff.dimensions.ypos = starty + (mapGridSize+1)*(rownumber+1)
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize)*(rownumber+1)
                     it.menuThings = {other->listOf(
                         StatView({"Rcl"},other,0,0),
                         StatView({"Rld"},other,1,0),

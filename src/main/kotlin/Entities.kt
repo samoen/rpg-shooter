@@ -49,8 +49,9 @@ class Bullet(shottah: HasHealth) : Entity {
         if(commonStuff.dimensions.ypos<0)commonStuff.toBeRemoved = true
         framesAlive++
         if(framesAlive>shtbywep.bulLifetime){
-            val shrinky = shtbywep.bulSize/SHRINK_RATE
-            damage-=( shrinky*(startDamage/ commonStuff.dimensions.drawSize)).toInt()
+            val shrinky = SHRINK_RATE
+//            damage-=( shrinky*(startDamage/ commonStuff.dimensions.drawSize)).toInt()
+            damage-=( shrinky).toInt()
             commonStuff.dimensions.drawSize-=shrinky
             commonStuff.dimensions.xpos+=shrinky/2
             commonStuff.dimensions.ypos+=shrinky/2
@@ -61,7 +62,7 @@ class Bullet(shottah: HasHealth) : Entity {
     }
 
 }
-val SHRINK_RATE = 7
+val SHRINK_RATE = 2
 
 class Player: HasHealth {
     var canEnterGateway:Boolean = true
@@ -88,12 +89,12 @@ class Player: HasHealth {
     )
 
     var spareWep:Weapon = Weapon(
-        atkSpd = 12,
+        atkSpd = 10,
         recoil = 6.0,
-        bulSize = 11.0,
-        projectiles = 7,
+        bulSize = 12.0,
+        projectiles = 5,
         mobility = 1.0f,
-        bulLifetime = 2,
+        bulLifetime = 4,
         bulspd = 17
     )
     override fun updateEntity() {
@@ -516,7 +517,7 @@ class StatView(val showText: ()->String,val other:Entity,val rownumba:Int,val co
     }
 
     override fun drawEntity(g: Graphics) {
-        g.color = Color.RED
+        g.color = Color.PINK
 //        g.font = g.font.deriveFont((myFrame.width/70).toFloat())
         g.font = Font("Courier", Font.BOLD,17)
         g.drawString(showText(),getWindowAdjustedPos(commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos+15).toInt())

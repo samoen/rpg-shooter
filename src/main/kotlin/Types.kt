@@ -19,7 +19,7 @@ var painting = false
 val statsYSpace = 20.0
 val statsXSpace = 40.0
 val selectorXSpace = 45.0
-const val INTENDED_FRAME_SIZE = 900
+const val INTENDED_FRAME_SIZE = 1000
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 val YFRAMEMAGIC = 40
 const val TICK_INTERVAL = 40
@@ -192,10 +192,10 @@ data class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
         return xpos+(drawSize/2)
     }
     fun overlapsOther(other: EntDimens):Boolean{
-        return ypos+drawSize > other.ypos &&
-                ypos<other.ypos+other.drawSize &&
-                xpos+drawSize > other.xpos &&
-                xpos<other.xpos+other.drawSize
+        return ypos.toInt()+drawSize.toInt() > other.ypos.toInt() &&
+                ypos.toInt()<other.ypos.toInt()+other.drawSize.toInt() &&
+                xpos.toInt()+drawSize.toInt() > other.xpos.toInt() &&
+                xpos.toInt()<other.xpos.toInt()+other.drawSize.toInt()
     }
 }
 
@@ -220,7 +220,7 @@ class playControls(
 
 data class Weapon(
     var mobility:Float = 0.2f,
-    var atkSpd:Int = 60,
+    var atkSpd:Int = 55,
     var bulLifetime:Int = 15,
     var bulspd:Int = 30,
     var recoil:Double = 0.0,
