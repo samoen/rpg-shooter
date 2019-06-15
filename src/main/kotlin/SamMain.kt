@@ -7,7 +7,6 @@ import javax.swing.JPanel
 import javax.swing.WindowConstants
 
 class SamMain{
-//    companion object{
     fun samMain() {
 
         val controllers = ControllerManager()
@@ -19,59 +18,12 @@ class SamMain{
         soundFiles[soundType.LASER] = enemyPewFile
         soundFiles[soundType.SWAP] = swapnoiseFile
 
-//    soundBank["ouch"]= AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(ouchnoiseFile)) }
-//    soundBank["die"]= AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(dienoiseFile)) }
-//    soundBank["swap"] = AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(swapnoiseFile)) }
-//    soundBank["shoot"] = AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(longpewFil)) }
-//    soundBank["laser"] = AudioSystem.getClip().also{ it.open(AudioSystem.getAudioInputStream(enemyPewFile)) }
-
-        players.add(Player(
-//        ButtonSet(KeyEvent.VK_UP,KeyEvent.VK_DOWN,KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_NUMPAD8,KeyEvent.VK_NUMPAD5,KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6)
-        ))
-        players.add(
-            Player(
-//            ButtonSet(
-//                KeyEvent.VK_W,
-//                KeyEvent.VK_S,
-//                KeyEvent.VK_A,
-//                KeyEvent.VK_D,
-//                KeyEvent.VK_F,
-//                KeyEvent.VK_V,
-//                KeyEvent.VK_C,
-//                KeyEvent.VK_B
-//            )
-            ).also{
+        players.add(Player())
+        players.add(Player().also{
                 it.commonStuff.dimensions.xpos=150.0
-//        it.commonStuff.speed = 8
-//        it.commonStuff.dimensions.drawSize = 40.0
             })
-        entsToAdd.addAll(players)
-
-//    myFrame.addKeyListener(
-//        object :KeyListener{
-//            override fun keyTyped(e: KeyEvent?) {}
-//            override fun keyPressed(e: KeyEvent?) {
-//                if(e!=null){
-//                    if (e.keyCode == KeyEvent.VK_1) pressed1.tryProduce()
-//                    if (e.keyCode == KeyEvent.VK_2) pressed2.tryProduce()
-//                    if (e.keyCode == KeyEvent.VK_3) pressed3.tryProduce()
-//                    for(player in players){
-//                        playerKeyPressed(player,e)
-//                    }
-//                }
-//            }
-//            override fun keyReleased(e: KeyEvent?) {
-//                if(e!=null){
-//                    if (e.keyCode == KeyEvent.VK_1) pressed1.release()
-//                    if (e.keyCode == KeyEvent.VK_2) pressed2.release()
-//                    if (e.keyCode == KeyEvent.VK_3) pressed3.release()
-//                    for (player in players){
-//                        playerKeyReleased(player,e)
-//                    }
-//                }
-//            }
-//        }
-//    )
+//        entsToAdd.addAll(players)
+        placeMap(map1,1,1)
 //    myFrame.createBufferStrategy(3)
 //    myFrame.graphics.dispose()
 //    myFrame.bufferStrategy.show()
@@ -132,12 +84,6 @@ class SamMain{
             for((i,p1) in players.withIndex()){
                 val currState = controllers.getState(i)
                 if(!currState.isConnected)continue
-//            p1.pCont.spenlef.booly = currState.lb
-//            p1.pCont.spinri.booly = currState.rb
-//            p1.pCont.riri.booly = currState.dpadRight
-//            p1.pCont.leflef.booly = currState.dpadLeft
-//            p1.pCont.up.booly = currState.dpadUp
-//            p1.pCont.dwm.booly = currState.dpadDown
                 p1.pCont.sht.booly = currState.rb
                 p1.pCont.Swp.booly = currState.lbJustPressed
                 p1.pCont.selUp.booly = currState.rbJustPressed
@@ -241,8 +187,4 @@ class SamMain{
             if(tickdiff<TICK_INTERVAL) Thread.sleep(TICK_INTERVAL-tickdiff)
         }
     }
-
-
-//    }
-
 }

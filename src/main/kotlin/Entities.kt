@@ -89,13 +89,13 @@ class Player: HasHealth {
     )
 
     var spareWep:Weapon = Weapon(
-        atkSpd = 10,
+        atkSpd = 8,
         recoil = 6.0,
-        bulSize = 12.0,
+        bulSize = 7.0,
         projectiles = 5,
-        mobility = 1.0f,
-        bulLifetime = 7,
-        bulspd = 14
+        mobility = 0.9f,
+        bulLifetime = 8,
+        bulspd = 16
     )
     override fun updateEntity() {
         var didStopBlock = false
@@ -110,7 +110,18 @@ class Player: HasHealth {
         }else {
                 notOnShop = true
         }
-
+        if(notOnShop){
+            if(pCont.Swp.booly){
+                playStrSound(soundType.SWAP)
+                if (primaryEquipped){
+                    healthStats.wep = spareWep
+                }else{
+                    healthStats.wep = primWep
+                }
+                primaryEquipped = !primaryEquipped
+            }
+        }
+        processShooting(this,pCont.sht.booly&&notOnShop,this.healthStats.wep,pBulImage)
         var toMovex = 0.0
         var toMovey = 0.0
 
@@ -121,7 +132,7 @@ class Player: HasHealth {
             didStopBlock = true
         }
 
-        if(healthStats.wep.framesSinceShottah<healthStats.wep.atkSpd || pCont.rightStickMag>0.12){
+        if(healthStats.wep.framesSinceShottah-1<=healthStats.wep.atkSpd || pCont.rightStickMag>0.12){
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
         }
@@ -149,20 +160,6 @@ class Player: HasHealth {
         }
 
         stayInMap(this)
-
-        if(notOnShop){
-            if(pCont.Swp.booly){
-                playStrSound(soundType.SWAP)
-                if (primaryEquipped){
-                    healthStats.wep = spareWep
-                }else{
-                    healthStats.wep = primWep
-                }
-                primaryEquipped = !primaryEquipped
-            }
-        }
-        processShooting(this,pCont.sht.booly&&notOnShop,this.healthStats.wep,pBulImage)
-
         if(notOnShop){
             healthStats.stopped = !didStopBlock
             if(healthStats.wep.framesSinceShottah<healthStats.shieldSkill){
@@ -230,9 +227,9 @@ class Player: HasHealth {
             g.color = Color.RED
 //            g.drawLine(commonStuff.dimensions.getMidX().toInt(),commonStuff.dimensions.getMidY().toInt(),(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*1000).toInt(),commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*1000).toInt())
             val path = Path2D.Double()
-            path.moveTo(commonStuff.dimensions.getMidX(),commonStuff.dimensions.getMidY())
-            path.lineTo((commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*1000),commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*1000))
-            val intersectors = allEntities.filter {it is Wall}.filter {  path.intersects(Rectangle(it.commonStuff.dimensions.xpos.toInt(),it.commonStuff.dimensions.ypos.toInt(),it.commonStuff.dimensions.drawSize.toInt(),it.commonStuff.dimensions.drawSize.toInt()))}.sortedBy { Math.abs(it.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos)+Math.abs(it.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos) }
+            path.moveTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()),getWindowAdjustedPos(commonStuff.dimensions.getMidY()))
+            path.lineTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*INTENDED_FRAME_SIZE),getWindowAdjustedPos(commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*INTENDED_FRAME_SIZE)))
+            val intersectors = allEntities.filter {it is Wall}.filter {  path.intersects(Rectangle(getWindowAdjustedPos(it.commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(it.commonStuff.dimensions.ypos).toInt(),getWindowAdjustedPos(it.commonStuff.dimensions.drawSize).toInt(),getWindowAdjustedPos(it.commonStuff.dimensions.drawSize).toInt()))}.sortedBy { Math.abs(it.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos)+Math.abs(it.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos) }
             if(intersectors.isEmpty()){
                 g.draw(path)
             }else{
@@ -240,8 +237,8 @@ class Player: HasHealth {
                 var amt = Math.pow(guy.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos,2.0)+Math.pow(guy.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos,2.0)
                 amt = Math.sqrt(amt)
                 val path2 = Path2D.Double()
-                path2.moveTo(commonStuff.dimensions.getMidX(),commonStuff.dimensions.getMidY())
-                path2.lineTo((commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*amt),commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*amt))
+                path2.moveTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()),getWindowAdjustedPos(commonStuff.dimensions.getMidY()))
+                path2.lineTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*amt),getWindowAdjustedPos(commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*amt)))
                 g.draw(path2)
             }
         }
@@ -280,15 +277,6 @@ class Enemy : HasHealth{
     }
 
     override fun updateEntity() {
-//        if (healthStats.didGetShot) {
-//            if(healthStats.gotShotFrames>0) {
-//                color = Color.ORANGE
-//                healthStats.gotShotFrames--
-//            } else {
-//                color = Color.BLUE
-//                healthStats.didGetShot = false
-//            }
-//        }
         healthStats.didHeal = false
         val filteredEnts = players
             .filter { !it.commonStuff.toBeRemoved }
@@ -320,7 +308,6 @@ class Enemy : HasHealth{
 
                 var adjSpd = commonStuff.speed.toFloat()
                 if(framesSinceDrift>=ENEMY_DRIFT_FRAMES){
-
                     if(healthStats.currentHp<healthStats.maxHP/3 && packEnts.isNotEmpty()){
                         val firstpack = packEnts.first()
                         val packxd = firstpack.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
@@ -399,7 +386,7 @@ class Gateway : Entity{
         var toremove:Int = -1
         
         for ((index,player) in playersInside.withIndex()){
-            if(player.pCont.sht.booly){
+            if(player.pCont.selRight.booly){
                 player.commonStuff.dimensions.xpos = commonStuff.dimensions.xpos
                 player.commonStuff.dimensions.ypos = commonStuff.dimensions.ypos
                 var canSpawn = true
@@ -508,13 +495,11 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
         if(other.pCont.selDwn.booly){
             if(indexer+1<numStats){
                 indexer++
-//                commonStuff.dimensions.ypos+=statsYSpace
             }
         }
         if(other.pCont.selUp.booly){
             if(indexer-1>=0){
                 indexer--
-//                commonStuff.dimensions.ypos -= statsYSpace
             }
         }
         if(other.pCont.selRight.booly){
@@ -535,8 +520,6 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
     }
 }
 class StatView(val showText: ()->String,val other:Entity,val rownumba:Int,val colNuma:Int ):Entity{
-//    var xloc:Double = statsXSpace*colNuma + other.commonStuff.dimensions.xpos
-//    var yloc:Double =statsYSpace*rownumba + other.commonStuff.dimensions.ypos
     override var commonStuff=EntCommon()
     override fun updateEntity() {
         commonStuff.dimensions.xpos = statsXSpace*colNuma + other.commonStuff.dimensions.xpos
@@ -544,9 +527,8 @@ class StatView(val showText: ()->String,val other:Entity,val rownumba:Int,val co
     }
 
     override fun drawEntity(g: Graphics) {
-        g.color = Color.PINK
-//        g.font = g.font.deriveFont((myFrame.width/70).toFloat())
-        g.font = Font("Courier", Font.BOLD,17)
+        g.color = Color.MAGENTA
+        g.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
         g.drawString(showText(),getWindowAdjustedPos(commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos+15).toInt())
     }
 }

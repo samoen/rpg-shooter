@@ -1,5 +1,7 @@
 import java.awt.*
 import java.awt.event.KeyEvent
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import javax.sound.sampled.*
 import kotlin.math.abs
 
@@ -247,7 +249,7 @@ fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
     val ydiff = me.commonStuff.dimensions.ypos - oldme.ypos
     val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
     val midDistY = abs(abs(oldOther.getMidY())-abs(oldme.getMidY()))
-    if(abs(midDistX-midDistY)<0.5)return
+    if(abs(midDistX-midDistY)<0.2)return
     if(midDistX>midDistY){
         me.commonStuff.dimensions.xpos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,xdiff,me.commonStuff.dimensions.xpos,other.commonStuff.dimensions.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
     }else{
@@ -345,21 +347,22 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                                 val desired = other.healthStats.wep.recoil-0.5
                                 if(desired>=0.0)other.healthStats.wep.recoil=desired
                             },{
-                                if(other.healthStats.wep.atkSpd+1<200){
-                                    other.healthStats.wep.atkSpd++
-                                }
+                                    other.healthStats.wep.atkSpd+=3
                             },{
-                                if(other.healthStats.wep.atkSpd-1>1)other.healthStats.wep.atkSpd--
+                                val desired = other.healthStats.wep.atkSpd-3
+                                if(desired>=2)other.healthStats.wep.atkSpd=desired
                             },{
-                                val desired = other.healthStats.wep.mobility+0.1f
-                                if(desired<=1.001f) other.healthStats.wep.mobility = desired
+                                var desired = other.healthStats.wep.mobility+0.1f
+                                desired = "%.1f".format(desired).toFloat()
+                                if(desired<=1f) other.healthStats.wep.mobility = desired
                             },{
-                                val desired = other.healthStats.wep.mobility-0.1f
+                                var desired = other.healthStats.wep.mobility-0.1f
+                                desired = "%.1f".format(desired).toFloat()
                                 if(desired>=0)other.healthStats.wep.mobility = desired
                             }),
                         StatView({other.healthStats.wep.recoil.toString() }, other,0,1),
                         StatView({other.healthStats.wep.atkSpd.toString() }, other,1,1),
-                        StatView({( other.healthStats.wep.mobility*10).toInt().toString() }, other,2,1)
+                        StatView({other.healthStats.wep.mobility.toString() }, other,2,1)
                     )
                     }
                 })
@@ -378,14 +381,11 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Buk"},other,2,0),
                         Selector(3,other,
                             {
-//                                other.healthStats.wep.buldmg+=1
                                 other.healthStats.wep.bulSize+=1
                             },{
-//                                val desiredDmg = other.healthStats.wep.buldmg-1
                                 val desiredSize = other.healthStats.wep.bulSize-1
-                                if(desiredSize>(MIN_ENT_SIZE/2) ){
+                                if(desiredSize>(5.0) ){
                                     other.healthStats.wep.bulSize = desiredSize
-//                                    other.healthStats.wep.buldmg = desiredDmg
                                 }
                             },{
                                 if(other.healthStats.wep.bulspd+1<50 && other.healthStats.wep.bulLifetime+1<100){
@@ -426,23 +426,16 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         },{
                             other.commonStuff.dimensions.drawSize  += 3
                             other.healthStats.maxHP += 3
-                            other.healthStats.currentHp = other.healthStats.maxHP
+//                            other.healthStats.currentHp = other.healthStats.maxHP
                         },{
                             val desiredSize = other.commonStuff.dimensions.drawSize-3
-                            val desiredHp = other.healthStats.maxHP-10
-                            if(desiredSize>MIN_ENT_SIZE && desiredHp>0){
+                            val desiredHp = other.healthStats.maxHP-3
+                            if(desiredSize>15.0 && desiredHp>0){
                                 other.commonStuff.dimensions.drawSize = desiredSize
                                 other.healthStats.maxHP = desiredHp
                             }
                             other.healthStats.currentHp = other.healthStats.maxHP
                         },
-//                            {
-//                            val desired = "%.4f".format(other.healthStats.turnSpeed+0.01f).toFloat()
-//                            if(desired<1) other.healthStats.turnSpeed = desired
-//                        }, {
-//                            val desired = "%.4f".format(other.healthStats.turnSpeed-0.01f).toFloat()
-//                            if(desired>0) other.healthStats.turnSpeed = desired
-//                        },
                             {
                             other.healthStats.shieldSkill += 1
                         },{
@@ -451,7 +444,6 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         }),
                         StatView({other.commonStuff.speed.toString() }, other,0,1),
                         StatView({other.healthStats.maxHP.toInt().toString() }, other,1,1),
-//                        StatView({( other.healthStats.turnSpeed*100).toInt().toString() }, other,2,1),
                         StatView({( other.healthStats.shieldSkill).toInt().toString() }, other,2,1)
                     )}
                     it.char = 'g'

@@ -23,13 +23,10 @@ const val INTENDED_FRAME_SIZE = 1000
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 val YFRAMEMAGIC = 40
 const val TICK_INTERVAL = 40
-const val MIN_ENT_SIZE = 9.0
 val DAMAGED_ANIMATION_FRAMES:Int = 3
 val ENEMY_DRIFT_FRAMES = 30
 
 val soundFiles:MutableMap<soundType, File> = mutableMapOf()
-//val soundBank:MutableMap<String, Clip> = mutableMapOf()
-//val enBulFile = File("src/main/resources/pewnew.wav").getAbsoluteFile()
 val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
 val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
 val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
@@ -221,11 +218,11 @@ class playControls(
 
 data class Weapon(
     var mobility:Float = 0.2f,
-    var atkSpd:Int = 55,
+    var atkSpd:Int = 41,
     var bulLifetime:Int = 15,
     var bulspd:Int = 30,
     var recoil:Double = 0.0,
-    var bulSize:Double = 25.0,
+    var bulSize:Double = 20.0,
     var projectiles:Int = 1,
     var framesSinceShottah:Int = 999
 )
