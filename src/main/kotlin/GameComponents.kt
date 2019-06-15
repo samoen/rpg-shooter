@@ -49,7 +49,7 @@ fun startWave(numberofenemies: Int) {
     var lastsize = 0.0
     for (i in 1..numberofenemies) {
         val e = randEnemy()
-        e.commonStuff.dimensions.xpos = (lastsize)
+        e.commonStuff.dimensions.xpos = (lastsize+20)
         lastsize += e.commonStuff.dimensions.drawSize
         e.commonStuff.dimensions.ypos = 10.0
         entsToAdd.add(e)
@@ -412,7 +412,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Run"},other,0,0),
                         StatView({"HP"},other,1,0),
 //                        StatView({"Turn"},other,2,0),
-                        StatView({"Blok"},other,2,0),
+                        StatView({"Blk"},other,2,0),
                         Selector(3,other,
                             {
                             other.commonStuff.speed += 1
