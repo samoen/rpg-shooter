@@ -41,6 +41,7 @@ val goblinImage = ImageIcon("src/main/resources/main.png").image
 val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 val backgroundImage = ImageIcon("src/main/resources/tilemap.png").image
 val healthShopImage = ImageIcon("src/main/resources/hospital.png").image
+val medpackImage = ImageIcon("src/main/resources/medpack.png").image
 val ammoShopImage = ImageIcon("src/main/resources/ammoshop.png").image
 val gunShopImage = ImageIcon("src/main/resources/gunshop.png").image
 val pstoppedImage = ImageIcon("src/main/resources/shield.png").image

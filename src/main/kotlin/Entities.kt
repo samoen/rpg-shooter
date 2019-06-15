@@ -94,8 +94,8 @@ class Player: HasHealth {
         bulSize = 12.0,
         projectiles = 5,
         mobility = 1.0f,
-        bulLifetime = 4,
-        bulspd = 17
+        bulLifetime = 7,
+        bulspd = 14
     )
     override fun updateEntity() {
         var didStopBlock = false
@@ -219,8 +219,14 @@ class Player: HasHealth {
 
     override fun drawEntity(g: Graphics) {
         g as Graphics2D
-        if(healthStats.wep.bulspd+healthStats.wep.bulLifetime>30 && healthStats.wep.framesSinceShottah>healthStats.wep.atkSpd){
-            g.stroke = BasicStroke(0.1f *myFrame.width/INTENDED_FRAME_SIZE)
+        if(
+            healthStats.wep.bulspd>20
+//            && healthStats.wep.bulLifetime>15 &&
+            && healthStats.wep.framesSinceShottah>healthStats.wep.atkSpd
+//            &&
+//            healthStats.wep.atkSpd>10
+        ){
+            g.stroke = BasicStroke(0.01f)
             g.color = Color.RED
 //            g.drawLine(commonStuff.dimensions.getMidX().toInt(),commonStuff.dimensions.getMidY().toInt(),(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*1000).toInt(),commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*1000).toInt())
             val path = Path2D.Double()
@@ -468,7 +474,7 @@ class Impact : Entity{
 }
 
 class MedPack : Entity {
-    override var commonStuff=EntCommon()
+    override var commonStuff=EntCommon(spriteu = medpackImage)
     override fun updateEntity() {
         allEntities.filter { it is HasHealth }.forEach {
             it as HasHealth

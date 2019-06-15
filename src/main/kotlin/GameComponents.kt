@@ -306,6 +306,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
             }
             if (ch == 'h'){
                 entsToAdd.add(MedPack().also {
+                    it.commonStuff.dimensions.drawSize = mapGridSize/2
                     it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
                     it.commonStuff.dimensions.ypos = starty + (mapGridSize)*(rownumber+1)
                 })
@@ -388,12 +389,12 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                                 }
                             },{
                                 if(other.healthStats.wep.bulspd+1<50 && other.healthStats.wep.bulLifetime+1<100){
-                                    other.healthStats.wep.bulspd++
+                                    other.healthStats.wep.bulspd+=2
                                     other.healthStats.wep.bulLifetime++
                                 }
                             },{
                                 if(other.healthStats.wep.bulspd-1>2 && other.healthStats.wep.bulLifetime-1>1){
-                                    other.healthStats.wep.bulspd--
+                                    other.healthStats.wep.bulspd-=2
                                     other.healthStats.wep.bulLifetime--
                                 }
                             },{
