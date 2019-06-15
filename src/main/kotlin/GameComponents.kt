@@ -132,6 +132,8 @@ fun drawCrosshair(me:HasHealth, g: Graphics){
     g.color = Color.CYAN
     val strkw = 2.5f
     g.stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
+
+
     val arcdiameter = (me as Entity).commonStuff.dimensions.drawSize
     fun doarc(diver:Double,timeser:Double){
         val spread = (7)*(me.healthStats.wep.recoil+1)

@@ -218,6 +218,27 @@ class Player: HasHealth {
     }
 
     override fun drawEntity(g: Graphics) {
+        g as Graphics2D
+        if(healthStats.wep.bulspd+healthStats.wep.bulLifetime>30 && healthStats.wep.framesSinceShottah>healthStats.wep.atkSpd){
+            g.stroke = BasicStroke(0.1f *myFrame.width/INTENDED_FRAME_SIZE)
+            g.color = Color.RED
+//            g.drawLine(commonStuff.dimensions.getMidX().toInt(),commonStuff.dimensions.getMidY().toInt(),(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*1000).toInt(),commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*1000).toInt())
+            val path = Path2D.Double()
+            path.moveTo(commonStuff.dimensions.getMidX(),commonStuff.dimensions.getMidY())
+            path.lineTo((commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*1000),commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*1000))
+            val intersectors = allEntities.filter {it is Wall}.filter {  path.intersects(Rectangle(it.commonStuff.dimensions.xpos.toInt(),it.commonStuff.dimensions.ypos.toInt(),it.commonStuff.dimensions.drawSize.toInt(),it.commonStuff.dimensions.drawSize.toInt()))}.sortedBy { Math.abs(it.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos)+Math.abs(it.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos) }
+            if(intersectors.isEmpty()){
+                g.draw(path)
+            }else{
+                val guy = intersectors.first()
+                var amt = Math.pow(guy.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos,2.0)+Math.pow(guy.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos,2.0)
+                amt = Math.sqrt(amt)
+                val path2 = Path2D.Double()
+                path2.moveTo(commonStuff.dimensions.getMidX(),commonStuff.dimensions.getMidY())
+                path2.lineTo((commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*amt),commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*amt))
+                g.draw(path2)
+            }
+        }
         drawAsSprite(this,commonStuff.spriteu,g,!(healthStats.angy>Math.PI/2 || healthStats.angy<-Math.PI/2))
         drawCrosshair(this,g)
         drawReload(this,g,this.healthStats.wep)
