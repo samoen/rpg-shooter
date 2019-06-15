@@ -27,7 +27,7 @@ data class HealthStats(
     var armorBrokenFrames :Int= 0,
     var gotShotFrames :Int= DAMAGED_ANIMATION_FRAMES,
     var stopped :Boolean= false,
-    var shieldSkill:Int = 1,
+    var shieldSkill:Int = 3,
     var shootySound:soundType = soundType.DIE,
     var angy :Double = 0.0,
     var wep:Weapon=Weapon(),
@@ -100,13 +100,12 @@ class playControls(
 )
 
 data class Weapon(
-    var mobility:Float = 0.3f,
+    var mobility:Float = 0.2f,
     var atkSpd:Int = 4,
-    var bulLifetime:Int = 15,
-    var bulspd:Int = 2,
-    var recoil:Double = 5.0,
-    var bulSize:Double = 9.0,
-    var buldmg:Int = 3,
+    var bulLifetime:Int = 14,
+    var bulspd:Int = 14,
+    var recoil:Double = 3.0,
+    var bulSize:Double = 5.0,
     var projectiles:Int = 1,
     var framesSinceShottah:Int = 999
 )

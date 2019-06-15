@@ -38,7 +38,7 @@ fun randEnemy():Enemy{
     se.healthStats.currentHp = se.healthStats.maxHP
     se.commonStuff.speed = (Math.random()*4).toInt()+1
     se.healthStats.wep.bulSize = 8.0+(Math.random()*25)
-    se.healthStats.wep.buldmg = se.healthStats.wep.bulSize.toInt()
+//    se.healthStats.wep.buldmg = se.healthStats.wep.bulSize.toInt()
     se.healthStats.wep.atkSpd = (Math.random()*20).toInt()+10
     se.healthStats.wep.bulspd = (Math.random()*11).toInt()+3
     se.healthStats.wep.bulLifetime = 20
@@ -374,14 +374,14 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"Buk"},other,2,0),
                         Selector(3,other,
                             {
-                                other.healthStats.wep.buldmg+=1
-                                other.healthStats.wep.bulSize+=3
+//                                other.healthStats.wep.buldmg+=1
+                                other.healthStats.wep.bulSize+=1
                             },{
-                                val desiredDmg = other.healthStats.wep.buldmg-1
-                                val desiredSize = other.healthStats.wep.bulSize -3
-                                if(desiredSize>(MIN_ENT_SIZE/2) && desiredDmg>0){
+//                                val desiredDmg = other.healthStats.wep.buldmg-1
+                                val desiredSize = other.healthStats.wep.bulSize-1
+                                if(desiredSize>(MIN_ENT_SIZE/2) ){
                                     other.healthStats.wep.bulSize = desiredSize
-                                    other.healthStats.wep.buldmg = desiredDmg
+//                                    other.healthStats.wep.buldmg = desiredDmg
                                 }
                             },{
                                 if(other.healthStats.wep.bulspd+1<50 && other.healthStats.wep.bulLifetime+1<100){
@@ -389,7 +389,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                                     other.healthStats.wep.bulLifetime++
                                 }
                             },{
-                                if(other.healthStats.wep.bulspd-1>1 && other.healthStats.wep.bulLifetime-1>=1){
+                                if(other.healthStats.wep.bulspd-1>2 && other.healthStats.wep.bulLifetime-1>1){
                                     other.healthStats.wep.bulspd--
                                     other.healthStats.wep.bulLifetime--
                                 }
@@ -398,7 +398,7 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                             },{
                                 if(other.healthStats.wep.projectiles-1>=1)other.healthStats.wep.projectiles--
                             }),
-                        StatView({other.healthStats.wep.buldmg.toString() }, other,0,1),
+                        StatView({other.healthStats.wep.bulSize.toInt().toString() }, other,0,1),
                         StatView({other.healthStats.wep.bulspd.toString() }, other,1,1),
                         StatView({other.healthStats.wep.projectiles.toString() }, other,2,1)
                     )}
@@ -413,14 +413,15 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                         StatView({"HP"},other,1,0),
 //                        StatView({"Turn"},other,2,0),
                         StatView({"Blok"},other,2,0),
-                        Selector(3,other,{
+                        Selector(3,other,
+                            {
                             other.commonStuff.speed += 1
                         },{
                             val desiredspeed = other.commonStuff.speed-1
                             if(desiredspeed>0)other.commonStuff.speed = desiredspeed
                         },{
                             other.commonStuff.dimensions.drawSize  += 3
-                            other.healthStats.maxHP +=10
+                            other.healthStats.maxHP += 3
                             other.healthStats.currentHp = other.healthStats.maxHP
                         },{
                             val desiredSize = other.commonStuff.dimensions.drawSize-3

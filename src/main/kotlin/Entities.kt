@@ -11,8 +11,8 @@ class Bullet(shottah: HasHealth) : Entity {
     var shtbywep = shottah.healthStats.wep.copy()
     var bTeam = shottah.healthStats.teamNumber
     var anglo = shottah.healthStats.angy
-    var startDamage = shtbywep.buldmg
-    var damage = shtbywep.buldmg
+    var startDamage = shtbywep.bulSize.toInt()
+    var damage = startDamage
     var framesAlive = 0
     var bulDir = anglo + ((Math.random()-0.5)*shtbywep.recoil/6.0)
     override var commonStuff=EntCommon(
@@ -55,7 +55,9 @@ class Bullet(shottah: HasHealth) : Entity {
             commonStuff.dimensions.xpos+=shrinky/2
             commonStuff.dimensions.ypos+=shrinky/2
         }
-        if(commonStuff.dimensions.drawSize<=4 || damage<0.5)commonStuff.toBeRemoved=true
+        if(
+//            commonStuff.dimensions.drawSize<=4 ||
+            damage<0.5)commonStuff.toBeRemoved=true
     }
 
 }
@@ -67,13 +69,8 @@ class Player: HasHealth {
     var spawnGate:Gateway = Gateway()
     val pCont:playControls = playControls()
     var primWep = Weapon()
-    var movedRight = false
-//    var didMove = false
     var didShoot = false
-//    var tSpdMod = 0.1f
     var primaryEquipped = true
-    var didSpinright = false
-//    var didSpinleft = false
     var notOnShop = true
     override var commonStuff=EntCommon(
         dimensions = EntDimens(0.0,0.0,40.0),
@@ -91,11 +88,13 @@ class Player: HasHealth {
     )
 
     var spareWep:Weapon = Weapon(
-        atkSpd = 60,
-        bulspd = 15,
-        recoil = 0.0,
-        bulSize = 12.0,
-        buldmg = 4
+        atkSpd = 30,
+        recoil = 6.0,
+        bulSize = 13.0,
+        projectiles = 6,
+        mobility = 1.0f,
+        bulLifetime = 7,
+        bulspd = 7
     )
     override fun updateEntity() {
         var didStopBlock = false
@@ -113,42 +112,23 @@ class Player: HasHealth {
 
         var toMovex = 0.0
         var toMovey = 0.0
-//        if (pCont.riri.booly) toMovex += commonStuff.speed.toDouble()
-//        if (pCont.leflef.booly) toMovex -= commonStuff.speed.toDouble()
-//        if (pCont.up.booly){ toMovey -= commonStuff.speed.toDouble() }
-//        if (pCont.dwm.booly) { toMovey += commonStuff.speed.toDouble() }
 
         toMovex +=  Math.cos( pCont.leftStickAngle*Math.PI/180)* pCont.leftStickMag*commonStuff.speed
         toMovey -=  Math.sin( pCont.leftStickAngle*Math.PI/180)* pCont.leftStickMag*commonStuff.speed
 
-        if(pCont.leftStickMag>0.15){
+        if(pCont.leftStickMag>0.23){
             didStopBlock = true
-
         }
 
-        if(Math.abs(pCont.leftStickMag)<0.009){
-            toMovex = 0.0
-            toMovey = 0.0
-        }
-
-        if(healthStats.wep.framesSinceShottah<healthStats.wep.atkSpd){
+        if(healthStats.wep.framesSinceShottah<healthStats.wep.atkSpd || pCont.rightStickMag>0.12){
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
         }
-//        if(notOnShop){
-//            if(pCont.spenlef.booly||pCont.spinri.booly)
-        if(pCont.rightStickMag>0.1){
-            toMovex *= healthStats.wep.mobility
-            toMovey *= healthStats.wep.mobility
-            var desAng = pCont.rightStickAngle*Math.PI/180
-            var myAng =  healthStats.angy %(2*Math.PI)
-//            var myAng =  Math.abs(healthStats.angy)%(2*Math.PI)
+        if(pCont.rightStickMag>0.09){
+            val desAng = pCont.rightStickAngle*Math.PI/180
+            val myAng =  healthStats.angy %(2*Math.PI)
             var a = desAng - myAng
             a = (a + Math.PI) % (2*Math.PI) - Math.PI
-//            var goleft = false
-//            if(a>0)goleft=true
-//            if(goleft) healthStats.angy+=0.05
-//            else healthStats.angy-=0.05
             if(a<-Math.PI){
                 a = Math.PI*2 + a
             }
@@ -158,36 +138,18 @@ class Player: HasHealth {
                 healthStats.angy = (healthStats.angy + desAdd)%(Math.PI*2)
             }
         }
+//        if(Math.abs(toMovex)>0.5 &&Math.abs(toMovey)>0.5){
+//            toMovex=toMovex*0.707
+//            toMovey=toMovey*0.707
 //        }
-        if(Math.abs(toMovex)>0.5 &&Math.abs(toMovey)>0.5){
-            toMovex=toMovex*0.707
-            toMovey=toMovey*0.707
+        if(Math.abs(pCont.leftStickMag)>0.09){
+            commonStuff.dimensions.xpos += toMovex
+            commonStuff.dimensions.ypos += toMovey
         }
-        commonStuff.dimensions.xpos += toMovex
-        commonStuff.dimensions.ypos += toMovey
-        if(toMovex>0)movedRight = true
-        if(toMovex<0)movedRight = false
 
         stayInMap(this)
 
         if(notOnShop){
-
-//            if(pCont.spenlef.booly == pCont.spinri.booly){
-//                tSpdMod = healthStats.turnSpeed
-//            }
-
-//            if(didSpinright && !pCont.spinri.booly){
-//                tSpdMod = healthStats.turnSpeed
-//            }
-//            if(didSpinleft && !pCont.spenlef.booly){
-//                tSpdMod = healthStats.turnSpeed
-//            }
-
-//            didSpinright=pCont.spinri.booly && !pCont.spenlef.booly
-//            didSpinleft= pCont.spenlef.booly && !pCont.spinri.booly
-//            tSpdMod-= healthStats.turnSpeed/15
-//            if(tSpdMod<0)tSpdMod=0.0f
-//            processTurning(this,pCont.spenlef.booly,pCont.spinri.booly,healthStats.turnSpeed-tSpdMod)
             if(pCont.Swp.booly){
                 playStrSound(soundType.SWAP)
                 if (primaryEquipped){
@@ -197,8 +159,8 @@ class Player: HasHealth {
                 }
                 primaryEquipped = !primaryEquipped
             }
-            processShooting(this,pCont.sht.booly,this.healthStats.wep,pBulImage)
         }
+        processShooting(this,pCont.sht.booly&&notOnShop,this.healthStats.wep,pBulImage)
 
         if(notOnShop){
             healthStats.stopped = !didStopBlock

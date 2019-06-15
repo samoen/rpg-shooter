@@ -287,9 +287,6 @@ fun main() {
             placeMap(nextMap,nextMapNum,currentMapNum)
         } else{
                 if(!gamePaused){
-
-
-
                     val preupdateEnts = allEntities.map { it.commonStuff.dimensions.copy() }
                     allEntities.forEach { entity: Entity ->
                         entity.updateEntity()
