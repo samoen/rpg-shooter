@@ -1,5 +1,6 @@
 
 import com.studiohartman.jamepad.ControllerManager
+import java.awt.Font
 import java.awt.Graphics
 import java.awt.event.WindowEvent
 import java.awt.event.WindowListener
@@ -27,10 +28,18 @@ class SamMain{
 //    myFrame.createBufferStrategy(3)
 //    myFrame.graphics.dispose()
 //    myFrame.bufferStrategy.show()
-
-
+var firstFrame = true
         val myPanel:JPanel =object : JPanel() {
+//            override fun getFont(): Font {
+//                return fonfon
+//            }
+
             override fun paint(g: Graphics) {
+                if(firstFrame){
+                    firstFrame = false
+                    g.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
+                    g.drawString("heyo",50,50)
+                }
                 if(myrepaint){
                     myrepaint = false
 //                    super.paint(g)
@@ -42,6 +51,10 @@ class SamMain{
                 }
             }
         }
+
+//        myFrame.graphics.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
+//        myPanel.graphics.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
+//        myPanel.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
         myFrame.addWindowListener(object:WindowListener{
             override fun windowClosing(e: WindowEvent?) {
                 frameNotClosing = false

@@ -131,10 +131,8 @@ fun processTurning(me:HasHealth, lef:Boolean, righ:Boolean,tSpd:Float){
 }
 fun drawCrosshair(me:HasHealth, g: Graphics){
     g as Graphics2D
-    g.color = Color.CYAN
     val strkw = 2.5f
     g.stroke = BasicStroke(strkw *myFrame.width/INTENDED_FRAME_SIZE)
-
 
     val arcdiameter = (me as Entity).commonStuff.dimensions.drawSize
     fun doarc(diver:Double,timeser:Double){
@@ -158,7 +156,7 @@ fun drawCrosshair(me:HasHealth, g: Graphics){
 fun drawReload(me:HasHealth, g: Graphics, weap: Weapon){
     me as Entity
     if(weap.framesSinceShottah<me.healthStats.wep.atkSpd){
-        g.color = Color.CYAN
+        g.color = Color.YELLOW
         (g as Graphics2D).stroke = BasicStroke(2f)
         g.drawLine(
             getWindowAdjustedPos (me.commonStuff.dimensions.xpos).toInt(),
@@ -249,7 +247,7 @@ fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
     val ydiff = me.commonStuff.dimensions.ypos - oldme.ypos
     val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
     val midDistY = abs(abs(oldOther.getMidY())-abs(oldme.getMidY()))
-    if(abs(midDistX-midDistY)<0.2)return
+    if(abs(midDistX-midDistY)<0.1)return
     if(midDistX>midDistY){
         me.commonStuff.dimensions.xpos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,xdiff,me.commonStuff.dimensions.xpos,other.commonStuff.dimensions.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
     }else{

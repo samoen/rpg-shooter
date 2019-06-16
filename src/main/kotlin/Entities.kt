@@ -36,7 +36,7 @@ class Bullet(shottah: HasHealth) : Entity {
         allEntities.filter { it is Wall && commonStuff.dimensions.overlapsOther(it.commonStuff.dimensions)}.forEach {
             commonStuff.toBeRemoved = true
             val imp = Impact()
-            imp.commonStuff.dimensions.drawSize = commonStuff.dimensions.drawSize
+            imp.commonStuff.dimensions.drawSize = commonStuff.dimensions.drawSize+5
             imp.commonStuff.dimensions.xpos = commonStuff.dimensions.xpos
             imp.commonStuff.dimensions.ypos = commonStuff.dimensions.ypos
             entsToAdd.add(imp)
@@ -128,14 +128,12 @@ class Player: HasHealth {
         toMovex +=  Math.cos( pCont.leftStickAngle*Math.PI/180)* pCont.leftStickMag*commonStuff.speed
         toMovey -=  Math.sin( pCont.leftStickAngle*Math.PI/180)* pCont.leftStickMag*commonStuff.speed
 
-        if(pCont.leftStickMag>0.23){
-            didStopBlock = true
-        }
 
         if(healthStats.wep.framesSinceShottah-1<=healthStats.wep.atkSpd || pCont.rightStickMag>0.12){
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
         }
+
         if(pCont.rightStickMag>0.09){
             val desAng = pCont.rightStickAngle*Math.PI/180
             val myAng =  healthStats.angy %(2*Math.PI)
@@ -157,6 +155,13 @@ class Player: HasHealth {
         if(Math.abs(pCont.leftStickMag)>0.09){
             commonStuff.dimensions.xpos += toMovex
             commonStuff.dimensions.ypos += toMovey
+            if(
+            pCont.leftStickMag*commonStuff.speed>4
+
+//                Math.sqrt(Math.pow(toMovex,2.0) + Math.pow(toMovey,2.0))>2
+            ){
+                didStopBlock = true
+            }
         }
 
         stayInMap(this)
@@ -219,30 +224,35 @@ class Player: HasHealth {
         if(
             healthStats.wep.bulspd>20
 //            && healthStats.wep.bulLifetime>15 &&
-            && healthStats.wep.framesSinceShottah>healthStats.wep.atkSpd
+
 //            &&
 //            healthStats.wep.atkSpd>10
-        ){
-            g.stroke = BasicStroke(0.01f)
-            g.color = Color.RED
+            ){
+                g.stroke = BasicStroke(0.01f)
+
 //            g.drawLine(commonStuff.dimensions.getMidX().toInt(),commonStuff.dimensions.getMidY().toInt(),(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*1000).toInt(),commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*1000).toInt())
-            val path = Path2D.Double()
-            path.moveTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()),getWindowAdjustedPos(commonStuff.dimensions.getMidY()))
-            path.lineTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*INTENDED_FRAME_SIZE),getWindowAdjustedPos(commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*INTENDED_FRAME_SIZE)))
-            val intersectors = allEntities.filter {it is Wall}.filter {  path.intersects(Rectangle(getWindowAdjustedPos(it.commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(it.commonStuff.dimensions.ypos).toInt(),getWindowAdjustedPos(it.commonStuff.dimensions.drawSize).toInt(),getWindowAdjustedPos(it.commonStuff.dimensions.drawSize).toInt()))}.sortedBy { Math.abs(it.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos)+Math.abs(it.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos) }
-            if(intersectors.isEmpty()){
-                g.draw(path)
-            }else{
-                val guy = intersectors.first()
-                var amt = Math.pow(guy.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos,2.0)+Math.pow(guy.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos,2.0)
-                amt = Math.sqrt(amt)
-                val path2 = Path2D.Double()
-                path2.moveTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()),getWindowAdjustedPos(commonStuff.dimensions.getMidY()))
-                path2.lineTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*amt),getWindowAdjustedPos(commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*amt)))
-                g.draw(path2)
+                val path = Path2D.Double()
+                path.moveTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()),getWindowAdjustedPos(commonStuff.dimensions.getMidY()))
+                path.lineTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*INTENDED_FRAME_SIZE),getWindowAdjustedPos(commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*INTENDED_FRAME_SIZE)))
+                val intersectors = allEntities.filter {it is Wall}.filter {  path.intersects(Rectangle(getWindowAdjustedPos(it.commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(it.commonStuff.dimensions.ypos).toInt(),getWindowAdjustedPos(it.commonStuff.dimensions.drawSize).toInt(),getWindowAdjustedPos(it.commonStuff.dimensions.drawSize).toInt()))}.sortedBy { Math.abs(it.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos)+Math.abs(it.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos) }
+                g.color = Color.RED
+                if(intersectors.isEmpty()){
+                    g.draw(path)
+                }else{
+                    val guy = intersectors.first()
+                    var amt = Math.pow(guy.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos,2.0)+Math.pow(guy.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos,2.0)
+                    amt = Math.sqrt(amt)
+                    val path2 = Path2D.Double()
+                    path2.moveTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()),getWindowAdjustedPos(commonStuff.dimensions.getMidY()))
+                    path2.lineTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*amt),getWindowAdjustedPos(commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*amt)))
+                    g.draw(path2)
+                }
             }
-        }
+            g.color = Color.GREEN
+
         drawAsSprite(this,commonStuff.spriteu,g,!(healthStats.angy>Math.PI/2 || healthStats.angy<-Math.PI/2))
+        if(healthStats.wep.framesSinceShottah>healthStats.wep.atkSpd)g.color = Color.GREEN
+        else g.color = Color.YELLOW
         drawCrosshair(this,g)
         drawReload(this,g,this.healthStats.wep)
         drawHealth(this,g)
@@ -266,6 +276,7 @@ class Enemy : HasHealth{
     override fun drawEntity(g: Graphics) {
         drawAsSprite(this,commonStuff.spriteu,g,!(healthStats.angy>Math.PI/2 || healthStats.angy<-Math.PI/2))
         drawHealth(this,g)
+        g.color = Color.GREEN
         drawCrosshair(this,g)
 //        val r = Rectangle((xpos).toInt(),(ypos - (healthStats.wep.bulSize/(drawSize))).toInt(),healthStats.wep.bulSize.toInt(),700)
 //        val path = Path2D.Double()
@@ -525,11 +536,16 @@ class StatView(val showText: ()->String,val other:Entity,val rownumba:Int,val co
         commonStuff.dimensions.xpos = statsXSpace*colNuma + other.commonStuff.dimensions.xpos
         commonStuff.dimensions.ypos = statsYSpace*rownumba + other.commonStuff.dimensions.ypos
     }
-
+//    var fontDone = false
+//    var font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
     override fun drawEntity(g: Graphics) {
         g.color = Color.MAGENTA
-        g.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
-        g.drawString(showText(),getWindowAdjustedPos(commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos+15).toInt())
+//        if(!fontDone){
+//            fontDone=true
+//        }
+//        g.font = font
+    g.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
+    g.drawString(showText(),getWindowAdjustedPos(commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos+15).toInt())
     }
 }
 

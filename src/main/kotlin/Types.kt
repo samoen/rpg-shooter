@@ -18,7 +18,7 @@ var myrepaint = false
 var painting = false
 val statsYSpace = 20.0
 val statsXSpace = 40.0
-val selectorXSpace = 45.0
+val selectorXSpace = 37.0
 const val INTENDED_FRAME_SIZE = 1000
 val XMAXMAGIC = INTENDED_FRAME_SIZE*15
 val YFRAMEMAGIC = 40
@@ -219,8 +219,8 @@ class playControls(
 data class Weapon(
     var mobility:Float = 0.2f,
     var atkSpd:Int = 41,
-    var bulLifetime:Int = 15,
-    var bulspd:Int = 30,
+    var bulLifetime:Int = 17,
+    var bulspd:Int = 34,
     var recoil:Double = 0.0,
     var bulSize:Double = 20.0,
     var projectiles:Int = 1,
