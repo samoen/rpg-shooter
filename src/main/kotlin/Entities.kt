@@ -223,14 +223,10 @@ class Player: HasHealth {
         g as Graphics2D
         if(
             healthStats.wep.bulspd>20
-//            && healthStats.wep.bulLifetime>15 &&
-
-//            &&
-//            healthStats.wep.atkSpd>10
+            && healthStats.wep.recoil<4
+            && healthStats.wep.framesSinceShottah>healthStats.wep.atkSpd
             ){
                 g.stroke = BasicStroke(0.01f)
-
-//            g.drawLine(commonStuff.dimensions.getMidX().toInt(),commonStuff.dimensions.getMidY().toInt(),(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*1000).toInt(),commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*1000).toInt())
                 val path = Path2D.Double()
                 path.moveTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()),getWindowAdjustedPos(commonStuff.dimensions.getMidY()))
                 path.lineTo(getWindowAdjustedPos(commonStuff.dimensions.getMidX()+Math.cos(healthStats.angy)*INTENDED_FRAME_SIZE),getWindowAdjustedPos(commonStuff.dimensions.getMidY().toInt()-(Math.sin(healthStats.angy)*INTENDED_FRAME_SIZE)))

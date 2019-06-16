@@ -247,7 +247,7 @@ fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
     val ydiff = me.commonStuff.dimensions.ypos - oldme.ypos
     val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
     val midDistY = abs(abs(oldOther.getMidY())-abs(oldme.getMidY()))
-    if(abs(midDistX-midDistY)<0.1)return
+    if(abs(midDistX-midDistY)<0.05)return
     if(midDistX>midDistY){
         me.commonStuff.dimensions.xpos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,xdiff,me.commonStuff.dimensions.xpos,other.commonStuff.dimensions.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
     }else{
