@@ -19,10 +19,9 @@ class SamMain{
         soundFiles[soundType.LASER] = enemyPewFile
         soundFiles[soundType.SWAP] = swapnoiseFile
 
-        players.add(Player())
-        players.add(Player().also{
-                it.commonStuff.dimensions.xpos=150.0
-            })
+        for (i in 0..3){
+            if(controllers.getState(i).isConnected)players.add(Player())
+        }
 
 
 //        entsToAdd.addAll(players)

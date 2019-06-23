@@ -14,7 +14,13 @@ class Bullet(shottah: HasHealth) : Entity {
     var startDamage = shtbywep.bulSize.toInt()
     var damage = startDamage
     var framesAlive = 0
-    var bulDir = anglo + ((Math.random()-0.5)*shtbywep.recoil/6.0)
+    var bulDir = let{
+        var newcoil = shtbywep.recoil
+        if(shtbywep.projectiles>1){
+            newcoil += 1/(shtbywep.recoil+0.5)
+        }
+        anglo + ((Math.random()-0.5)*newcoil/6.0)
+    }
     override var commonStuff=EntCommon(
         dimensions = run {
             val bsize = shtbywep.bulSize

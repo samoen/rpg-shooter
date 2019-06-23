@@ -42,8 +42,8 @@ fun randEnemy():Enemy{
     se.healthStats.wep.bulSize = 8.0+(Math.random()*25)
 //    se.healthStats.wep.buldmg = se.healthStats.wep.bulSize.toInt()
     se.healthStats.wep.atkSpd = (Math.random()*20).toInt()+10
-    se.healthStats.wep.bulspd = (Math.random()*11).toInt()+3
-    se.healthStats.wep.bulLifetime = 20
+    se.healthStats.wep.bulspd = (Math.random()*11).toInt()+4
+    se.healthStats.wep.bulLifetime = 24
     return  se
 }
 
@@ -179,9 +179,11 @@ fun takeDamage(other:Entity,me:Entity){
     other as Bullet
     other.commonStuff.toBeRemoved = true
     var desirDam = other.damage
+    var shieldProc = false
     if(me.healthStats.getArmored()){
         if(me.healthStats.shieldSkill<other.damage){
             desirDam = me.healthStats.shieldSkill
+            shieldProc = true
         }
     }
     val desirHealth = me.healthStats.currentHp - desirDam
@@ -210,7 +212,7 @@ fun takeDamage(other:Entity,me:Entity){
     }else{
         me.healthStats.currentHp = desirHealth
         if(me.healthStats.getArmored()){
-            me.healthStats.armorIsBroken = true
+            if(shieldProc) me.healthStats.armorIsBroken = true
             playStrSound(soundType.SWAP)
         }else playStrSound(me.healthStats.ouchNoise)
         me.healthStats.didGetShot = true
