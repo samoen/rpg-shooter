@@ -60,7 +60,24 @@ var myFrame = run {
 }
 const val mapGridColumns = 16
 
-val map1 =  "        w       " +
+val map0 =
+        "        w       " +
+        "                " +
+        "                " +
+        "            w   " +
+        "  hw            " +
+        "  h      m      " +
+        "  h  1         h" +
+        "            w w " +
+        "   h  w       w " +
+        "              ww" +
+        "       h    w   " +
+        "  g    b    wh  " +
+        "                " +
+        "                " +
+        "            s   "
+val map1 =
+        "        w       " +
         "                " +
         "                " +
         "ww          w   " +
@@ -73,7 +90,7 @@ val map1 =  "        w       " +
         "  w    h    w   " +
         "  g    b    wh  " +
         "            2   " +
-        "   1            " +
+        "   0            " +
         "            s   "
 
 val map2 =  "s       we      " +

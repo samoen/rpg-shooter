@@ -189,6 +189,12 @@ fun takeDamage(other:Entity,me:Entity){
         if(me is Player){
             me.healthStats.currentHp = me.healthStats.maxHP
             me.spawnGate.playersInside.add(me)
+            me.commonStuff.toBeRemoved = true
+            if(players.all { it.commonStuff.toBeRemoved && it.spawnGate.locked }){
+                changeMap = true
+                nextMapNum = currentMapNum
+                currentMapNum = previousMapNum
+            }
         }else me.healthStats.currentHp = 0.0
         playStrSound(me.healthStats.dieNoise)
         me.commonStuff.toBeRemoved = true
@@ -289,8 +295,10 @@ fun drawHealth(me:HasHealth, g:Graphics){
     g.stroke = BasicStroke(1f)
 }
 
-fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
+fun placeMap(mapNum:Int,fromMapNum:Int){
+    val map=getMapFromNum(mapNum)
     val mapGridSize = ((INTENDED_FRAME_SIZE/mapGridColumns.toDouble())-2).toInt().toDouble()
+    previousMapNum = fromMapNum
     currentMapNum = mapNum
     allEntities.clear()
     val starty = 0
@@ -452,13 +460,8 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
                 continue
             }
             val charint:Int= Character.getNumericValue(ch)
-            if(charint in 1..9){
-                val mappy:String =when(charint){
-                    1->map1
-                    2->map2
-                    3->map3
-                    else ->map1
-                }
+            if(charint in 0..9){
+                val mappy:String =getMapFromNum(charint)
                 val gatex = ind.toDouble()+(ind* mapGridSize)
                 val gatey = starty + (mapGridSize+1)*(rownumber+1)
                 val gate = Gateway().also {
@@ -485,4 +488,12 @@ fun placeMap(map:String, mapNum:Int,fromMapNum:Int){
 
         }
     }
+}
+
+fun getMapFromNum(num:Int):String=when(num){
+    0->map0
+    1->map1
+    2->map2
+    3->map3
+    else ->map1
 }

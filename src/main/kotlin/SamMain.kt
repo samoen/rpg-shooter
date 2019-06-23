@@ -23,8 +23,11 @@ class SamMain{
         players.add(Player().also{
                 it.commonStuff.dimensions.xpos=150.0
             })
+
+
 //        entsToAdd.addAll(players)
-        placeMap(map1,1,1)
+        placeMap(1,0)
+
 //    myFrame.createBufferStrategy(3)
 //    myFrame.graphics.dispose()
 //    myFrame.bufferStrategy.show()
@@ -99,10 +102,10 @@ var firstFrame = true
                 if(!currState.isConnected)continue
                 p1.pCont.sht.booly = currState.rb
                 p1.pCont.Swp.booly = currState.lbJustPressed
-                p1.pCont.selUp.booly = currState.rbJustPressed
-                p1.pCont.selDwn.booly = currState.lbJustPressed
-                p1.pCont.selLeft.booly = currState.xJustPressed
-                p1.pCont.selRight.booly = currState.aJustPressed
+                p1.pCont.selUp.booly = currState.xJustPressed
+                p1.pCont.selDwn.booly = currState.aJustPressed
+                p1.pCont.selLeft.booly = currState.lbJustPressed
+                p1.pCont.selRight.booly = currState.rbJustPressed
                 p1.pCont.leftStickAngle = currState.leftStickAngle
                 p1.pCont.leftStickMag = currState.leftStickMagnitude
                 p1.pCont.rightStickAngle = currState.rightStickAngle
@@ -118,15 +121,20 @@ var firstFrame = true
                 }
 
             }
-            if(pressed3.booly || pressed3contr){
-                placeMap(map1,1,1)
+//            if(!allEntities.contains(player) && !entsToAdd.contains(player))
+//            if(players.all { it.commonStuff.toBeRemoved }){
+//              placeMap(nextMap,nextMapNum,currentMapNum)
+//                placeMap(currentMapNum,previousMapNum)
+//            } else
+                if(pressed3.booly || pressed3contr){
+//                placeMap(map1,1,currentMapNum)
             }else if(pressed2.booly || pressed2contr) {
                 gamePaused = !gamePaused
             } else if (pressed1.booly || pressed1contr) {
                 startWave(4)
             } else if(changeMap){
                 changeMap=false
-                placeMap(nextMap,nextMapNum,currentMapNum)
+                placeMap(nextMapNum,currentMapNum)
             } else{
                 if(!gamePaused){
                     val preupdateEnts = allEntities.map { it.commonStuff.dimensions.copy() }
@@ -167,6 +175,7 @@ var firstFrame = true
                             }
                         }
                     }while (triggeredReaction)
+
                     allEntities.removeIf { it.commonStuff.toBeRemoved }
                     entsToDraw.clear()
                     val combatants = mutableListOf<Entity>()

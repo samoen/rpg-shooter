@@ -137,14 +137,13 @@ class Player: HasHealth {
         if(pCont.rightStickMag>0.09){
             val desAng = pCont.rightStickAngle*Math.PI/180
             val myAng =  healthStats.angy %(2*Math.PI)
-            var a = desAng - myAng
-            a = (a + Math.PI) % (2*Math.PI) - Math.PI
+            var a = (desAng - myAng + Math.PI) % (2*Math.PI) - Math.PI
             if(a<-Math.PI){
-                a = Math.PI*2 + a
+                a += Math.PI * 2
             }
             if(pCont.rightStickMag>0.95)healthStats.angy = desAng
             else{
-                val desAdd = pCont.rightStickMag*0.4*a
+                val desAdd = pCont.rightStickMag*0.3*a
                 healthStats.angy = (healthStats.angy + desAdd)%(Math.PI*2)
             }
         }
@@ -393,7 +392,7 @@ class Gateway : Entity{
         var toremove:Int = -1
         
         for ((index,player) in playersInside.withIndex()){
-            if(player.pCont.selRight.booly){
+            if(player.pCont.selDwn.booly){
                 player.commonStuff.dimensions.xpos = commonStuff.dimensions.xpos
                 player.commonStuff.dimensions.ypos = commonStuff.dimensions.ypos
                 var canSpawn = true
@@ -416,10 +415,13 @@ class Gateway : Entity{
         }
         if(toremove!=-1)
             playersInside.removeAt(toremove)
-        if(playersInside.size>=NumPlayers){
-            nextMap = map
-            nextMapNum = mapnum
-            changeMap = true
+        if(playersInside.size>=players.size){
+            var navigate = false
+            players.forEach { if(it.pCont.selUp.booly)navigate=true }
+            if(navigate){
+                nextMapNum = mapnum
+                changeMap = true
+            }
         }
         if(!locked){
             for (pp in players){
@@ -452,11 +454,10 @@ class GateSwitch:Entity{
         }
     }
 }
-var nextMap = map1
+var previousMapNum = 0
 var nextMapNum = 1
 var currentMapNum = 1
 var changeMap = false
-var NumPlayers = 2
 
 class Impact : Entity{
     var liveFrames = 4
