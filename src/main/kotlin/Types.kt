@@ -3,15 +3,16 @@ import java.awt.Image
 import java.io.File
 import javax.swing.ImageIcon
 import javax.swing.JFrame
+import kotlin.Boolean
 
 
 val allEntities = mutableListOf<Entity>()
 val entsToAdd = mutableListOf<Entity>()
 val entsToDraw = mutableListOf<Entity>()
 val players:MutableList<Player> = mutableListOf()
-var pressed1 = OneShotChannel()
-var pressed2 = OneShotChannel()
-var pressed3 = OneShotChannel()
+var pressed1 = false
+var pressed2 = false
+var pressed3 = false
 var frameNotClosing = true
 var gamePaused = false
 var myrepaint = false
@@ -136,10 +137,10 @@ enum class soundType{
 
 
 data class EntCommon(
-    var toBeRemoved: Boolean = false,
+    var toBeRemoved: kotlin.Boolean = false,
     var speed: Int = 0,
-    var dimensions:EntDimens = EntDimens(0.0,0.0,50.0),
-    var isSolid:Boolean = false,
+    var dimensions:EntDimens = EntDimens(0.0,0.0,25.0),
+    var isSolid:kotlin.Boolean = false,
     var spriteu: Image = backgroundImage
 )
 
@@ -179,7 +180,7 @@ interface HasHealth:Entity{
 
 class ButtonSet(val up:Int,val down:Int,val left:Int,val right:Int,val swapgun:Int,val shoot:Int,val spinleft:Int,val spinright:Int)
 
-class OneShotChannel(var locked:Boolean=false, var booly:Boolean=false){
+class Boolean(var locked:Boolean=false, var booly:Boolean=false){
     fun tryConsume():Boolean{
         if(booly){
             booly = false
@@ -199,14 +200,14 @@ class OneShotChannel(var locked:Boolean=false, var booly:Boolean=false){
     }
 }
 
-data class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
+data class EntDimens(var xpos:Double=0.0,var ypos:Double=0.0,var drawSize:Double=25.0){
     fun getMidY():Double{
         return ypos+(drawSize/2)
     }
     fun getMidX():Double{
         return xpos+(drawSize/2)
     }
-    fun overlapsOther(other: EntDimens):Boolean{
+    fun overlapsOther(other: EntDimens):kotlin.Boolean{
         return ypos.toInt()+drawSize.toInt() > other.ypos.toInt() &&
                 ypos.toInt()<other.ypos.toInt()+other.drawSize.toInt() &&
                 xpos.toInt()+drawSize.toInt() > other.xpos.toInt() &&
@@ -215,22 +216,22 @@ data class EntDimens(var xpos:Double,var ypos:Double,var drawSize:Double){
 }
 
 class playControls(
-//    var up:OneShotChannel=OneShotChannel(),
-//    var dwm:OneShotChannel=OneShotChannel(),
-    var sht:OneShotChannel=OneShotChannel(),
-    var Swp:OneShotChannel=OneShotChannel(),
-    var selDwn:OneShotChannel=OneShotChannel(),
-    var selUp:OneShotChannel=OneShotChannel(),
-//    var riri:OneShotChannel=OneShotChannel(),
+//    var up:Boolean=false,
+//    var dwm:Boolean=false,
+    var sht:kotlin.Boolean=false,
+    var Swp:kotlin.Boolean=false,
+    var selDwn:kotlin.Boolean=false,
+    var selUp:kotlin.Boolean=false,
+//    var riri:kotlin.Boolean=false,
     var leftStickAngle:Float = 0f,
     var leftStickMag:Float = 0f,
     var rightStickAngle:Float = 0f,
     var rightStickMag:Float = 0f,
-//    var leflef:OneShotChannel=OneShotChannel(),
-//    var spinri:OneShotChannel=OneShotChannel(),
-    var selRight:OneShotChannel=OneShotChannel(),
-    var selLeft:OneShotChannel=OneShotChannel()
-//    var spenlef:OneShotChannel=OneShotChannel()
+//    var leflef:kotlin.Boolean=false,
+//    var spinri:kotlin.Boolean=false,
+    var selRight:kotlin.Boolean=false,
+    var selLeft:kotlin.Boolean=false
+//    var spenlef:kotlin.Boolean=false
 )
 
 data class Weapon(
@@ -239,7 +240,7 @@ data class Weapon(
     var bulLifetime:Int = 17,
     var bulspd:Int = 34,
     var recoil:Double = 0.0,
-    var bulSize:Double = 20.0,
+    var bulSize:Double = 25.0,
     var projectiles:Int = 1,
     var framesSinceShottah:Int = 999
 )

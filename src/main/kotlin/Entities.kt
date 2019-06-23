@@ -4,15 +4,15 @@ import kotlin.math.atan2
 import java.awt.geom.AffineTransform
 import java.awt.geom.Path2D
 import java.awt.Rectangle
-
+import kotlin.Boolean
 
 class Bullet(shottah: HasHealth) : Entity {
     var shDims = (shottah as Entity).commonStuff.dimensions
     var shtbywep = shottah.healthStats.wep.copy()
     var bTeam = shottah.healthStats.teamNumber
     var anglo = shottah.healthStats.angy
-    var startDamage = shtbywep.bulSize.toInt()
-    var damage = startDamage
+//    var startDamage = shtbywep.bulSize.toInt()
+    var damage = shtbywep.bulSize
     var framesAlive = 0
     var bulDir = let{
         var newcoil = shtbywep.recoil
@@ -55,20 +55,24 @@ class Bullet(shottah: HasHealth) : Entity {
         if(commonStuff.dimensions.ypos<0)commonStuff.toBeRemoved = true
         framesAlive++
         if(framesAlive>shtbywep.bulLifetime){
-            val shrinky = SHRINK_RATE
+//            val shrinky = SHRINK_RATE
+            val shrinky = shtbywep.bulSize/SHRINK_RATE
 //            damage-=( shrinky*(startDamage/ commonStuff.dimensions.drawSize)).toInt()
-            damage-=( shrinky).toInt()
+            damage-=(shrinky)
             commonStuff.dimensions.drawSize-=shrinky
             commonStuff.dimensions.xpos+=shrinky/2
             commonStuff.dimensions.ypos+=shrinky/2
+            if(
+//            commonStuff.dimensions.drawSize<5.0
+                commonStuff.dimensions.drawSize<shtbywep.bulSize/3
+                    ||
+                damage<1
+                )commonStuff.toBeRemoved=true
         }
-        if(
-//            commonStuff.dimensions.drawSize<=4 ||
-            damage<0.5)commonStuff.toBeRemoved=true
     }
 
 }
-val SHRINK_RATE = 2
+val SHRINK_RATE = 8
 
 class Player: HasHealth {
     var canEnterGateway:Boolean = true
@@ -95,13 +99,13 @@ class Player: HasHealth {
     )
 
     var spareWep:Weapon = Weapon(
-        atkSpd = 8,
+        atkSpd = 5,
         recoil = 6.0,
-        bulSize = 7.0,
-        projectiles = 5,
+        bulSize = 10.0,
+        projectiles = 3,
         mobility = 0.9f,
-        bulLifetime = 8,
-        bulspd = 16
+        bulLifetime = 7,
+        bulspd = 14
     )
     override fun updateEntity() {
         var didStopBlock = false
@@ -117,7 +121,7 @@ class Player: HasHealth {
                 notOnShop = true
         }
         if(notOnShop){
-            if(pCont.Swp.booly){
+            if(pCont.Swp){
                 playStrSound(soundType.SWAP)
                 if (primaryEquipped){
                     healthStats.wep = spareWep
@@ -127,7 +131,7 @@ class Player: HasHealth {
                 primaryEquipped = !primaryEquipped
             }
         }
-        processShooting(this,pCont.sht.booly&&notOnShop,this.healthStats.wep,pBulImage)
+        processShooting(this,pCont.sht&&notOnShop,this.healthStats.wep,pBulImage)
         var toMovex = 0.0
         var toMovey = 0.0
 
@@ -398,7 +402,7 @@ class Gateway : Entity{
         var toremove:Int = -1
         
         for ((index,player) in playersInside.withIndex()){
-            if(player.pCont.selDwn.booly){
+            if(player.pCont.selDwn){
                 player.commonStuff.dimensions.xpos = commonStuff.dimensions.xpos
                 player.commonStuff.dimensions.ypos = commonStuff.dimensions.ypos
                 var canSpawn = true
@@ -423,7 +427,7 @@ class Gateway : Entity{
             playersInside.removeAt(toremove)
         if(playersInside.size>=players.size){
             var navigate = false
-            players.forEach { if(it.pCont.selUp.booly)navigate=true }
+            players.forEach { if(it.pCont.selUp)navigate=true }
             if(navigate){
                 nextMapNum = mapnum
                 changeMap = true
@@ -501,29 +505,32 @@ class Shop:Entity{
 }
 
 class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()->Unit,val onUp1:()->Unit,val onDown1:()->Unit,val onUp2:()->Unit={},val onDown2:()->Unit={},val onUp3:()->Unit={},val onDown3:()->Unit={}):Entity{
-    override var commonStuff=EntCommon(dimensions = EntDimens(other.commonStuff.dimensions.xpos+selectorXSpace,other.commonStuff.dimensions.ypos,20.0))
+    override var commonStuff=EntCommon(
+        dimensions = EntDimens(drawSize = 30.0)
+//        dimensions = EntDimens(other.commonStuff.dimensions.xpos+selectorXSpace,other.commonStuff.dimensions.ypos-10,25.0)
+    )
     var indexer = 0
     override fun updateEntity() {
         commonStuff.dimensions.xpos=other.commonStuff.dimensions.xpos+selectorXSpace
-        commonStuff.dimensions.ypos=other.commonStuff.dimensions.ypos+(indexer*statsYSpace)
-        if(other.pCont.selDwn.booly){
+        commonStuff.dimensions.ypos=other.commonStuff.dimensions.ypos+(indexer*statsYSpace) - 7
+        if(other.pCont.selDwn){
             if(indexer+1<numStats){
                 indexer++
             }
         }
-        if(other.pCont.selUp.booly){
+        if(other.pCont.selUp){
             if(indexer-1>=0){
                 indexer--
             }
         }
-        if(other.pCont.selRight.booly){
+        if(other.pCont.selRight){
             when(indexer){
                 0->{ onUp() }
                 1->{ onUp1() }
                 2->{ onUp2() }
                 3->{ onUp3() }
             }
-        }else if(other.pCont.selLeft.booly){
+        }else if(other.pCont.selLeft){
             when(indexer){
                 0->{ onDown() }
                 1->{ onDown1() }
@@ -547,7 +554,7 @@ class StatView(val showText: ()->String,val other:Entity,val rownumba:Int,val co
 //            fontDone=true
 //        }
 //        g.font = font
-    g.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
+    g.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(18.0).toInt())
     g.drawString(showText(),getWindowAdjustedPos(commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos+15).toInt())
     }
 }

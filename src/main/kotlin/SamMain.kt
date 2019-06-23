@@ -92,19 +92,19 @@ var firstFrame = true
 
         while (frameNotClosing){
             val pretime = System.currentTimeMillis()
-            var pressed1contr : Boolean = false
-            var pressed2contr : Boolean = false
-            var pressed3contr : Boolean = false
+            var pressed1contr = false
+            var pressed2contr = false
+            var pressed3contr = false
             controllers.update()
             for((i,p1) in players.withIndex()){
                 val currState = controllers.getState(i)
                 if(!currState.isConnected)continue
-                p1.pCont.sht.booly = currState.rb
-                p1.pCont.Swp.booly = currState.lbJustPressed
-                p1.pCont.selUp.booly = currState.xJustPressed
-                p1.pCont.selDwn.booly = currState.aJustPressed
-                p1.pCont.selLeft.booly = currState.lbJustPressed
-                p1.pCont.selRight.booly = currState.rbJustPressed
+                p1.pCont.sht = currState.rb
+                p1.pCont.Swp = currState.lbJustPressed
+                p1.pCont.selUp = currState.xJustPressed
+                p1.pCont.selDwn = currState.aJustPressed
+                p1.pCont.selLeft = currState.lbJustPressed
+                p1.pCont.selRight = currState.rbJustPressed
                 p1.pCont.leftStickAngle = currState.leftStickAngle
                 p1.pCont.leftStickMag = currState.leftStickMagnitude
                 p1.pCont.rightStickAngle = currState.rightStickAngle
@@ -125,11 +125,11 @@ var firstFrame = true
 //              placeMap(nextMap,nextMapNum,currentMapNum)
 //                placeMap(currentMapNum,previousMapNum)
 //            } else
-                if(pressed3.booly || pressed3contr){
+                if(pressed3 || pressed3contr){
 //                placeMap(map1,1,currentMapNum)
-            }else if(pressed2.booly || pressed2contr) {
+            }else if(pressed2 || pressed2contr) {
                 gamePaused = !gamePaused
-            } else if (pressed1.booly || pressed1contr) {
+            } else if (pressed1 || pressed1contr) {
                 startWave(4)
             } else if(changeMap){
                 changeMap=false

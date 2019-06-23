@@ -4,6 +4,7 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 import javax.sound.sampled.*
 import kotlin.math.abs
+import kotlin.Boolean
 
 fun getWindowAdjustedPos(pos:Double):Double{
     return pos * myFrame.width/INTENDED_FRAME_SIZE
@@ -41,9 +42,10 @@ fun randEnemy():Enemy{
     se.commonStuff.speed = (Math.random()*4).toInt()+1
     se.healthStats.wep.bulSize = 8.0+(Math.random()*25)
 //    se.healthStats.wep.buldmg = se.healthStats.wep.bulSize.toInt()
+    se.healthStats.wep.mobility = Math.random().toFloat()
     se.healthStats.wep.atkSpd = (Math.random()*20).toInt()+10
-    se.healthStats.wep.bulspd = (Math.random()*11).toInt()+4
-    se.healthStats.wep.bulLifetime = 24
+    se.healthStats.wep.bulspd = (Math.random()*19).toInt()+4
+    se.healthStats.wep.bulLifetime = 23
     return  se
 }
 
@@ -57,40 +59,6 @@ fun startWave(numberofenemies: Int) {
         entsToAdd.add(e)
     }
 }
-
-//fun playerKeyPressed(player: Player, e: KeyEvent){
-//    if (e.keyCode == player.buttonSet.swapgun) player.pCont.Swp.tryProduce()
-//    if (e.keyCode == player.buttonSet.up) player.pCont.up.tryProduce()
-//    if (e.keyCode == player.buttonSet.down) player.pCont.dwm.tryProduce()
-//    if (e.keyCode == player.buttonSet.shoot) player.pCont.sht.tryProduce()
-//    if (e.keyCode == player.buttonSet.right) player.pCont.riri.tryProduce()
-//    if (e.keyCode == player.buttonSet.left) player.pCont.leflef.tryProduce()
-//    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.tryProduce()
-//    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.tryProduce()
-//}
-
-//fun playerKeyReleased(player: Player,e: KeyEvent){
-//    if (e.keyCode == player.buttonSet.swapgun) {
-//        player.pCont.Swp.release()
-//    }
-//    if (e.keyCode == player.buttonSet.up) {
-//        player.pCont.up.release()
-//    }
-//    if (e.keyCode == player.buttonSet.down) {
-//        player.pCont.dwm.release()
-//    }
-//    if (e.keyCode == player.buttonSet.shoot){
-//        player.pCont.sht.release()
-//    }
-//    if (e.keyCode == player.buttonSet.right){
-//        player.pCont.riri.release()
-//    }
-//    if (e.keyCode == player.buttonSet.left) {
-//        player.pCont.leflef.release()
-//    }
-//    if (e.keyCode == player.buttonSet.spinleft) player.pCont.spenlef.release()
-//    if (e.keyCode == player.buttonSet.spinright) player.pCont.spinri.release()
-//}
 
 fun processShooting(me:HasHealth, sht:Boolean, weap:Weapon, bulImage:Image){
     if (sht && weap.framesSinceShottah > me.healthStats.wep.atkSpd) {
@@ -182,7 +150,7 @@ fun takeDamage(other:Entity,me:Entity){
     var shieldProc = false
     if(me.healthStats.getArmored()){
         if(me.healthStats.shieldSkill<other.damage){
-            desirDam = me.healthStats.shieldSkill
+            desirDam = me.healthStats.shieldSkill.toDouble()
             shieldProc = true
         }
     }
@@ -389,10 +357,10 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                         StatView({"Buk"},other,2,0),
                         Selector(3,other,
                             {
-                                other.healthStats.wep.bulSize+=1
+                                other.healthStats.wep.bulSize+=5
                             },{
-                                val desiredSize = other.healthStats.wep.bulSize-1
-                                if(desiredSize>(5.0) ){
+                                val desiredSize = other.healthStats.wep.bulSize-5
+                                if(desiredSize>=(5.0) ){
                                     other.healthStats.wep.bulSize = desiredSize
                                 }
                             },{
