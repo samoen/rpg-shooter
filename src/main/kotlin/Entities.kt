@@ -139,10 +139,14 @@ class Player: HasHealth {
         toMovey -=  Math.sin( pCont.leftStickAngle*Math.PI/180)* pCont.leftStickMag*commonStuff.speed
 
 
-        if(healthStats.wep.framesSinceShottah-1<=healthStats.wep.atkSpd || pCont.rightStickMag>0.12){
+        if(healthStats.wep.framesSinceShottah-1<=healthStats.wep.atkSpd){
             toMovex *= healthStats.wep.mobility
             toMovey *= healthStats.wep.mobility
         }
+//        else if(pCont.rightStickMag>0.01){
+                toMovey *= healthStats.wep.mobility+((1-healthStats.wep.mobility)*(1-pCont.rightStickMag))
+                toMovex *= healthStats.wep.mobility+((1-healthStats.wep.mobility)*(1-pCont.rightStickMag))
+//        }
 
         if(pCont.rightStickMag>0.09){
             val desAng = pCont.rightStickAngle*Math.PI/180
@@ -308,7 +312,7 @@ class Enemy : HasHealth{
             if(runTick>maxTick)runTick = 0
             runTick+=(4).toInt()
             if(runTick<maxTick/2)commonStuff.spriteu = goblinImage
-            else commonStuff.spriteu = runImage
+            else commonStuff.spriteu = enemyWalkImage
             var xdiff = firstplayer.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
             var ydiff = firstplayer.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
             if(!(iTried.first==commonStuff.dimensions.xpos && iTried.second==commonStuff.dimensions.ypos)){

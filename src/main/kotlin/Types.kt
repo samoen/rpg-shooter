@@ -33,9 +33,12 @@ val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
 val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
 val ouchnoiseFile = File("src/main/resources/ouch.wav").getAbsoluteFile()
 val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
+
 val stillImage = ImageIcon("src/main/resources/main.png").image
 val runImage = ImageIcon("src/main/resources/walk.png").image
-val goblinImage = ImageIcon("src/main/resources/main.png").image
+val goblinImage = ImageIcon("src/main/resources/enemy1.png").image
+val enemyWalkImage = ImageIcon("src/main/resources/enemy1walk.png").image
+val enemyDeadImage = ImageIcon("src/main/resources/enemy1dead.png").image
 val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 val backgroundImage = ImageIcon("src/main/resources/tilemap.png").image
 val healthShopImage = ImageIcon("src/main/resources/hospital.png").image

@@ -170,7 +170,12 @@ fun takeDamage(other:Entity,me:Entity){
         me.commonStuff.toBeRemoved = true
         val deathEnt = object: Entity{
             var liveFrames = 8
-            override var commonStuff=EntCommon(spriteu = dieImage, dimensions = EntDimens(me.commonStuff.dimensions.xpos,me.commonStuff.dimensions.ypos,me.commonStuff.dimensions.drawSize))
+            override var commonStuff=EntCommon(
+                spriteu = let{
+                    if(me is Player) dieImage
+                    else enemyDeadImage
+                },
+                dimensions = EntDimens(me.commonStuff.dimensions.xpos,me.commonStuff.dimensions.ypos,me.commonStuff.dimensions.drawSize))
             override fun updateEntity() {
                 liveFrames--
                 if(liveFrames<0)commonStuff.toBeRemoved=true
