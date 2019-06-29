@@ -1,4 +1,3 @@
-
 import com.studiohartman.jamepad.ControllerManager
 import java.awt.Font
 import java.awt.Graphics
@@ -7,7 +6,7 @@ import java.awt.event.WindowListener
 import javax.swing.JPanel
 import javax.swing.WindowConstants
 
-class SamMain{
+class SamMain {
     fun samMain() {
 
         val controllers = ControllerManager()
@@ -19,33 +18,40 @@ class SamMain{
         soundFiles[soundType.LASER] = enemyPewFile
         soundFiles[soundType.SWAP] = swapnoiseFile
 
-        for (i in 0..3){
-            if(controllers.getState(i).isConnected)players.add(Player())
+        for (i in 0..3) {
+            if (controllers.getState(i).isConnected) players.add(Player())
         }
 
 
 //        entsToAdd.addAll(players)
-        placeMap(1,0)
+        placeMap(1, 0)
 
 //    myFrame.createBufferStrategy(3)
 //    myFrame.graphics.dispose()
 //    myFrame.bufferStrategy.show()
-var firstFrame = true
-        val myPanel:JPanel =object : JPanel() {
+        var firstFrame = true
+        val myPanel: JPanel = object : JPanel() {
 //            override fun getFont(): Font {
 //                return fonfon
 //            }
 
             override fun paint(g: Graphics) {
-                if(firstFrame){
+                if (firstFrame) {
                     firstFrame = false
-                    g.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
-                    g.drawString("heyo",50,50)
+                    g.font = Font("Courier", Font.BOLD, getWindowAdjustedPos(16.0).toInt())
+                    g.drawString("heyo", 50, 50)
                 }
-                if(myrepaint){
+                if (myrepaint) {
                     myrepaint = false
 //                    super.paint(g)
-                    g.drawImage(backgroundImage,0,0, getWindowAdjustedPos(INTENDED_FRAME_SIZE-(XMAXMAGIC/myFrame.width.toDouble())).toInt(),myFrame.width,null)
+                    g.drawImage(
+                        backgroundImage,
+                        0,
+                        0,
+                        getWindowAdjustedPos(INTENDED_FRAME_SIZE - (XMAXMAGIC / myFrame.width.toDouble())).toInt(),
+                        myFrame.width,
+                        null
+                    )
                     entsToDraw.forEach {
                         it.drawEntity(g)
                     }
@@ -57,7 +63,7 @@ var firstFrame = true
 //        myFrame.graphics.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
 //        myPanel.graphics.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
 //        myPanel.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
-        myFrame.addWindowListener(object:WindowListener{
+        myFrame.addWindowListener(object : WindowListener {
             override fun windowClosing(e: WindowEvent?) {
                 frameNotClosing = false
                 controllers.quitSDLGamepad()
@@ -85,20 +91,20 @@ var firstFrame = true
         myFrame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
         myFrame.contentPane = myPanel
         myFrame.title = "Gunplay"
-        myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE+YFRAMEMAGIC)
+        myFrame.setBounds(0, 0, INTENDED_FRAME_SIZE, INTENDED_FRAME_SIZE + YFRAMEMAGIC)
         myFrame.isVisible = true
 
         playStrSound(soundType.SWAP)
 
-        while (frameNotClosing){
+        while (frameNotClosing) {
             val pretime = System.currentTimeMillis()
             var pressed1contr = false
             var pressed2contr = false
             var pressed3contr = false
             controllers.update()
-            for((i,p1) in players.withIndex()){
+            for ((i, p1) in players.withIndex()) {
                 val currState = controllers.getState(i)
-                if(!currState.isConnected)continue
+                if (!currState.isConnected) continue
                 p1.pCont.sht = currState.rb
                 p1.pCont.Swp = currState.lbJustPressed
                 p1.pCont.selUp = currState.xJustPressed
@@ -109,61 +115,56 @@ var firstFrame = true
                 p1.pCont.leftStickMag = currState.leftStickMagnitude
                 p1.pCont.rightStickAngle = currState.rightStickAngle
                 p1.pCont.rightStickMag = currState.rightStickMagnitude
-                if(currState.bJustPressed){
+                if (currState.bJustPressed) {
                     pressed1contr = true
                 }
-                if(currState.startJustPressed){
+                if (currState.startJustPressed) {
                     pressed2contr = true
                 }
-                if(currState.yJustPressed){
+                if (currState.yJustPressed) {
                     pressed3contr = true
                 }
 
             }
-//            if(!allEntities.contains(player) && !entsToAdd.contains(player))
-//            if(players.all { it.commonStuff.toBeRemoved }){
-//              placeMap(nextMap,nextMapNum,currentMapNum)
-//                placeMap(currentMapNum,previousMapNum)
-//            } else
-                if(pressed3 || pressed3contr){
+            if (pressed3contr) {
 //                placeMap(map1,1,currentMapNum)
-            }else if(pressed2 || pressed2contr) {
+            } else if (pressed2contr) {
                 gamePaused = !gamePaused
-            } else if (pressed1 || pressed1contr) {
+            } else if (pressed1contr) {
                 startWave(4)
-            } else if(changeMap){
-                changeMap=false
-                placeMap(nextMapNum,currentMapNum)
-            } else{
-                if(!gamePaused){
+            } else if (changeMap) {
+                changeMap = false
+                placeMap(nextMapNum, currentMapNum)
+            } else {
+                if (!gamePaused) {
                     val preupdateEnts = allEntities.map { it.commonStuff.dimensions.copy() }
                     allEntities.forEach { entity: Entity ->
                         entity.updateEntity()
                     }
                     var timesTried = 0
-                    do{
+                    do {
                         timesTried++
                         var triggeredReaction = false
                         val allSize = allEntities.size
-                        for(dex in 0 until allSize) {
+                        for (dex in 0 until allSize) {
                             val ient = allEntities[dex]
-                            if(ient is Player || ient is Enemy){
-                                for(j in (0)until allSize){
-                                    if(dex!=j){
+                            if (ient is Player || ient is Enemy) {
+                                for (j in (0) until allSize) {
+                                    if (dex != j) {
                                         val jent = allEntities[j]
-                                        if(jent.commonStuff.isSolid){
+                                        if (jent.commonStuff.isSolid) {
                                             var collided = false
-                                            if(!ient.commonStuff.toBeRemoved && !jent.commonStuff.toBeRemoved){
-                                                if(ient.commonStuff.dimensions.overlapsOther(jent.commonStuff.dimensions)){
+                                            if (!ient.commonStuff.toBeRemoved && !jent.commonStuff.toBeRemoved) {
+                                                if (ient.commonStuff.dimensions.overlapsOther(jent.commonStuff.dimensions)) {
                                                     collided = true
-                                                    blockMovement(ient,jent,preupdateEnts[dex],preupdateEnts[j])
+                                                    blockMovement(ient, jent, preupdateEnts[dex], preupdateEnts[j])
                                                 }
                                             }
-                                            if(dex>j && collided && jent.commonStuff.dimensions.overlapsOther(ient.commonStuff.dimensions)) {
+                                            if (dex > j && collided && jent.commonStuff.dimensions.overlapsOther(ient.commonStuff.dimensions)) {
                                                 if (ient.commonStuff.isSolid && jent.commonStuff.isSolid) {
-                                                    if(timesTried > 5){
+                                                    if (timesTried > 5) {
                                                         println("Cannot resolve collision")
-                                                    }else{
+                                                    } else {
                                                         triggeredReaction = true
                                                     }
                                                 }
@@ -173,7 +174,7 @@ var firstFrame = true
                                 }
                             }
                         }
-                    }while (triggeredReaction)
+                    } while (triggeredReaction)
 
                     allEntities.removeIf { it.commonStuff.toBeRemoved }
                     entsToDraw.clear()
@@ -181,15 +182,16 @@ var firstFrame = true
                     val noncombatants = mutableListOf<Entity>()
                     val bullets = mutableListOf<Entity>()
                     allEntities.forEach {
-                        if(it is Player || it is Enemy)combatants.add(it)
-                        else if(it is Bullet){bullets.add(it)}
-                        else noncombatants.add(it)
+                        if (it is Player || it is Enemy) combatants.add(it)
+                        else if (it is Bullet) {
+                            bullets.add(it)
+                        } else noncombatants.add(it)
                     }
                     entsToDraw.addAll(noncombatants)
                     entsToDraw.addAll(combatants)
                     entsToDraw.addAll(bullets)
-                    for(player in players){
-                        if(!player.notOnShop){
+                    for (player in players) {
+                        if (!player.notOnShop) {
                             player.menuStuff.forEach {
                                 it.updateEntity()
                                 entsToDraw.add(it)
@@ -199,13 +201,15 @@ var firstFrame = true
                     myrepaint = true
                     painting = true
                     myPanel.repaint()
-                    while (painting){Thread.sleep(1)}
-                    if(entsToAdd.size>0) allEntities.addAll(entsToAdd)
+                    while (painting) {
+                        Thread.sleep(1)
+                    }
+                    if (entsToAdd.size > 0) allEntities.addAll(entsToAdd)
                     entsToAdd.clear()
                 }
             }
             val tickdiff = System.currentTimeMillis() - pretime
-            if(tickdiff<TICK_INTERVAL) Thread.sleep(TICK_INTERVAL-tickdiff)
+            if (tickdiff < TICK_INTERVAL) Thread.sleep(TICK_INTERVAL - tickdiff)
         }
     }
 }

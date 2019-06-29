@@ -144,8 +144,12 @@ class Player: HasHealth {
             toMovey *= healthStats.wep.mobility
         }
 //        else if(pCont.rightStickMag>0.01){
-                toMovey *= healthStats.wep.mobility+((1-healthStats.wep.mobility)*(1-pCont.rightStickMag))
-                toMovex *= healthStats.wep.mobility+((1-healthStats.wep.mobility)*(1-pCont.rightStickMag))
+        var stickmagamt = pCont.rightStickMag
+        val magMax = 0.98f
+        if(stickmagamt>magMax)stickmagamt = magMax
+        val moveamt = abs(healthStats.wep.mobility+((1-healthStats.wep.mobility)*(1-stickmagamt)))
+        toMovey *= moveamt
+        toMovex *= moveamt
 //        }
 
         if(pCont.rightStickMag>0.09){
@@ -161,16 +165,11 @@ class Player: HasHealth {
                 healthStats.angy = (healthStats.angy + desAdd)%(Math.PI*2)
             }
         }
-//        if(Math.abs(toMovex)>0.5 &&Math.abs(toMovey)>0.5){
-//            toMovex=toMovex*0.707
-//            toMovey=toMovey*0.707
-//        }
         if(Math.abs(pCont.leftStickMag)>0.09){
             commonStuff.dimensions.xpos += toMovex
             commonStuff.dimensions.ypos += toMovey
             if(
             pCont.leftStickMag*commonStuff.speed>4
-
 //                Math.sqrt(Math.pow(toMovex,2.0) + Math.pow(toMovey,2.0))>2
             ){
                 didStopBlock = true

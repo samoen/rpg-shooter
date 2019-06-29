@@ -1,10 +1,6 @@
 import java.awt.*
-import java.awt.event.KeyEvent
-import java.math.RoundingMode
-import java.text.DecimalFormat
-import javax.sound.sampled.*
+import javax.sound.sampled.AudioSystem
 import kotlin.math.abs
-import kotlin.Boolean
 
 fun getWindowAdjustedPos(pos:Double):Double{
     return pos * myFrame.width/INTENDED_FRAME_SIZE
@@ -36,8 +32,8 @@ fun playStrSound(str:soundType){
 fun randEnemy():Enemy{
     val se = Enemy()
     se.healthStats.turnSpeed = (0.01+(Math.random()/14)).toFloat()
-    se.commonStuff.dimensions.drawSize = 20+(Math.random()*30)
-    se.healthStats.maxHP = (se.commonStuff.dimensions.drawSize/2)
+    se.commonStuff.dimensions.drawSize = 20+(Math.random()*50)
+    se.healthStats.maxHP = (se.commonStuff.dimensions.drawSize)
     se.healthStats.currentHp = se.healthStats.maxHP
     se.commonStuff.speed = (Math.random()*4).toInt()+1
     se.healthStats.wep.bulSize = 8.0+(Math.random()*25)
@@ -122,7 +118,6 @@ fun drawCrosshair(me:HasHealth, g: Graphics){
     g.stroke = BasicStroke(1f)
 }
 fun drawReload(me:HasHealth, g: Graphics, weap: Weapon){
-    me as Entity
     if(weap.framesSinceShottah<me.healthStats.wep.atkSpd){
         g.color = Color.YELLOW
         (g as Graphics2D).stroke = BasicStroke(2f)
@@ -142,14 +137,12 @@ fun drawReload(me:HasHealth, g: Graphics, weap: Weapon){
     }
 }
 
-fun takeDamage(other:Entity,me:Entity){
-    me as HasHealth
-    other as Bullet
-    other.commonStuff.toBeRemoved = true
-    var desirDam = other.damage
+fun takeDamage(bullet:Bullet, me:HasHealth){
+    bullet.commonStuff.toBeRemoved = true
+    var desirDam = bullet.damage
     var shieldProc = false
     if(me.healthStats.getArmored()){
-        if(me.healthStats.shieldSkill<other.damage){
+        if(me.healthStats.shieldSkill<bullet.damage){
             desirDam = me.healthStats.shieldSkill.toDouble()
             shieldProc = true
         }
