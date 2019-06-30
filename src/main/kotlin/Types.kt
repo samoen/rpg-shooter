@@ -35,6 +35,7 @@ val stillImage = ImageIcon("src/main/resources/main.png").image
 val runImage = ImageIcon("src/main/resources/walk.png").image
 val goblinImage = ImageIcon("src/main/resources/enemy1.png").image
 val enemyWalkImage = ImageIcon("src/main/resources/enemy1walk.png").image
+val enemyShootImage = ImageIcon("src/main/resources/enemy1shoot.png").image
 val enemyDeadImage = ImageIcon("src/main/resources/enemy1dead.png").image
 val pewImage = ImageIcon("src/main/resources/shoot1.png").image
 val backgroundImage = ImageIcon("src/main/resources/tilemap.png").image
@@ -50,6 +51,8 @@ val dieImage = ImageIcon("src/main/resources/deadman.png").image
 val impactImage = ImageIcon("src/main/resources/shrapnel.png").image
 val pBulImage = ImageIcon("src/main/resources/plasma.png").image
 val eBulImage = ImageIcon("src/main/resources/badbullet.png").image
+val gateSwitchImage = ImageIcon("src/main/resources/switchoff.png").image
+val gateSwitchActiveImage = ImageIcon("src/main/resources/switchon.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 
@@ -92,7 +95,7 @@ val map1 =
             "     w          " +
             "      w         " +
             "   0            " +
-            "                "
+            "          w    w"
 
 val map2 = "s       we      " +
         "   3         e  " +
@@ -137,6 +140,7 @@ enum class soundType {
 
 
 data class EntCommon(
+    var didShoot:Boolean = false,
     var toBeRemoved: Boolean = false,
     var speed: Int = 0,
     var dimensions: EntDimens = EntDimens(0.0, 0.0, 25.0),
@@ -210,10 +214,10 @@ class playControls(
 )
 
 data class Weapon(
-    var mobility: Float = 0.2f,
-    var atkSpd: Int = 41,
-    var bulLifetime: Int = 17,
-    var bulspd: Int = 34,
+    var mobility: Float = 0.3f,
+    var atkSpd: Int = 35,
+    var bulLifetime: Int = 18,
+    var bulspd: Int = 35,
     var recoil: Double = 0.0,
     var bulSize: Double = 25.0,
     var projectiles: Int = 1,

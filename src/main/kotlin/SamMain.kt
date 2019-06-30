@@ -48,7 +48,8 @@ class SamMain {
                         backgroundImage,
                         0,
                         0,
-                        getWindowAdjustedPos(INTENDED_FRAME_SIZE - (XMAXMAGIC / myFrame.width.toDouble())).toInt(),
+//                        getWindowAdjustedPos(INTENDED_FRAME_SIZE - (XMAXMAGIC / myFrame.width.toDouble())).toInt(),
+                        myFrame.width,
                         myFrame.width,
                         null
                     )

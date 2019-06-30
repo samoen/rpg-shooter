@@ -39,7 +39,7 @@ fun randEnemy():Enemy{
     se.healthStats.wep.bulSize = 8.0+(Math.random()*25)
 //    se.healthStats.wep.buldmg = se.healthStats.wep.bulSize.toInt()
     se.healthStats.wep.mobility = Math.random().toFloat()
-    se.healthStats.wep.atkSpd = (Math.random()*20).toInt()+10
+    se.healthStats.wep.atkSpd = (Math.random()*30).toInt()+10
     se.healthStats.wep.bulspd = (Math.random()*19).toInt()+4
     se.healthStats.wep.bulLifetime = 23
     return  se
@@ -59,7 +59,7 @@ fun startWave(numberofenemies: Int) {
 fun processShooting(me:HasHealth, sht:Boolean, weap:Weapon, bulImage:Image){
     if (sht && weap.framesSinceShottah > me.healthStats.wep.atkSpd) {
         weap.framesSinceShottah = 0
-        if(me is Player)me.didShoot=true
+        me.commonStuff.didShoot=true
         for( i in 1..weap.projectiles){
             val b = Bullet(me)
             b.commonStuff.spriteu = bulImage
@@ -265,26 +265,26 @@ fun drawHealth(me:HasHealth, g:Graphics){
 
 fun placeMap(mapNum:Int,fromMapNum:Int){
     val map=getMapFromNum(mapNum)
-    val mapGridSize = ((INTENDED_FRAME_SIZE/mapGridColumns.toDouble())-2).toInt().toDouble()
+    val mapGridSize = ((INTENDED_FRAME_SIZE/mapGridColumns.toDouble())-2.0)
     previousMapNum = fromMapNum
     currentMapNum = mapNum
     allEntities.clear()
-    val starty = 0
+    val starty = -10
     for(rownumber in 0 until (map.length/mapGridColumns)){
         for((ind:Int,ch:Char) in map.substring(rownumber*mapGridColumns,(rownumber*mapGridColumns)+mapGridColumns).withIndex()){
             if(ch=='w'){
                 entsToAdd.add(Wall().also {
                     it.commonStuff.dimensions.drawSize = mapGridSize
-                    it.commonStuff.dimensions.xpos = (ind +(ind* mapGridSize.toInt()).toInt()).toInt().toDouble()
-                    it.commonStuff.dimensions.ypos = (starty + (mapGridSize)*(rownumber+1)).toInt().toDouble()
+                    it.commonStuff.dimensions.xpos = (ind +(ind* mapGridSize)).toDouble()
+                    it.commonStuff.dimensions.ypos = (starty + (mapGridSize)*(rownumber+1)).toDouble()
                 })
                 continue
             }
             if (ch == 'h'){
                 entsToAdd.add(MedPack().also {
                     it.commonStuff.dimensions.drawSize = mapGridSize/2
-                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.commonStuff.dimensions.ypos = starty + (mapGridSize)*(rownumber+1)
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)+mapGridSize/4
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize)*(rownumber+1)+mapGridSize/4
                 })
                 continue
             }
@@ -297,8 +297,9 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
             }
             if(ch == 's'){
                 entsToAdd.add(GateSwitch().also {
-                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)
-                    it.commonStuff.dimensions.ypos = starty + (mapGridSize)*(rownumber+1)
+                    it.commonStuff.dimensions.drawSize = mapGridSize/2
+                    it.commonStuff.dimensions.xpos = ind.toDouble()+(ind* mapGridSize)+mapGridSize/4
+                    it.commonStuff.dimensions.ypos = starty + (mapGridSize)*(rownumber+1)+mapGridSize/4
                 })
                 continue
             }
@@ -334,9 +335,9 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                                 desired = "%.1f".format(desired).toFloat()
                                 if(desired>=0)other.healthStats.wep.mobility = desired
                             }),
-                        StatView({other.healthStats.wep.recoil.toString() }, other,0,1),
-                        StatView({other.healthStats.wep.atkSpd.toString() }, other,1,1),
-                        StatView({other.healthStats.wep.mobility.toString() }, other,2,1)
+                        StatStars({other.healthStats.wep.recoil.toString() },{(other.healthStats.wep.recoil/0.5).toInt()}, other,0),
+                        StatStars({other.healthStats.wep.atkSpd.toString() },{(other.healthStats.wep.atkSpd/3).toInt()}, other,1),
+                        StatStars({other.healthStats.wep.mobility.toString() },{(other.healthStats.wep.mobility/0.1f).toInt()}, other,2)
                     )
                     }
                 })
@@ -362,23 +363,26 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                                     other.healthStats.wep.bulSize = desiredSize
                                 }
                             },{
-                                if(other.healthStats.wep.bulspd+1<50 && other.healthStats.wep.bulLifetime+1<100){
+
+                                if(other.healthStats.wep.bulspd+2<50){
                                     other.healthStats.wep.bulspd+=2
                                     other.healthStats.wep.bulLifetime++
                                 }
                             },{
-                                if(other.healthStats.wep.bulspd-1>2 && other.healthStats.wep.bulLifetime-1>1){
+                                if(other.healthStats.wep.bulspd-2>=1){
                                     other.healthStats.wep.bulspd-=2
                                     other.healthStats.wep.bulLifetime--
                                 }
                             },{
-                                if(other.healthStats.wep.projectiles+1<20)other.healthStats.wep.projectiles++
+                                val desiredproj = other.healthStats.wep.projectiles+2
+                                if(desiredproj<=10)other.healthStats.wep.projectiles=desiredproj
                             },{
-                                if(other.healthStats.wep.projectiles-1>=1)other.healthStats.wep.projectiles--
+                                val desiredproj = other.healthStats.wep.projectiles-2
+                                if(desiredproj>=1)other.healthStats.wep.projectiles=desiredproj
                             }),
-                        StatView({other.healthStats.wep.bulSize.toInt().toString() }, other,0,1),
-                        StatView({other.healthStats.wep.bulspd.toString() }, other,1,1),
-                        StatView({other.healthStats.wep.projectiles.toString() }, other,2,1)
+                        StatStars({other.healthStats.wep.bulSize.toInt().toString() }, {((other.healthStats.wep.bulSize-5)/5).toInt()},other,0),
+                        StatStars({other.healthStats.wep.bulspd.toString() },{((other.healthStats.wep.bulspd-1)/2).toInt()}, other,1),
+                        StatStars({other.healthStats.wep.projectiles.toString() },{((other.healthStats.wep.projectiles-1)/2).toInt()}, other,2)
                     )}
                 })
                 continue
@@ -393,10 +397,11 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                         StatView({"Blk"},other,2,0),
                         Selector(3,other,
                             {
-                            other.commonStuff.speed += 1
+                                val desiredspd = other.commonStuff.speed+2
+                                if(desiredspd<20) other.commonStuff.speed = desiredspd
                         },{
-                            val desiredspeed = other.commonStuff.speed-1
-                            if(desiredspeed>0)other.commonStuff.speed = desiredspeed
+                            val desiredspeed = other.commonStuff.speed-2
+                            if(desiredspeed>=3)other.commonStuff.speed = desiredspeed
                         },{
                             other.commonStuff.dimensions.drawSize  += 3
                             other.healthStats.maxHP += 3
@@ -404,21 +409,21 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                         },{
                             val desiredSize = other.commonStuff.dimensions.drawSize-3
                             val desiredHp = other.healthStats.maxHP-3
-                            if(desiredSize>15.0 && desiredHp>0){
+                            if(desiredHp>=15){
                                 other.commonStuff.dimensions.drawSize = desiredSize
                                 other.healthStats.maxHP = desiredHp
                             }
                             other.healthStats.currentHp = other.healthStats.maxHP
                         },
                             {
-                            other.healthStats.shieldSkill += 1
+                            other.healthStats.shieldSkill += 2
                         },{
-                            val desired = other.healthStats.shieldSkill-1
+                            val desired = other.healthStats.shieldSkill-2
                             if(desired>=1)other.healthStats.shieldSkill = desired
                         }),
-                        StatView({other.commonStuff.speed.toString() }, other,0,1),
-                        StatView({other.healthStats.maxHP.toInt().toString() }, other,1,1),
-                        StatView({( other.healthStats.shieldSkill).toInt().toString() }, other,2,1)
+                        StatStars({other.commonStuff.speed.toString() },{(((other.commonStuff.speed) - 3)/2).toInt()}, other,0),
+                        StatStars({other.healthStats.maxHP.toInt().toString() }, {((other.healthStats.maxHP-15)/3).toInt()},other,1),
+                        StatStars({( other.healthStats.shieldSkill).toInt().toString() },{((other.healthStats.shieldSkill-1)/2).toInt()}, other,2)
                     )}
                     it.char = 'g'
                     it.commonStuff.dimensions.drawSize = mapGridSize

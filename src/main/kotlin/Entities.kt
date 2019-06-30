@@ -80,13 +80,13 @@ class Player: HasHealth {
     var spawnGate:Gateway = Gateway()
     val pCont:playControls = playControls()
     var primWep = Weapon()
-    var didShoot = false
+
     var primaryEquipped = true
     var notOnShop = true
     override var commonStuff=EntCommon(
-        dimensions = EntDimens(0.0,0.0,40.0),
+        dimensions = EntDimens(0.0,0.0,30.0),
         isSolid = true,
-        speed = 8
+        speed = 9
     )
 
     override var healthStats=HealthStats(
@@ -99,13 +99,13 @@ class Player: HasHealth {
     )
 
     var spareWep:Weapon = Weapon(
-        atkSpd = 5,
+        atkSpd = 8,
         recoil = 6.0,
         bulSize = 10.0,
         projectiles = 3,
         mobility = 0.9f,
         bulLifetime = 7,
-        bulspd = 14
+        bulspd = 13
     )
     override fun updateEntity() {
         var didStopBlock = false
@@ -193,13 +193,13 @@ class Player: HasHealth {
             }
         }
         var todraw = stillImage
-        if(didShoot){
+        if(commonStuff.didShoot){
             pewframecount++
             if(pewframecount < 3){
                 todraw = pewImage
             }else {
                 pewframecount = 0
-                didShoot=false
+                commonStuff.didShoot=false
             }
         }
         if(didStopBlock){
@@ -312,6 +312,8 @@ class Enemy : HasHealth{
             runTick+=(4).toInt()
             if(runTick<maxTick/2)commonStuff.spriteu = goblinImage
             else commonStuff.spriteu = enemyWalkImage
+            if(healthStats.wep.framesSinceShottah<10)commonStuff.spriteu=enemyShootImage
+
             var xdiff = firstplayer.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
             var ydiff = firstplayer.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
             if(!(iTried.first==commonStuff.dimensions.xpos && iTried.second==commonStuff.dimensions.ypos)){
@@ -451,13 +453,14 @@ class Gateway : Entity{
     }
 }
 class GateSwitch:Entity{
-    override var commonStuff=EntCommon(spriteu = eBulImage)
+    override var commonStuff=EntCommon(spriteu = gateSwitchImage)
     var beenSwitched = false
     override fun updateEntity() {
         if(!beenSwitched){
             players.forEach {
                 if(it.commonStuff.dimensions.overlapsOther(commonStuff.dimensions)){
                     beenSwitched = true
+                    commonStuff.spriteu = gateSwitchActiveImage
                     allEntities.filter { it is Gateway }.forEach {
                         it.commonStuff.spriteu = gateOpenImage
                         (it as Gateway).locked = false
@@ -543,6 +546,25 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
         }
     }
 }
+class StatStars(val showText: ()->String,val stars:()->Int, val other:Entity,val rownumba:Int ):Entity{
+    override var commonStuff=EntCommon()
+    override fun updateEntity() {
+        commonStuff.dimensions.xpos = statsXSpace + other.commonStuff.dimensions.xpos
+        commonStuff.dimensions.ypos = statsYSpace*rownumba + other.commonStuff.dimensions.ypos
+    }
+    //    var fontDone = false
+//    var font = Font("Courier", Font.BOLD,getWindowAdjustedPos(16.0).toInt())
+    override fun drawEntity(g: Graphics) {
+        g.color = Color.MAGENTA
+        g.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(18.0).toInt())
+        g.drawString(showText(),getWindowAdjustedPos(commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos+15).toInt())
+        for(i in 1..stars()){
+            g.drawImage(enemyShootImage,getWindowAdjustedPos(commonStuff.dimensions.xpos+(i*30.0)).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos).toInt(),30,30,null)
+        }
+
+    }
+}
+
 class StatView(val showText: ()->String,val other:Entity,val rownumba:Int,val colNuma:Int ):Entity{
     override var commonStuff=EntCommon()
     override fun updateEntity() {
