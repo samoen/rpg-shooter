@@ -24,7 +24,7 @@ const val TICK_INTERVAL = 40
 val DAMAGED_ANIMATION_FRAMES: Int = 3
 val ENEMY_DRIFT_FRAMES = 30
 val MAX_SHIELD_SKILL = 21
-val MAX_RECOIL = 7
+val MAX_RECOIL = 16
 val MAX_RELOED = 38
 
 val soundFiles: MutableMap<soundType, File> = mutableMapOf()
@@ -58,6 +58,7 @@ val gateSwitchImage = ImageIcon("src/main/resources/switchoff.png").image
 val gateSwitchActiveImage = ImageIcon("src/main/resources/switchon.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
+val starImage = ImageIcon("src/main/resources/star4.png").image
 
 var myFrame = run {
     val jf = JFrame()

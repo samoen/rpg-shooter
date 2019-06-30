@@ -17,7 +17,8 @@ class Bullet(shottah: HasHealth) : Entity {
     var bulDir = let{
         var newcoil = shtbywep.recoil
         if(shtbywep.projectiles>1){
-            newcoil += 1/(shtbywep.recoil+0.5)
+//            newcoil += 1/(shtbywep.recoil+0.5)
+            newcoil += shtbywep.projectiles/2
         }
         anglo + ((Math.random()-0.5)*newcoil/6.0)
     }
@@ -517,7 +518,7 @@ class Selector(val numStats:Int,val other:Player,val onUp:()->Unit,val onDown:()
     )
     var indexer = 0
     override fun updateEntity() {
-        commonStuff.dimensions.xpos=other.commonStuff.dimensions.xpos+selectorXSpace
+        commonStuff.dimensions.xpos=other.commonStuff.dimensions.xpos
         commonStuff.dimensions.ypos=other.commonStuff.dimensions.ypos+(indexer*statsYSpace) - 7
         if(other.pCont.selDwn){
             if(indexer+1<numStats){
@@ -558,8 +559,8 @@ class StatStars(val showText: ()->String,val stars:()->Int, val other:Entity,val
         g.color = Color.MAGENTA
         g.font = Font("Courier", Font.BOLD,getWindowAdjustedPos(18.0).toInt())
         g.drawString(showText(),getWindowAdjustedPos(commonStuff.dimensions.xpos).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos+15).toInt())
-        for(i in 1..stars()){
-            g.drawImage(enemyShootImage,getWindowAdjustedPos(commonStuff.dimensions.xpos+(i*30.0)).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos).toInt(),30,30,null)
+        for(i in 0 until stars()){
+            g.drawImage(starImage,getWindowAdjustedPos(commonStuff.dimensions.xpos+(i*10.0)).toInt(),getWindowAdjustedPos(commonStuff.dimensions.ypos).toInt(),15,15,null)
         }
 
     }

@@ -316,10 +316,10 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                         StatView({"Mob"},other,2,0),
                         Selector(3,other,
                             {
-                                val desired = other.healthStats.wep.recoil-0.5
+                                val desired = other.healthStats.wep.recoil-1
                                 if(desired>=0.0)other.healthStats.wep.recoil=desired
                             },{
-                                val desired = other.healthStats.wep.recoil+0.5
+                                val desired = other.healthStats.wep.recoil+1
                                 if(desired<=MAX_RECOIL)other.healthStats.wep.recoil=desired
 
                             },{
@@ -338,7 +338,7 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                                 desired = "%.1f".format(desired).toFloat()
                                 if(desired>=0)other.healthStats.wep.mobility = desired
                             }),
-                        StatStars({other.healthStats.wep.recoil.toString() },{((MAX_RECOIL/0.5)-(other.healthStats.wep.recoil/0.5)).toInt()}, other,0),
+                        StatStars({other.healthStats.wep.recoil.toString() },{((MAX_RECOIL/1)-(other.healthStats.wep.recoil/1)).toInt()}, other,0),
                         StatStars({other.healthStats.wep.atkSpd.toString() },{((MAX_RELOED/3)-(other.healthStats.wep.atkSpd/3)).toInt()}, other,1),
                         StatStars({other.healthStats.wep.mobility.toString() },{(other.healthStats.wep.mobility/0.1f).toInt()}, other,2)
                     )
@@ -378,7 +378,7 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                                 }
                             },{
                                 val desiredproj = other.healthStats.wep.projectiles+2
-                                if(desiredproj<=10)other.healthStats.wep.projectiles=desiredproj
+                                if(desiredproj<=13)other.healthStats.wep.projectiles=desiredproj
                             },{
                                 val desiredproj = other.healthStats.wep.projectiles-2
                                 if(desiredproj>=1)other.healthStats.wep.projectiles=desiredproj
@@ -400,7 +400,7 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                         Selector(3,other,
                             {
                                 val desiredspd = other.commonStuff.speed+2
-                                if(desiredspd<20) other.commonStuff.speed = desiredspd
+                                if(desiredspd<30) other.commonStuff.speed = desiredspd
                         },{
                             val desiredspeed = other.commonStuff.speed-2
                             if(desiredspeed>=3)other.commonStuff.speed = desiredspeed
