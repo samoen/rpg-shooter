@@ -316,16 +316,19 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                         StatView({"Mob"},other,2,0),
                         Selector(3,other,
                             {
-                                val desired = other.healthStats.wep.recoil+0.5
-                                if(desired<15)other.healthStats.wep.recoil=desired
-                            },{
                                 val desired = other.healthStats.wep.recoil-0.5
                                 if(desired>=0.0)other.healthStats.wep.recoil=desired
                             },{
-                                    other.healthStats.wep.atkSpd+=3
+                                val desired = other.healthStats.wep.recoil+0.5
+                                if(desired<=MAX_RECOIL)other.healthStats.wep.recoil=desired
+
                             },{
                                 val desired = other.healthStats.wep.atkSpd-3
                                 if(desired>=2)other.healthStats.wep.atkSpd=desired
+
+                            },{
+                                val desired = other.healthStats.wep.atkSpd+3
+                                if(desired<=MAX_RELOED)other.healthStats.wep.atkSpd=desired
                             },{
                                 var desired = other.healthStats.wep.mobility+0.1f
                                 desired = "%.1f".format(desired).toFloat()
@@ -335,8 +338,8 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                                 desired = "%.1f".format(desired).toFloat()
                                 if(desired>=0)other.healthStats.wep.mobility = desired
                             }),
-                        StatStars({other.healthStats.wep.recoil.toString() },{(other.healthStats.wep.recoil/0.5).toInt()}, other,0),
-                        StatStars({other.healthStats.wep.atkSpd.toString() },{(other.healthStats.wep.atkSpd/3).toInt()}, other,1),
+                        StatStars({other.healthStats.wep.recoil.toString() },{((MAX_RECOIL/0.5)-(other.healthStats.wep.recoil/0.5)).toInt()}, other,0),
+                        StatStars({other.healthStats.wep.atkSpd.toString() },{((MAX_RELOED/3)-(other.healthStats.wep.atkSpd/3)).toInt()}, other,1),
                         StatStars({other.healthStats.wep.mobility.toString() },{(other.healthStats.wep.mobility/0.1f).toInt()}, other,2)
                     )
                     }
@@ -393,7 +396,6 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                     it.menuThings = {other->listOf(
                         StatView({"Run"},other,0,0),
                         StatView({"HP"},other,1,0),
-//                        StatView({"Turn"},other,2,0),
                         StatView({"Blk"},other,2,0),
                         Selector(3,other,
                             {
@@ -416,14 +418,15 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                             other.healthStats.currentHp = other.healthStats.maxHP
                         },
                             {
-                            other.healthStats.shieldSkill += 2
+                                val desired = other.healthStats.shieldSkill-2
+                                if(desired>=1)other.healthStats.shieldSkill = desired
                         },{
-                            val desired = other.healthStats.shieldSkill-2
-                            if(desired>=1)other.healthStats.shieldSkill = desired
+                                val desiredshld = other.healthStats.shieldSkill+2
+                                if(desiredshld<=MAX_SHIELD_SKILL) other.healthStats.shieldSkill = desiredshld
                         }),
                         StatStars({other.commonStuff.speed.toString() },{(((other.commonStuff.speed) - 3)/2).toInt()}, other,0),
                         StatStars({other.healthStats.maxHP.toInt().toString() }, {((other.healthStats.maxHP-15)/3).toInt()},other,1),
-                        StatStars({( other.healthStats.shieldSkill).toInt().toString() },{((other.healthStats.shieldSkill-1)/2).toInt()}, other,2)
+                        StatStars({( other.healthStats.shieldSkill).toInt().toString() },{(MAX_SHIELD_SKILL/2)-((other.healthStats.shieldSkill-1)/2).toInt()}, other,2)
                     )}
                     it.char = 'g'
                     it.commonStuff.dimensions.drawSize = mapGridSize

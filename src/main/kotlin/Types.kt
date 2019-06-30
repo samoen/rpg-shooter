@@ -23,6 +23,9 @@ val YFRAMEMAGIC = 40
 const val TICK_INTERVAL = 40
 val DAMAGED_ANIMATION_FRAMES: Int = 3
 val ENEMY_DRIFT_FRAMES = 30
+val MAX_SHIELD_SKILL = 21
+val MAX_RECOIL = 7
+val MAX_RELOED = 38
 
 val soundFiles: MutableMap<soundType, File> = mutableMapOf()
 val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
