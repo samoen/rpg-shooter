@@ -51,9 +51,15 @@ class Bullet(shottah: HasHealth) : Entity {
         commonStuff.dimensions.ypos -= ((((Math.sin(bulDir))) * commonStuff.speed.toDouble()))
         commonStuff.dimensions.xpos += ((((Math.cos(bulDir))) * commonStuff.speed))
         if(commonStuff.dimensions.xpos<0)commonStuff.toBeRemoved = true
-        if(commonStuff.dimensions.xpos > INTENDED_FRAME_SIZE - (commonStuff.dimensions.drawSize) - (XMAXMAGIC/myFrame.width))commonStuff.toBeRemoved = true
+
+//        if(commonStuff.dimensions.xpos > INTENDED_FRAME_SIZE - (commonStuff.dimensions.drawSize) - (XMAXMAGIC/myFrame.width))commonStuff.toBeRemoved = true
+        if(commonStuff.dimensions.xpos > myFrame.width - (commonStuff.dimensions.drawSize))commonStuff.toBeRemoved = true
+
+//        if(commonStuff.dimensions.ypos > INTENDED_FRAME_SIZE - commonStuff.dimensions.drawSize) commonStuff.toBeRemoved = true
         if(commonStuff.dimensions.ypos > INTENDED_FRAME_SIZE - commonStuff.dimensions.drawSize) commonStuff.toBeRemoved = true
+
         if(commonStuff.dimensions.ypos<0)commonStuff.toBeRemoved = true
+
         framesAlive++
         if(framesAlive>shtbywep.bulLifetime){
 //            val shrinky = SHRINK_RATE
@@ -317,6 +323,11 @@ class Enemy : HasHealth{
 
             var xdiff = firstplayer.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
             var ydiff = firstplayer.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
+
+            var xdaim = xdiff
+            var ydaim = ydiff
+            var goingpack = false
+
             if(!(iTried.first==commonStuff.dimensions.xpos && iTried.second==commonStuff.dimensions.ypos)){
                 randnumx = (Math.random()-0.5)*2
                 randnumy = (Math.random()-0.5)*2
@@ -335,6 +346,7 @@ class Enemy : HasHealth{
                         val packxd = firstpack.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
                         val packyd = firstpack.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
 //                        if((Math.abs(packxd)+Math.abs(packyd))<(Math.abs(xdiff)+Math.abs(ydiff))){
+                            goingpack = true
                             xdiff = packxd
                             ydiff = packyd
 //                        }
@@ -361,7 +373,10 @@ class Enemy : HasHealth{
 //            val dx = commonStuff.dimensions.getMidX() - firstplayer.commonStuff.dimensions.getMidX()
 //            val dy = commonStuff.dimensions.getMidY() - firstplayer.commonStuff.dimensions.getMidY()
 
-            val radtarget = ((atan2( -ydiff , xdiff)))
+            var radtarget = ((atan2( -ydiff , xdiff)))
+//            if(goingpack){
+//                radtarget = ((atan2( -ydaim , xdaim)))
+//            }
             val absanglediff = abs(radtarget-this.healthStats.angy)
             val shootem =absanglediff<0.4
             var shoot2 = false
@@ -376,11 +391,22 @@ class Enemy : HasHealth{
                 if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
             }
             processShooting(this,shoot2,this.healthStats.wep,eBulImage)
-            val fix = absanglediff>Math.PI-healthStats.turnSpeed
-            var lef = radtarget>=healthStats.angy
-            if(fix)lef = !lef
-            val aimDone = absanglediff<0.1
-            processTurning(this,lef&&!aimDone,!lef&&!aimDone,healthStats.turnSpeed)
+            if(goingpack){
+                val radtargetenemy = ((atan2( -ydaim , xdaim)))
+                val absanglediffr = abs(radtargetenemy-this.healthStats.angy)
+                val fix = absanglediffr>Math.PI-healthStats.turnSpeed
+                var lef = radtargetenemy>=healthStats.angy
+                if(fix)lef = !lef
+                val aimDone = absanglediffr<0.1
+                processTurning(this,lef&&!aimDone,!lef&&!aimDone,healthStats.turnSpeed)
+            }else{
+                val fix = absanglediff>Math.PI-healthStats.turnSpeed
+                var lef = radtarget>=healthStats.angy
+                if(fix)lef = !lef
+                val aimDone = absanglediff<0.1
+                processTurning(this,lef&&!aimDone,!lef&&!aimDone,healthStats.turnSpeed)
+            }
+
         }
     }
 }

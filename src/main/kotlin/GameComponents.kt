@@ -13,7 +13,13 @@ fun drawAsSprite(entity: Entity,image:Image,g:Graphics,flipped:Boolean){
         flipAdjust = -1
         flipaddAdj = entity.commonStuff.dimensions.drawSize
     }
-    g.drawImage(image,getWindowAdjustedPos(entity.commonStuff.dimensions.xpos + flipaddAdj).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.ypos).toInt(),getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt()*flipAdjust,getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt(),null)
+    g.drawImage(
+        image,
+        getWindowAdjustedPos(entity.commonStuff.dimensions.xpos + flipaddAdj).toInt(),
+        getWindowAdjustedPos(entity.commonStuff.dimensions.ypos).toInt(),
+        getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt()*flipAdjust,
+        getWindowAdjustedPos(entity.commonStuff.dimensions.drawSize).toInt(),
+        null)
 }
 
 fun playStrSound(str:soundType){
@@ -229,10 +235,12 @@ fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
     }
 }
 fun stayInMap(me:Entity){
-    var limit = INTENDED_FRAME_SIZE-me.commonStuff.dimensions.drawSize
-    limit -= XMAXMAGIC/myFrame.width
-    if(me.commonStuff.dimensions.xpos>limit){
-        me.commonStuff.dimensions.xpos -= me.commonStuff.dimensions.xpos - limit
+    var limit = myFrame.width-me.commonStuff.dimensions.drawSize
+//    limit -= XMAXMAGIC/myFrame.width
+    if(me.commonStuff.dimensions.xpos>INTENDED_FRAME_SIZE-me.commonStuff.dimensions.drawSize){
+        me.commonStuff.dimensions.xpos -= me.commonStuff.dimensions.xpos - INTENDED_FRAME_SIZE + me.commonStuff.dimensions.drawSize
+//        me.commonStuff.dimensions.xpos -= me.commonStuff.dimensions.xpos - limit
+//        me.commonStuff.dimensions.xpos = limit
     }
     if(me.commonStuff.dimensions.xpos<0){
         me.commonStuff.dimensions.xpos -= me.commonStuff.dimensions.xpos
@@ -366,7 +374,6 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                                     other.healthStats.wep.bulSize = desiredSize
                                 }
                             },{
-
                                 if(other.healthStats.wep.bulspd+2<50){
                                     other.healthStats.wep.bulspd+=2
                                     other.healthStats.wep.bulLifetime++
@@ -400,7 +407,7 @@ fun placeMap(mapNum:Int,fromMapNum:Int){
                         Selector(3,other,
                             {
                                 val desiredspd = other.commonStuff.speed+2
-                                if(desiredspd<30) other.commonStuff.speed = desiredspd
+                                if(desiredspd<26) other.commonStuff.speed = desiredspd
                         },{
                             val desiredspeed = other.commonStuff.speed-2
                             if(desiredspeed>=3)other.commonStuff.speed = desiredspeed

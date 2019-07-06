@@ -218,12 +218,12 @@ class playControls(
 )
 
 data class Weapon(
-    var mobility: Float = 0.3f,
-    var atkSpd: Int = 35,
-    var bulLifetime: Int = 18,
-    var bulspd: Int = 35,
+    var mobility: Float = 0.2f,
+    var atkSpd: Int = 41,
+    var bulLifetime: Int = 17,
+    var bulspd: Int = 33,
     var recoil: Double = 0.0,
-    var bulSize: Double = 25.0,
+    var bulSize: Double = 20.0,
     var projectiles: Int = 1,
     var framesSinceShottah: Int = 999
 )
