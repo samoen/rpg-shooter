@@ -37,7 +37,7 @@ fun playStrSound(str:soundType){
 
 fun randEnemy():Enemy{
     val se = Enemy()
-    se.healthStats.turnSpeed = (0.01+(Math.random()/14)).toFloat()
+    se.healthStats.turnSpeed = (0.03+(Math.random()/14)).toFloat()
     se.commonStuff.dimensions.drawSize = 20+(Math.random()*50)
     se.healthStats.maxHP = (se.commonStuff.dimensions.drawSize)
     se.healthStats.currentHp = se.healthStats.maxHP

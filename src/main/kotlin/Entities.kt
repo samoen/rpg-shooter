@@ -175,9 +175,14 @@ class Player: HasHealth {
         if(Math.abs(pCont.leftStickMag)>0.09){
             commonStuff.dimensions.xpos += toMovex
             commonStuff.dimensions.ypos += toMovey
+            toMovex = abs(toMovex)
+            toMovey = abs(toMovey)
+//            if(toMovex>0.9)toMovex=0.9
+//            if(toMovey>0.9)toMovey=0.9
             if(
-            pCont.leftStickMag*commonStuff.speed>4
-//                Math.sqrt(Math.pow(toMovex,2.0) + Math.pow(toMovey,2.0))>2
+//            pCont.leftStickMag*commonStuff.speed>4
+                Math.sqrt(Math.pow(toMovex,2.0) + Math.pow(toMovey,2.0))>4
+
             ){
                 didStopBlock = true
             }
