@@ -323,6 +323,7 @@ class Enemy : HasHealth {
         shootySound = soundType.LASER
     )
     var driftDims = EntDimens()
+    var lastspd = 0
     var framesSinceDrift = 100
     var ponging = false
     var randnumx = 0.0
@@ -344,14 +345,14 @@ class Enemy : HasHealth {
 //        (g as Graphics2D).draw(path)
     }
 
-    fun handleAnimation(spd: Int) {
+    fun handleAnimation() {
         val maxTick = commonStuff.dimensions.drawSize * 2
         if (runTick > maxTick) runTick = 0
         runTick += (4).toInt()
         if (runTick < maxTick / 2) commonStuff.spriteu = goblinImage
         else commonStuff.spriteu = enemyWalkImage
         if (healthStats.wep.framesSinceShottah < 10) commonStuff.spriteu = enemyShootImage
-        runTick += spd
+        runTick += lastspd
     }
 
     override fun updateEntity() {
@@ -403,7 +404,7 @@ class Enemy : HasHealth {
         }else{
             moveToward(firstplayer.commonStuff.dimensions)
         }
-        handleAnimation((2).toInt())
+        handleAnimation()
         stayInMap(this)
         handleAimShoot(firstplayer)
 
@@ -497,11 +498,20 @@ class Enemy : HasHealth {
         modifyPos(adjx,adjy,testdims)
         var colled = false
         for (e in allEntities) {
-            if (testdims.overlapsOther(e.commonStuff.dimensions)
-                && e is Wall
-            ) colled = true
+            if(
+                e is Wall
+                || e is Player
+                || (e is Enemy && e.commonStuff.dimensions!=commonStuff.dimensions)
+            ){
+                if (testdims.overlapsOther(e.commonStuff.dimensions)){
+                    colled = true
+                }
+            }
         }
-        if(!colled) modifyPos(adjx, adjy, commonStuff.dimensions)
+        if(!colled) {
+            lastspd = (adjx+adjy).toInt()
+            modifyPos(adjx, adjy, commonStuff.dimensions)
+        }
         else {
 //            if(!(framesSinceDrift<ENEMY_DRIFT_FRAMES)){
                 randnumx = -adjx
