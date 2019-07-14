@@ -362,124 +362,40 @@ class Enemy : HasHealth {
 
         if (filteredEnts.isEmpty()) return
 
-//        val packEnts = allEntities
-//            .filter {(it is MedPack)}
-//            .sortedBy { abs(it.commonStuff.dimensions.xpos - commonStuff.dimensions.xpos) + abs(it.commonStuff.dimensions.ypos - commonStuff.dimensions.ypos) }
-
-
-//            if(framesSinceDrift<ENEMY_DRIFT_FRAMES) framesSinceDrift++
-
-
-//            var xdaim = xdiff
-//            var ydaim = ydiff
-//            var goingpack = false
-
-        //            if(false){
-//                !(iTried.first==commonStuff.dimensions.xpos && iTried.second==commonStuff.dimensions.ypos)
-//                        && framesSinceDrift>=ENEMY_DRIFT_FRAMES
-//                        ){
-//                randnumx = (Math.random()-0.5)
-//                randnumy = (Math.random()-0.5)
-//                framesSinceDrift = 0
-//            } else{
-
-
-//                if(framesSinceDrift>=ENEMY_DRIFT_FRAMES){
-//                    if(healthStats.currentHp<healthStats.maxHP/3 && packEnts.isNotEmpty()){
-//                        val firstpack = packEnts.first()
-//                        val packxd = firstpack.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
-//                        val packyd = firstpack.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
-////                        if((Math.abs(packxd)+Math.abs(packyd))<(Math.abs(xdiff)+Math.abs(ydiff))){
-//                            goingpack = true
-//                            xdiff = packxd
-//                            ydiff = packyd
-////                        }
-//                    }
-
         val firstplayer = filteredEnts.first()
 
-        if(framesSinceDrift<ENEMY_DRIFT_FRAMES){
+        if (framesSinceDrift < ENEMY_DRIFT_FRAMES) {
             framesSinceDrift++
             moveToward(driftDims)
-        }else{
-            moveToward(firstplayer.commonStuff.dimensions)
+        } else {
+            var gopack = false
+            var packdims = EntDimens()
+            if (healthStats.currentHp < healthStats.maxHP / 3) {
+                val packEnts = allEntities
+                    .filter { (it is MedPack) }
+                    .sortedBy { abs(it.commonStuff.dimensions.xpos - commonStuff.dimensions.xpos) + abs(it.commonStuff.dimensions.ypos - commonStuff.dimensions.ypos) }
+                if (packEnts.isNotEmpty()) {
+                    gopack = true
+                    packdims = packEnts.first().commonStuff.dimensions
+                }
+            }
+            if (gopack) moveToward(packdims)
+            else moveToward(firstplayer.commonStuff.dimensions)
+
         }
         handleAnimation()
         stayInMap(this)
         handleAimShoot(firstplayer)
-
-//                if(framesSinceDrift<ENEMY_DRIFT_FRAMES){
-//                    framesSinceDrift++
-//                    modifyPos(randnumx,randnumy,testdims)
-//                }else{
-//                    modifyPos(adjx,adjy,testdims)
-//                }
-//                    modifyPos(adjx,adjy,commonStuff.dimensions)
-//                }else{
-//                    modifyPos(adjSpd*randnumx,adjSpd*randnumy)
-//                }
-
-//                if(!colled){
-////                    modifyPos(adjx,adjy,commonStuff.dimensions)
-////                    runTick+=((adjx+adjy)).toInt()
-//                }else{
-////                    framesSinceDrift = 0
-////                    randnumx = -adjx
-////                    randnumx = (Math.random()-0.5)*2
-////                    randnumy = -adjy
-////                    randnumy = (Math.random()-0.5)*2
-//                }
-//            }
-//            iTried = Pair(commonStuff.dimensions.xpos,commonStuff.dimensions.ypos)
-//            val dx = commonStuff.dimensions.getMidX() - firstplayer.commonStuff.dimensions.getMidX()
-//            val dy = commonStuff.dimensions.getMidY() - firstplayer.commonStuff.dimensions.getMidY()
-
-//            if(goingpack){
-//                radtarget = ((atan2( -ydaim , xdaim)))
-//            }
-//            var radtarget = ((atan2( -ydiff , xdiff)))
-//            val absanglediff = abs(radtarget-this.healthStats.angy)
-//            val shootem =absanglediff<0.4
-//            var shoot2 = false
-//            if(shootem){
-//                val r = Rectangle((commonStuff.dimensions.xpos).toInt(),(commonStuff.dimensions.ypos - (healthStats.wep.bulSize/(commonStuff.dimensions.drawSize))).toInt(),healthStats.wep.bulSize.toInt(),healthStats.wep.bulspd*80)
-//                val path = Path2D.Double()
-//                path.append(r, false)
-//                val t = AffineTransform()
-//                t.rotate(-healthStats.angy+(-Math.PI/2),(commonStuff.dimensions.xpos+(commonStuff.dimensions.drawSize/2)),(commonStuff.dimensions.ypos+(commonStuff.dimensions.drawSize/2)))
-//                path.transform(t)
-//                val intersectors = allEntities.filter {it is Wall || it is Player}.filter {  path.intersects(Rectangle(it.commonStuff.dimensions.xpos.toInt(),it.commonStuff.dimensions.ypos.toInt(),it.commonStuff.dimensions.drawSize.toInt(),it.commonStuff.dimensions.drawSize.toInt()))}.sortedBy { Math.abs(it.commonStuff.dimensions.ypos-commonStuff.dimensions.ypos)+Math.abs(it.commonStuff.dimensions.xpos-commonStuff.dimensions.xpos) }
-//                if(intersectors.isNotEmpty()) if (intersectors.first() is Player) shoot2 = true
-//            }
-//            processShooting(this,shoot2,this.healthStats.wep,eBulImage)
-
-
-//            if(goingpack){
-//                val radtargetenemy = ((atan2( -ydaim , xdaim)))
-//                val absanglediffr = abs(radtargetenemy-this.healthStats.angy)
-//
-//                val fix = absanglediffr>Math.PI-healthStats.turnSpeed
-//                var lef = radtargetenemy>=healthStats.angy
-//                if(fix)lef = !lef
-//                val aimDone = absanglediffr<0.1
-//                processTurning(this,lef&&!aimDone,!lef&&!aimDone,healthStats.turnSpeed)
-//            }else{
-//                val fix = absanglediff>Math.PI-healthStats.turnSpeed
-//                var lef = radtarget>=healthStats.angy
-//                if(fix)lef = !lef
-//                val aimDone = absanglediff<0.1
-//                processTurning(this,lef&&!aimDone,!lef&&!aimDone,healthStats.turnSpeed)
-//            }
-
-//        }
     }
-    fun moveToward(entity: EntDimens){
+
+    fun moveToward(entity: EntDimens) {
         fun modifyPos(xamt: Double, yamt: Double, dims: EntDimens) {
             dims.xpos += xamt
             dims.ypos += yamt
         }
-        var xdiff = entity.getMidX() - commonStuff.dimensions.getMidX()
-        var ydiff = entity.getMidY() - commonStuff.dimensions.getMidY()
+
+        val xdiff = entity.getMidX() - commonStuff.dimensions.getMidX()
+        val ydiff = entity.getMidY() - commonStuff.dimensions.getMidY()
 
         var adjSpd = commonStuff.speed.toFloat()
         if (healthStats.wep.framesSinceShottah < healthStats.wep.atkSpd) {
@@ -494,38 +410,35 @@ class Enemy : HasHealth {
         if (Math.abs(ydiff) < 5) adjy = 0.0
 
 
-        var testdims = commonStuff.dimensions.copy()
-        modifyPos(adjx,adjy,testdims)
+        val testdims = commonStuff.dimensions.copy()
+        modifyPos(adjx, adjy, testdims)
         var colled = false
         for (e in allEntities) {
-            if(
+            if (
                 e is Wall
                 || e is Player
-                || (e is Enemy && e.commonStuff.dimensions!=commonStuff.dimensions)
-            ){
-                if (testdims.overlapsOther(e.commonStuff.dimensions)){
+                || (e is Enemy && e.commonStuff.dimensions != commonStuff.dimensions)
+            ) {
+                if (testdims.overlapsOther(e.commonStuff.dimensions)) {
                     colled = true
                 }
             }
         }
-        if(!colled) {
-            lastspd = (adjx+adjy).toInt()
+        if (!colled) {
+            lastspd = (adjx + adjy).toInt()
             modifyPos(adjx, adjy, commonStuff.dimensions)
-        }
-        else {
-//            if(!(framesSinceDrift<ENEMY_DRIFT_FRAMES)){
-                randnumx = -adjx
-                randnumy = -adjy
-                framesSinceDrift=0
-//                driftDims = allEntities.random().commonStuff.dimensions.copy()
-            var r = Random()
-                driftDims = EntDimens(
-                    xpos = r.nextDouble()*myFrame.width,
-                    ypos = r.nextDouble()*myFrame.width
-                    )
-//            }
+        } else {
+            randnumx = -adjx
+            randnumy = -adjy
+            framesSinceDrift = 0
+            val r = Random()
+            driftDims = EntDimens(
+                xpos = r.nextDouble() * myFrame.width,
+                ypos = r.nextDouble() * myFrame.width
+            )
         }
     }
+
     fun handleAimShoot(player: Player) {
         var xdiff = player.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
         var ydiff = player.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
