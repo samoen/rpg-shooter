@@ -215,7 +215,7 @@ fun specialk(mesize:Double,mespd:Int,othersize:Double,diff:Double,mepos:Double,o
         if (xright) takebackx = takebackx * -1.0
         if(takebackx>0)takebackx+=0.1
         else if(takebackx<0)takebackx-=0.1
-        if(abs(takebackx)<mespd+2) {
+        if(abs(takebackx)<mespd+5) {
             return(takebackx)
         }
     }
@@ -227,7 +227,7 @@ fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
     val ydiff = me.commonStuff.dimensions.ypos - oldme.ypos
     val midDistX =  abs(abs(oldOther.getMidX())-abs(oldme.getMidX()))
     val midDistY = abs(abs(oldOther.getMidY())-abs(oldme.getMidY()))
-    if(abs(midDistX-midDistY)<0.05)return
+    if(abs(midDistX-midDistY)<0.05 && me is Player)return
     if(midDistX>midDistY){
         me.commonStuff.dimensions.xpos += specialk(me.commonStuff.dimensions.drawSize,me.commonStuff.speed,other.commonStuff.dimensions.drawSize,xdiff,me.commonStuff.dimensions.xpos,other.commonStuff.dimensions.xpos,oldOther.xpos,oldme.getMidX(),oldOther.getMidX())
     }else{
@@ -235,7 +235,7 @@ fun blockMovement(me:Entity,other: Entity, oldme: EntDimens,oldOther:EntDimens){
     }
 }
 fun stayInMap(me:Entity){
-    var limit = myFrame.width-me.commonStuff.dimensions.drawSize
+//    var limit = myFrame.width-me.commonStuff.dimensions.drawSize
 //    limit -= XMAXMAGIC/myFrame.width
     if(me.commonStuff.dimensions.xpos>INTENDED_FRAME_SIZE-me.commonStuff.dimensions.drawSize){
         me.commonStuff.dimensions.xpos -= me.commonStuff.dimensions.xpos - INTENDED_FRAME_SIZE + me.commonStuff.dimensions.drawSize

@@ -149,7 +149,9 @@ class SamMain {
                         val allSize = allEntities.size
                         for (dex in 0 until allSize) {
                             val ient = allEntities[dex]
-                            if (ient is Player || ient is Enemy) {
+                            if (ient is Player
+//                                || ient is Enemy
+                            ) {
                                 for (j in (0) until allSize) {
                                     if (dex != j) {
                                         val jent = allEntities[j]

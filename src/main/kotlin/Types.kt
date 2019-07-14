@@ -161,7 +161,6 @@ interface Entity {
 }
 
 data class HealthStats(
-    var didHeal: Boolean = false,
     var currentHp: Double = 10.0,
     var maxHP: Double = 10.0,
     var ouchNoise: soundType = soundType.OUCH,
@@ -219,7 +218,7 @@ class playControls(
 
 data class Weapon(
     var mobility: Float = 0.2f,
-    var atkSpd: Int = 41,
+    var atkSpd: Int = 38,
     var bulLifetime: Int = 17,
     var bulspd: Int = 33,
     var recoil: Double = 0.0,
