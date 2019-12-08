@@ -66,6 +66,7 @@ fun processShooting(me:HasHealth, sht:Boolean, weap:Weapon, bulImage:Image){
     if (sht && weap.framesSinceShottah > me.healthStats.wep.atkSpd) {
         weap.framesSinceShottah = 0
         me.commonStuff.didShoot=true
+        if(me is Player) me.pewframecount=6
         for( i in 1..weap.projectiles){
             val b = Bullet(me)
             b.commonStuff.spriteu = bulImage
@@ -186,9 +187,10 @@ fun takeDamage(bullet:Bullet, me:HasHealth){
         if(me.healthStats.getArmored()){
             if(shieldProc) me.healthStats.armorIsBroken = true
             playStrSound(soundType.SWAP)
-        }else playStrSound(me.healthStats.ouchNoise)
-        me.healthStats.didGetShot = true
-        me.healthStats.gotShotFrames = DAMAGED_ANIMATION_FRAMES
+        }else {
+            me.healthStats.gotShotFrames = DAMAGED_ANIMATION_FRAMES
+            playStrSound(me.healthStats.ouchNoise)
+        }
     }
 }
 

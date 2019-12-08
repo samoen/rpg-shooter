@@ -211,16 +211,8 @@ class Player : HasHealth {
                 healthStats.armorBrokenFrames = 0
             }
         }
+
         var todraw = stillImage
-        if (commonStuff.didShoot) {
-            pewframecount++
-            if (pewframecount < 3) {
-                todraw = pewImage
-            } else {
-                pewframecount = 0
-                commonStuff.didShoot = false
-            }
-        }
         if (didStopBlock) {
             gaitcount++
             if (gaitcount < 3) {
@@ -231,20 +223,19 @@ class Player : HasHealth {
         } else {
             gaitcount = 0
         }
+
+        if (pewframecount>0) {
+            pewframecount--
+            todraw = pewImage
+        }
         if (healthStats.getArmored()) todraw = pstoppedImage
 
         if (healthStats.armorIsBroken) {
             todraw = armorBrokenImage
-            healthStats.didGetShot = false
         }
-
-        if (healthStats.didGetShot) {
-            if (healthStats.gotShotFrames > 0) {
-                todraw = pouchImage
-                healthStats.gotShotFrames--
-            } else {
-                healthStats.didGetShot = false
-            }
+        if (healthStats.gotShotFrames > 0) {
+            healthStats.gotShotFrames--
+            todraw = pouchImage
         }
 
         commonStuff.spriteu = todraw
@@ -325,10 +316,6 @@ class Enemy : HasHealth {
     var driftDims = EntDimens()
     var lastspd = 0
     var framesSinceDrift = 100
-    var ponging = false
-    var randnumx = 0.0
-    var randnumy = 0.0
-    //    var iTried = Pair(-1.0,-1.0)
     var runTick = 0
 
     override fun drawEntity(g: Graphics) {
@@ -346,13 +333,15 @@ class Enemy : HasHealth {
     }
 
     fun handleAnimation() {
-        val maxTick = commonStuff.dimensions.drawSize * 2
-        if (runTick > maxTick) runTick = 0
-        runTick += (4).toInt()
+//        val maxTick = commonStuff.dimensions.drawSize
+        val maxTick = 30
+        runTick += lastspd
+        if (runTick > maxTick){
+            runTick = 0
+        }
         if (runTick < maxTick / 2) commonStuff.spriteu = goblinImage
         else commonStuff.spriteu = enemyWalkImage
         if (healthStats.wep.framesSinceShottah < 10) commonStuff.spriteu = enemyShootImage
-        runTick += lastspd
     }
 
     override fun updateEntity() {
@@ -425,11 +414,9 @@ class Enemy : HasHealth {
             }
         }
         if (!colled) {
-            lastspd = (adjx + adjy).toInt()
+            lastspd = (abs(adjx) + abs(adjy)).toInt()
             modifyPos(adjx, adjy, commonStuff.dimensions)
         } else {
-            randnumx = -adjx
-            randnumy = -adjy
             framesSinceDrift = 0
             val r = Random()
             driftDims = EntDimens(
@@ -440,9 +427,9 @@ class Enemy : HasHealth {
     }
 
     fun handleAimShoot(player: Player) {
-        var xdiff = player.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
-        var ydiff = player.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
-        var radtarget = ((atan2(-ydiff, xdiff)))
+        val xdiff = player.commonStuff.dimensions.getMidX() - commonStuff.dimensions.getMidX()
+        val ydiff = player.commonStuff.dimensions.getMidY() - commonStuff.dimensions.getMidY()
+        val radtarget = ((atan2(-ydiff, xdiff)))
         val absanglediff = abs(radtarget - this.healthStats.angy)
         val shootem = absanglediff < 0.4
         var shoot2 = false
