@@ -166,8 +166,6 @@ data class HealthStats(
     var ouchNoise: soundType = soundType.OUCH,
     var dieNoise: soundType = soundType.DIE,
     var didGetShot: Boolean = false,
-    var armorIsBroken: Boolean = false,
-    var armorBrokenFrames: Int = 0,
     var gotShotFrames: Int = DAMAGED_ANIMATION_FRAMES,
     var stopped: Boolean = false,
     var shieldSkill: Int = 3,
@@ -177,9 +175,6 @@ data class HealthStats(
     var turnSpeed: Float = 0.05f,
     var teamNumber: Int = 0
 ) {
-    fun getArmored(): Boolean {
-        return stopped && !armorIsBroken
-    }
 }
 
 interface HasHealth : Entity {

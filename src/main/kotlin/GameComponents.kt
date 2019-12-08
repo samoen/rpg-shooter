@@ -148,7 +148,7 @@ fun takeDamage(bullet:Bullet, me:HasHealth){
     bullet.commonStuff.toBeRemoved = true
     var desirDam = bullet.damage
     var shieldProc = false
-    if(me.healthStats.getArmored()){
+    if(me.healthStats.stopped){
         if(me.healthStats.shieldSkill<bullet.damage){
             desirDam = me.healthStats.shieldSkill.toDouble()
             shieldProc = true
@@ -184,8 +184,7 @@ fun takeDamage(bullet:Bullet, me:HasHealth){
         entsToAdd.add(deathEnt)
     }else{
         me.healthStats.currentHp = desirHealth
-        if(me.healthStats.getArmored()){
-            if(shieldProc) me.healthStats.armorIsBroken = true
+        if(me.healthStats.stopped){
             playStrSound(soundType.SWAP)
         }else {
             me.healthStats.gotShotFrames = DAMAGED_ANIMATION_FRAMES

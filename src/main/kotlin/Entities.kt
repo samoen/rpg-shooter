@@ -204,14 +204,6 @@ class Player : HasHealth {
             }
         } else healthStats.stopped = !didStopBlock
 
-        if (healthStats.armorIsBroken) {
-            healthStats.armorBrokenFrames++
-            if (healthStats.armorBrokenFrames > healthStats.shieldSkill * 3) {
-                healthStats.armorIsBroken = false
-                healthStats.armorBrokenFrames = 0
-            }
-        }
-
         var todraw = stillImage
         if (didStopBlock) {
             gaitcount++
@@ -228,11 +220,8 @@ class Player : HasHealth {
             pewframecount--
             todraw = pewImage
         }
-        if (healthStats.getArmored()) todraw = pstoppedImage
+        if (healthStats.stopped) todraw = pstoppedImage
 
-        if (healthStats.armorIsBroken) {
-            todraw = armorBrokenImage
-        }
         if (healthStats.gotShotFrames > 0) {
             healthStats.gotShotFrames--
             todraw = pouchImage
