@@ -136,6 +136,7 @@ class Player : HasHealth {
             notOnShop = true
         }
         if (notOnShop) {
+            menuStuff = listOf()
             if (pCont.Swp) {
                 playStrSound(soundType.SWAP)
                 if (primaryEquipped) {
@@ -145,6 +146,8 @@ class Player : HasHealth {
                 }
                 primaryEquipped = !primaryEquipped
             }
+        }else{
+            menuStuff.forEach { it.updateEntity() }
         }
         processShooting(this, pCont.sht && notOnShop, this.healthStats.wep, pBulImage)
         var toMovex = 0.0

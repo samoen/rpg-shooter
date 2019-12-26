@@ -1,6 +1,7 @@
 import com.studiohartman.jamepad.ControllerManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.awt.Font
@@ -96,8 +97,10 @@ fun main() {
     myFrame.isVisible = true
 
     playStrSound(soundType.SWAP)
+    val updateTicker = ticker(delayMillis = 25, initialDelayMillis = 0)
     GlobalScope.launch {
-        while (frameNotClosing) {
+        for(event in updateTicker){
+//        while (frameNotClosing) {
             val pretime = System.currentTimeMillis()
             var pressed1contr = false
             var pressed2contr = false
@@ -187,7 +190,10 @@ fun main() {
                     val noncombatants = mutableListOf<Entity>()
                     val bullets = mutableListOf<Entity>()
                     allEntities.forEach {
-                        if (it is Player || it is Enemy) combatants.add(it)
+                        if (it is Player || it is Enemy){
+                            combatants.add(it)
+                            if(it is Player)combatants.addAll(it.menuStuff)
+                        }
                         else if (it is Bullet) {
                             bullets.add(it)
                         } else noncombatants.add(it)
@@ -198,34 +204,39 @@ fun main() {
                         entsToDraw.addAll(noncombatants)
                         entsToDraw.addAll(combatants)
                         entsToDraw.addAll(bullets)
-                        for (player in players) {
-                            if (!player.notOnShop) {
-                                player.menuStuff.forEach {
-                                    it.updateEntity()
-                                    entsToDraw.add(it)
-                                }
-                            }
-                        }
+//                        for (player in players) {
+//                            if (!player.notOnShop) {
+//                                player.menuStuff.forEach {
+//                                    it.updateEntity()
+//                                    entsToDraw.add(it)
+//                                }
+//                            }
+//                        }
                         otherChan.send(true)
                     }
                     if (entsToAdd.size > 0) allEntities.addAll(entsToAdd)
                     entsToAdd.clear()
                 }
             }
-            val tickdiff = System.currentTimeMillis() - pretime
-            if (tickdiff < TARGET_UPDATE_RATE)
-                delay(TARGET_UPDATE_RATE - tickdiff)
+//            val tickdiff = System.currentTimeMillis() - pretime
+//            if (tickdiff < TARGET_UPDATE_RATE)
+//                delay(TARGET_UPDATE_RATE - tickdiff)
         }
     }
+    val tickerChannel = ticker(delayMillis = 30, initialDelayMillis = 0)
     GlobalScope.launch {
-        var prepre:Long
-        while (frameNotClosing) {
-            prepre = System.currentTimeMillis()
+        for (event in tickerChannel){
             otherChan.receive()
-            val tickdiff = System.currentTimeMillis() - prepre
-            if (tickdiff < TARGET_FRAME_RATE)
-                delay(TARGET_FRAME_RATE - tickdiff)
             myPanel.repaint()
         }
+//        var prepre:Long
+//        while (frameNotClosing) {
+//            prepre = System.currentTimeMillis()
+//            otherChan.receive()
+//            val tickdiff = System.currentTimeMillis() - prepre
+//            if (tickdiff < TARGET_FRAME_RATE)
+//                delay(TARGET_FRAME_RATE - tickdiff)
+//            myPanel.repaint()
+//        }
     }
 }
