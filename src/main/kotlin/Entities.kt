@@ -200,15 +200,15 @@ class Player : HasHealth {
         }
 
         stayInMap(this)
+        healthStats.shieldUp = !didStopBlock
         if (notOnShop) {
-            healthStats.stopped = !didStopBlock
             if (healthStats.wep.framesSinceShottah < healthStats.shieldSkill) {
-                healthStats.stopped = false
+                healthStats.shieldUp = false
             }
-        } else healthStats.stopped = !didStopBlock
+        }
 
         var todraw = stillImage
-        if (didStopBlock) {
+        if (!healthStats.shieldUp) {
             gaitcount++
             if (gaitcount < 3) {
                 todraw = runImage
@@ -223,7 +223,7 @@ class Player : HasHealth {
             pewframecount--
             todraw = pewImage
         }
-        if (healthStats.stopped) todraw = pstoppedImage
+        if (healthStats.shieldUp) todraw = pstoppedImage
 
         if (healthStats.gotShotFrames > 0) {
             healthStats.gotShotFrames--

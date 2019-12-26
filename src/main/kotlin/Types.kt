@@ -1,3 +1,4 @@
+import kotlinx.coroutines.channels.Channel
 import java.awt.Graphics
 import java.awt.Image
 import java.io.File
@@ -12,7 +13,6 @@ val entsToDraw = mutableListOf<Entity>()
 val players: MutableList<Player> = mutableListOf()
 var frameNotClosing = true
 var gamePaused = false
-var myrepaint = false
 var painting = false
 val statsYSpace = 20.0
 val statsXSpace = 40.0
@@ -27,15 +27,15 @@ val ENEMY_DRIFT_FRAMES = 50
 val MAX_SHIELD_SKILL = 21
 val MAX_RECOIL = 16
 val MAX_RELOED = 38
-
 val soundFiles: MutableMap<soundType, File> = mutableMapOf()
+
 val longpewFil = File("src/main/resources/newlongpew.wav").getAbsoluteFile()
 val swapnoiseFile = File("src/main/resources/swapnoise.wav").getAbsoluteFile()
 val dienoiseFile = File("src/main/resources/deathclip.wav").getAbsoluteFile()
 val ouchnoiseFile = File("src/main/resources/ouch.wav").getAbsoluteFile()
 val enemyPewFile = File("src/main/resources/enemypew.wav").getAbsoluteFile()
-
 val stillImage = ImageIcon("src/main/resources/main.png").image
+
 val runImage = ImageIcon("src/main/resources/walk.png").image
 val goblinImage = ImageIcon("src/main/resources/enemy1.png").image
 val enemyWalkImage = ImageIcon("src/main/resources/enemy1walk.png").image
@@ -60,15 +60,14 @@ val gateSwitchActiveImage = ImageIcon("src/main/resources/switchon.png").image
 val gateClosedImage = ImageIcon("src/main/resources/doorshut.png").image
 val gateOpenImage = ImageIcon("src/main/resources/dooropen.png").image
 val starImage = ImageIcon("src/main/resources/star4.png").image
-
 var myFrame = run {
     val jf = JFrame()
     jf.isFocusable = true
     jf.iconImage = ImageIcon("gunman.png").image
     jf
 }
-const val mapGridColumns = 16
 
+const val mapGridColumns = 16
 val map0 =
     "        w       " +
             "                " +
@@ -85,6 +84,7 @@ val map0 =
             "                " +
             "                " +
             "            s   "
+
 val map1 =
             "   b   m  w wwww" +
             "w         w   2 " +
@@ -101,7 +101,6 @@ val map1 =
             "      w         " +
             "   0            " +
             "          w    w"
-
 val map2 = "s       we      " +
         "   3         e  " +
         "      ww     h  " +
@@ -117,7 +116,6 @@ val map2 = "s       we      " +
         "  w     w   w   " +
         " e      w e w ew" +
         "        w      w"
-
 
 val map3 =  "e e e  e ehehehs" +
             "e  e e e e  e e " +
@@ -135,13 +133,16 @@ val map3 =  "e e e  e ehehehs" +
             "  e     e       " +
             "                "
 
+
 enum class soundType {
+
     SHOOT,
     OUCH,
     DIE,
     LASER,
     SWAP
 }
+
 
 
 data class EntCommon(
@@ -168,7 +169,7 @@ data class HealthStats(
     var dieNoise: soundType = soundType.DIE,
     var didGetShot: Boolean = false,
     var gotShotFrames: Int = DAMAGED_ANIMATION_FRAMES,
-    var stopped: Boolean = false,
+    var shieldUp: Boolean = false,
     var shieldSkill: Int = 3,
     var shootySound: soundType = soundType.DIE,
     var angy: Double = 0.0,
